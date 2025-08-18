@@ -1,68 +1,130 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
   <meta charset="UTF-8">
-  <title>오산독산성 전국하프마라톤 2차 접수 안내</title>
+  <title>제11회 시흥시 전국하프마라톤대회 참가 접수 안내</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --ink:#222;
+      --brand:#0b1c5f;
+      --accent:#f17e00;
+      --accent-weak:#fef1e0;
+      --danger:#b00000;
+      --danger-bg:#ffe7e7;
+      --line:#ccc;
+      --bg:#fff;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.6;
+      font-family:'맑은 고딕',system-ui,-apple-system,Segoe UI,Roboto,sans-serif
+    }
+    .container{
+      max-width:800px;
+      margin:0 auto;
+      padding:28px 20px;   /* 상하 패딩 줄임 */
+      background:#fff
+    }
+    .title{text-align:center;color:var(--brand)}
+    .title h1{font-size:32px;margin:0 0 8px;line-height:1.35}
+    .subtitle{color:var(--accent);font-weight:700;text-align:center;margin:0 0 24px;font-size:18px}
+    .content{font-size:16px}
+    .content p{margin:12px 0}   /* 문단 간격 축소 */
+    .highlight-box{
+      background:var(--accent-weak);
+      padding:10px 14px;   /* 패딩 소폭 줄임 */
+      border-left:6px solid var(--accent);
+      margin:16px 0;
+      font-weight:700;
+      color:#9b3e00;
+      font-size:17px
+    }
+    .info-note{
+      background:#f7fafc;
+      border:1px solid #dbe4ea;
+      border-radius:6px;
+      padding:10px 12px;
+      margin:12px 0 20px;
+      font-size:15px;
+      color:#2b3a42;
+    }
+    .info-note strong{color:#0b1c5f}
+    .highlight{color:var(--accent);font-weight:700}
+    .notice-list{margin:16px 0;padding-left:18px}
+    .notice-list li{margin-bottom:6px}
+    .warning{
+      background:var(--danger-bg);
+      padding:14px;
+      border-left:6px solid red;
+      margin:20px 0;
+      font-weight:700;
+      color:var(--danger);
+      font-size:15px
+    }
+    .footer{text-align:center;margin-top:24px;font-weight:700;color:var(--brand)}
+    a:focus{outline:3px solid var(--accent);outline-offset:2px}
+    @media (max-width:600px){
+      .title h1{font-size:26px}
+      .container{padding:20px 14px}
+      .content{font-size:15px}
+      .warning,.highlight-box{font-size:16px}
+    }
+  </style>
 </head>
+<body>
+  <main class="container" role="main">
+    <header class="title">
+      <h1>제11회 시흥시 전국하프마라톤대회<br>참가 접수 안내</h1>
+    </header>
 
-<body style="margin:0; font-family:'맑은 고딕', sans-serif; text-align: center;">
+    <section class="content" aria-labelledby="intro">
+      <p id="intro">
+        안녕하세요. 제11회 시흥시 전국하프마라톤대회 운영사무국입니다.<br>
+        곧 다가올 참가 접수를 원활하게 진행하실 수 있도록, 참가자 여러분께 사전 안내드립니다.
+      </p>
 
-  <!-- 상단 타이틀 영역 -->
-  <div style="background-color:#000; color:#fff; padding:40px 30px; text-align:center;">
-    <h1 style="font-size:50px; line-height:1.4; margin:0; text-align:left; display:inline-block;">
-      제<span style="color:#FFD700;">22</span>회<br>
-      <span style="color:#FFD700;">오산독산성</span><br>
-      전국하프마라톤
-    </h1>
-  </div>
+      <!-- 최상단 핵심 안내 -->
+      <div class="highlight-box" aria-live="polite">
+        📢 접수 시작일: <span class="highlight">8월 18일(월) 오후 2시</span><br>
+        총 모집 인원: <span class="highlight">5,000명</span> (선착순 마감)<br>
+      </div>
 
-  <!-- 본문 내용 영역 -->
-  <div style="background-color:#fff; color:#000; padding:40px 30px;  margin:0 auto; text-align:center;">
+      <!-- 오해 방지용 추가 설명 -->
+      <p class="info-note">
+        ※ 접수 당일 <strong>신청과 동시에 입금하실 필요가 없습니다.</strong><br>
+        입금 기간은 별도 공지되며, <strong>공지된 기간 내에만 입금</strong>하시면 됩니다.
+        <br>중복 입금·중복 결제 사례가 다수 발생하여, <strong>중복 건은 환불이 불가</strong>함을 다시 안내드립니다.
+      </p>
 
-    <!-- 마감 안내 배너 -->
-    <div
-      style="font-size:28px; font-weight:bold; color:#fff; background:linear-gradient(90deg, #444, #e04c2d); padding:16px 20px; border-radius:10px; margin-bottom:15px; display:inline-block; letter-spacing:2px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-      추가 접수 안내
-    </div>
-
-
-    <!-- 2차 접수 안내 -->
-    <p style="font-size:16px; line-height:1.6; color:#000; margin-top:30px;">
-      1차 접수 이후 취소분에 한해 <strong>8/11(월) 14:00</strong>부터 <strong>2차 접수</strong>를 진행합니다.<br>
-      이번 추가 접수는 <b style="color:#e04c2d;">메일 접수는 받지 않고</b>
-      <b>홈페이지를 통한 접수만</b> 진행합니다.<br>
-
-      또한 저번과 달리 <b style="color:#e04c2d;">사전에 대기하셔도 접수가 불가</b>하며,<br>
-      <b>2시 정각에 전체 대기열이 초기화</b>되오니 <b style="color:#000;">2시 이후 접수</b>해 주시기 바랍니다.<br>
-      참가자 여러분의 뜨거운 성원에 깊이 감사드립니다.
-    </p>
-
-    <div style="background: #fffbe6; border: 2px solid #e04c2d; border-radius: 10px; padding: 22px 18px; margin: 30px auto 20px auto; max-width: 600px; box-shadow: 0 2px 8px rgba(224,76,45,0.08); text-align:center;">
-      <ul style="list-style:none; padding:0; margin:0;">
-        <li style="margin-bottom:10px;">
-          <span style="background:#e04c2d; color:#fff; padding:3px 8px; border-radius:5px; font-weight:bold;">반드시 신청하신 후 입금해 주시기 바랍니다.</span>
-        </li>
-        <li style="margin-bottom:10px;">
-          <span style="color:#e04c2d; font-weight:bold;">참가 신청 없이 입금한 경우는 무효 처리</span>되며, <span style="color:#e04c2d;">환불이 지연될 수 있습니다.</span>
-        </li>
-        <li style="margin-bottom:10px;">
-          <span style="font-weight:bold;">입금 시 반드시 <span style="color:#e04c2d;">성함과 생년월일</span>을 기재</span>해 주세요. <span style="background:#ffe0b2; padding:2px 6px; border-radius:4px; font-weight:bold;">(예: 홍길동251012)</span>
-        </li>
-        <li>
-          <span style="color:#e04c2d; font-weight:bold;">신청 후 입금 완료 시 코스 변경 및 환불은 불가</span>하니 <span style="font-weight:bold;">신중히 선택해 주세요.</span>
-        </li>
+      <h2 class="subtitle" id="notice">유의사항 안내</h2>
+      <ul class="notice-list" aria-describedby="notice">
+        <li><strong>정해진 인원 도달 시 조기 마감</strong>되며, 이후 신청은 불가합니다.</li>
+        <li><strong>신청만 먼저 완료</strong>하시고, <strong>입금은 추후 공지된 기간 내</strong>에 진행해 주세요.</li>
+        <li>참가접수 마감 후 <strong>입금 일정은 별도 공지</strong>됩니다.</li>
+        <li>입금 시 반드시 <strong>성함과 생년월일</strong>을 기재해 주세요. <strong>(예: 홍길동251012)</strong></li>
+        <li><span class="highlight">기한 내 입금 완료</span> 시 참가가 확정되며, 기한 외 입금 시 참가가 불가합니다.</li>
+        <li><strong>참가 신청 없이 입금한 경우</strong>는 무효 처리되며, <strong>반드시 신청 후 입금</strong>해 주세요.</li>
+        <li>입금 일정 외 또는 미신청 상태로 입금 시 <strong>환불이 지연되거나 불가</strong>할 수 있습니다.</li>
+        <li style="color:#b00000;"><strong>신청 후 입금 완료 시 코스 변경 및 환불 불가</strong>하니 신중히 선택해 주세요.</li>
+        <li style="color:#b00000;"><strong>중복 신청 또는 중복 입금/결제 시에도 환불 불가</strong>합니다.</li>
       </ul>
-    </div>
 
+      <div class="warning" role="alert">
+        ⚠ 형평성을 위해 <strong>메일 접수는 받지 않습니다.</strong><br>
+        <span class="highlight">반드시 홈페이지를 통해 직접 접수</span>해 주세요.<br>
+        또한 <strong>중복 신청/입금/결제 건은 사후 확인 시에도 환불되지 않습니다.</strong>
+      </div>
+    </section>
 
-    <!-- 하단 푸터 -->
-    <div style="background-color:#000; padding:40px 30px; margin-top:30px; font-size:12px; color:#888; ">
-      © 제22회 오산독산성전국하프마라톤대회. All Rights Reserved.
-    </div>
-
-  </div>
-
+    <footer class="footer" aria-label="감사의 말씀">
+      여러분의 많은 관심과 성원 부탁드립니다.<br>
+      감사합니다.
+    </footer>
+  </main>
 </body>
-
 </html>
