@@ -1,130 +1,211 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>제11회 시흥시 전국하프마라톤대회 참가 접수 안내</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root{
-      --ink:#222;
-      --brand:#0b1c5f;
-      --accent:#f17e00;
-      --accent-weak:#fef1e0;
-      --danger:#b00000;
-      --danger-bg:#ffe7e7;
-      --line:#ccc;
-      --bg:#fff;
-    }
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      padding:0;
-      background:var(--bg);
-      color:var(--ink);
-      line-height:1.6;
-      font-family:'맑은 고딕',system-ui,-apple-system,Segoe UI,Roboto,sans-serif
-    }
-    .container{
-      max-width:800px;
-      margin:0 auto;
-      padding:28px 20px;   /* 상하 패딩 줄임 */
-      background:#fff
-    }
-    .title{text-align:center;color:var(--brand)}
-    .title h1{font-size:32px;margin:0 0 8px;line-height:1.35}
-    .subtitle{color:var(--accent);font-weight:700;text-align:center;margin:0 0 24px;font-size:18px}
-    .content{font-size:16px}
-    .content p{margin:12px 0}   /* 문단 간격 축소 */
-    .highlight-box{
-      background:var(--accent-weak);
-      padding:10px 14px;   /* 패딩 소폭 줄임 */
-      border-left:6px solid var(--accent);
-      margin:16px 0;
-      font-weight:700;
-      color:#9b3e00;
-      font-size:17px
-    }
-    .info-note{
-      background:#f7fafc;
-      border:1px solid #dbe4ea;
-      border-radius:6px;
-      padding:10px 12px;
-      margin:12px 0 20px;
-      font-size:15px;
-      color:#2b3a42;
-    }
-    .info-note strong{color:#0b1c5f}
-    .highlight{color:var(--accent);font-weight:700}
-    .notice-list{margin:16px 0;padding-left:18px}
-    .notice-list li{margin-bottom:6px}
-    .warning{
-      background:var(--danger-bg);
-      padding:14px;
-      border-left:6px solid red;
-      margin:20px 0;
-      font-weight:700;
-      color:var(--danger);
-      font-size:15px
-    }
-    .footer{text-align:center;margin-top:24px;font-weight:700;color:var(--brand)}
-    a:focus{outline:3px solid var(--accent);outline-offset:2px}
-    @media (max-width:600px){
-      .title h1{font-size:26px}
-      .container{padding:20px 14px}
-      .content{font-size:15px}
-      .warning,.highlight-box{font-size:16px}
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2025 과천마라톤대회 오픈 공지</title>
+<style>
+:root{
+  --navy:#5b1a1a;       /* 딥버건디 */
+  --teal:#d72638;       /* 강렬한 레드 */
+  --teal-dark:#8b0000;  /* 어두운 레드 */
+  --orange:#ff6b35;     /* 오렌지레드 */
+  --cream:#fff9f4;      /* 따뜻한 크림 */
+  --ink:#222;           /* 본문 텍스트 */
+  --line:#ddd;          /* 경계선 */
+}
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'맑은 고딕', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background:#fff;
+    color:var(--ink);
+    line-height:1.6;
+  }
+  /* 헤더 배너 */
+  .hero{
+    background: radial-gradient(1200px 600px at 15% 30%, rgba(215,38,56,0.15), transparent 60%),
+                radial-gradient(900px 500px at 55% 10%, rgba(123,30,30,0.12), transparent 60%),
+                radial-gradient(700px 400px at 85% 40%, rgba(255,107,53,0.10), transparent 60%),
+                #ffffff;
+    border-bottom: 4px solid var(--teal);
+  }
+  .hero-inner{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 20px 20px 28px;
+    display:flex;
+    align-items: flex-end;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .badge{
+    color: var(--teal);
+    font-weight: 800;
+    letter-spacing: .06em;
+    font-size: 18px;
+  }
+  .title{
+    color: var(--navy);
+    margin: 6px 0 0;
+    line-height:1.2;
+    font-weight:900;
+    font-size: 40px;
+  }
+  .subtitle{
+    color: var(--navy);
+    opacity:.85;
+    font-weight:600;
+    margin-top:8px;
+    font-size:18px;
+  }
+
+  /* 컨테이너 */
+  .container{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 28px 20px 20px;
+    background:#fff;
+  }
+
+  /* 하이라이트 카드 */
+  .highlight{
+    display:block;
+    grid-template-columns: 1fr 1fr;
+    gap:16px;
+    margin: 18px 0 26px;
+  }
+  .card{
+    border:1px solid var(--line);
+    border-left:6px solid var(--orange);
+    background: #fff5f5;
+    padding:16px 18px;
+    font-weight:600;
+    color:#8a1f1f;
+  }
+  .card strong{ color: var(--orange); }
+  .info{
+    border:1px solid var(--line);
+    border-left:6px solid var(--teal);
+    background: #fff5f5;
+    padding:16px 18px;
+    color:#7b1e1e;
+    font-weight:600;
+  }
+  .info strong{ color: var(--teal-dark); }
+
+  /* 공지 리스트 */
+  .section-title{
+    margin: 28px 0 10px;
+    color: var(--navy);
+    font-weight:800;
+    font-size:20px;
+  }
+  .notes{
+    margin:0;
+    padding-left:20px;
+  }
+  .notes li{ margin:8px 0; }
+  .accent{ color: var(--orange); font-weight:700; }
+
+  /* CTA */
+  .cta-wrap{
+    margin-top:22px;
+    display:flex; gap:12px; flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-block;
+    padding:12px 18px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:700;
+    border:2px solid transparent;
+    transition:transform .05s ease, background .2s ease, border-color .2s ease;
+  }
+  .btn-primary{
+    background: linear-gradient(180deg, var(--teal), var(--teal-dark));
+    color:#fff;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); }
+  .btn-ghost{
+    background:#fff;
+    color:var(--navy);
+    border-color: var(--navy);
+  }
+
+  /* 구분선 */
+  .rule{
+    height:3px; background: linear-gradient(90deg, var(--teal), var(--navy));
+    border:0; margin:28px 0;
+  }
+
+  /* 링크/접근성 보조 */
+  .url{ word-break: break-all; }
+  a:focus-visible{ outline:2px dashed var(--orange); outline-offset:2px; }
+
+  /* 푸터(전폭) */
+  .footer{
+    width:100%;
+    background: linear-gradient(90deg, rgba(123,30,30,.95), rgba(215,38,56,.95));
+    color:#fff; text-align:center;
+    padding:22px 16px; font-weight:700;
+  }
+  .footer a{ color:#fff; text-decoration: underline; }
+
+  @media (max-width:720px){
+    .title{ font-size:32px; }
+    .highlight{ grid-template-columns: 1fr; }
+  }
+</style>
+
 </head>
 <body>
-  <main class="container" role="main">
-    <header class="title">
-      <h1>제11회 시흥시 전국하프마라톤대회<br>참가 접수 안내</h1>
-    </header>
+  <!-- 헤더 -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="badge">2025 GWACHEON MARATHON</div>
+        <h1 class="title">2025 과천마라톤대회 오픈 공지</h1>
+        <div class="subtitle">참가자 여러분의 많은 관심과 참여를 기다립니다.</div>
+      </div>
+    </div>
+  </header>
 
-    <section class="content" aria-labelledby="intro">
-      <p id="intro">
-        안녕하세요. 제11회 시흥시 전국하프마라톤대회 운영사무국입니다.<br>
-        곧 다가올 참가 접수를 원활하게 진행하실 수 있도록, 참가자 여러분께 사전 안내드립니다.
-      </p>
-
-      <!-- 최상단 핵심 안내 -->
-      <div class="highlight-box" aria-live="polite">
-        📢 접수 시작일: <span class="highlight">8월 18일(월) 오후 2시</span><br>
-        총 모집 인원: <span class="highlight">5,000명</span> (선착순 마감)<br>
+  <!-- 본문 -->
+  <main class="container">
+    <section>
+      <h3>잠시 후 14:00부터 참가 접수가 시작됩니다.</h3>
+      <div class="info">
+        - 신청자 기준으로 코스별 정원이 차면 선착순 마감됩니다.<br>
+          (신청자 기준 마감이니, 입금은 잘 확인하시고 천천히 해주세요.)<br>
+        - <span class="accent">신청 먼저 해주시고, 8월 31일(일)까지 입금을 완료</span>해 주세요.<br />
+        - 입금하실 때에는 성함+생년월일 꼭 기재해 주세요.</strong><br>
+      </div>
+      <div class="highlight">
+        <div class="card">
+          📅 대회일시&nbsp;&nbsp;|&nbsp;&nbsp;<strong>2025-11-09(일)</strong><br />
+          ⏰ 운영시간&nbsp;&nbsp;|&nbsp;&nbsp;<strong>08:00 집결 · 09:00 출발</strong><br />
+          📝 접수시작&nbsp;&nbsp;|&nbsp;&nbsp;<strong class="accent">2025-08-25(월) 14:00</strong><br />
+          👥 참가인원&nbsp;&nbsp;|&nbsp;&nbsp;<strong>총 2,500명 (하프 700명 / 10km 800명 / 5km 1,000명)</strong>
+        </div>
       </div>
 
-      <!-- 오해 방지용 추가 설명 -->
-      <p class="info-note">
-        ※ 접수 당일 <strong>신청과 동시에 입금하실 필요가 없습니다.</strong><br>
-        입금 기간은 별도 공지되며, <strong>공지된 기간 내에만 입금</strong>하시면 됩니다.
-        <br>중복 입금·중복 결제 사례가 다수 발생하여, <strong>중복 건은 환불이 불가</strong>함을 다시 안내드립니다.
-      </p>
-
-      <h2 class="subtitle" id="notice">유의사항 안내</h2>
-      <ul class="notice-list" aria-describedby="notice">
-        <li><strong>정해진 인원 도달 시 조기 마감</strong>되며, 이후 신청은 불가합니다.</li>
-        <li><strong>신청만 먼저 완료</strong>하시고, <strong>입금은 추후 공지된 기간 내</strong>에 진행해 주세요.</li>
-        <li>참가접수 마감 후 <strong>입금 일정은 별도 공지</strong>됩니다.</li>
-        <li>입금 시 반드시 <strong>성함과 생년월일</strong>을 기재해 주세요. <strong>(예: 홍길동251012)</strong></li>
-        <li><span class="highlight">기한 내 입금 완료</span> 시 참가가 확정되며, 기한 외 입금 시 참가가 불가합니다.</li>
-        <li><strong>참가 신청 없이 입금한 경우</strong>는 무효 처리되며, <strong>반드시 신청 후 입금</strong>해 주세요.</li>
-        <li>입금 일정 외 또는 미신청 상태로 입금 시 <strong>환불이 지연되거나 불가</strong>할 수 있습니다.</li>
-        <li style="color:#b00000;"><strong>신청 후 입금 완료 시 코스 변경 및 환불 불가</strong>하니 신중히 선택해 주세요.</li>
-        <li style="color:#b00000;"><strong>중복 신청 또는 중복 입금/결제 시에도 환불 불가</strong>합니다.</li>
+      <h2 class="section-title">유의사항</h2>
+      <ul class="notes">
+        <li>중복 신청 및 중복 입금에 유의해 주세요. <span class="accent">중복 입금 시 환불 절차가 번거로울 수 있습니다.</span></li>
+        <li>접수 마감 후 안내되는 <span class="accent">입금 기한 내 입금 완료</span> 시 참가 확정됩니다.</li>
+        <li><span class="accent">선착순 마감 이후에는 코스 변경이 불가</span>합니다.</li>
+        <li>단, <span class="accent">입금 전에는</span> 신청 내역 조회를 통해 직접 코스 변경이 가능합니다.</li>
+        <li>입금 후 <span class="accent">입금 확인까지 2~3일 이상</span> 소요될 수 있으니 참고해 주세요.</li>
       </ul>
-
-      <div class="warning" role="alert">
-        ⚠ 형평성을 위해 <strong>메일 접수는 받지 않습니다.</strong><br>
-        <span class="highlight">반드시 홈페이지를 통해 직접 접수</span>해 주세요.<br>
-        또한 <strong>중복 신청/입금/결제 건은 사후 확인 시에도 환불되지 않습니다.</strong>
-      </div>
     </section>
-
-    <footer class="footer" aria-label="감사의 말씀">
-      여러분의 많은 관심과 성원 부탁드립니다.<br>
-      감사합니다.
-    </footer>
   </main>
+
+  <!-- 전폭 푸터 -->
+  <footer class="footer">
+    여러분의 많은 관심과 성원에 감사드립니다.<br>
+    2025 과천마라톤대회 운영사무국 · 공식 홈페이지:
+    <a href="https://www.gcrun.co.kr" target="_blank" rel="noopener">www.gcrun.co.kr</a>
+  </footer>
 </body>
 </html>
