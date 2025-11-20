@@ -1,0 +1,140 @@
+        :root {
+            --ink: #222;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --panel: #f8fafc;
+            --bg: #fff;
+            --accent: #c00000
+        }
+
+
+
+        .wrap {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 14px
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 14px
+        }
+
+        .rows {
+            display: grid;
+            gap: 8px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px
+        }
+
+        .label-cell {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            padding: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .content {
+            border: 1px solid var(--line);
+            padding: 12px;
+            border-radius: 6px
+        }
+
+        .logo-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 8px;
+        }
+
+        .logo {
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse
+        }
+        .table th,
+        .table td {
+            border: 1px solid var(--line);
+            padding: 6px;
+            font-size: 13px;
+            text-align: center
+        }
+
+        .table th {
+            background: var(--panel)
+        }
+
+        .num {
+            text-align: right
+        }
+
+        .bullet {
+            margin: 6px 0;
+            padding-left: 18px
+        }
+
+        .note {
+            display: inline-block;
+            background: #eef2f7;
+            padding: 4px 6px;
+            font-size: 12px;
+            margin: 6px 0
+        }
+
+        .accent {
+            color: var(--accent);
+            font-weight: 700
+        }
+
+        @media(max-width:600px) {
+            .row {
+                grid-template-columns: 1fr
+            }
+
+            .label-cell {
+                text-align: left
+            }
+        }
+
+        .wrapper .contents .sub .left .cont .logo img {
+            width: auto;
+            /* 핵심 */
+            max-width: 50%;
+            height: auto;
+            max-height: 38px;
+            /* 기존 제한 유지 */
+            display: block;
+            margin: 0 auto;
+        }
+
+        :root {
+            --fs-body: clamp(15px, 1.05vw + 0.2rem, 18px);
+            --fs-h1: clamp(24px, 1.2vw + 1.1rem, 32px);
+            --fs-sm: clamp(13px, 0.7vw + 0.35rem, 15px);
+        }
+
+        body {
+            font-size: var(--fs-body);
+        }
+
+        h1 {
+            font-size: var(--fs-h1)
+        }
+
+        .table th,
+        .table td,
+        .note,
+        .label-cell {
+            font-size: var(--fs-sm)
+        }
