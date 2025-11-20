@@ -1,211 +1,154 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2025 과천마라톤대회 오픈 공지</title>
-<style>
-:root{
-  --navy:#5b1a1a;       /* 딥버건디 */
-  --teal:#d72638;       /* 강렬한 레드 */
-  --teal-dark:#8b0000;  /* 어두운 레드 */
-  --orange:#ff6b35;     /* 오렌지레드 */
-  --cream:#fff9f4;      /* 따뜻한 크림 */
-  --ink:#222;           /* 본문 텍스트 */
-  --line:#ddd;          /* 경계선 */
-}
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:'맑은 고딕', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    background:#fff;
-    color:var(--ink);
-    line-height:1.6;
-  }
-  /* 헤더 배너 */
-  .hero{
-    background: radial-gradient(1200px 600px at 15% 30%, rgba(215,38,56,0.15), transparent 60%),
-                radial-gradient(900px 500px at 55% 10%, rgba(123,30,30,0.12), transparent 60%),
-                radial-gradient(700px 400px at 85% 40%, rgba(255,107,53,0.10), transparent 60%),
-                #ffffff;
-    border-bottom: 4px solid var(--teal);
-  }
-  .hero-inner{
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 20px 20px 28px;
-    display:flex;
-    align-items: flex-end;
-    gap:24px;
-    flex-wrap:wrap;
-  }
-  .badge{
-    color: var(--teal);
-    font-weight: 800;
-    letter-spacing: .06em;
-    font-size: 18px;
-  }
-  .title{
-    color: var(--navy);
-    margin: 6px 0 0;
-    line-height:1.2;
-    font-weight:900;
-    font-size: 40px;
-  }
-  .subtitle{
-    color: var(--navy);
-    opacity:.85;
-    font-weight:600;
-    margin-top:8px;
-    font-size:18px;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 구미 박정희 마라톤 참가접수 안내</title>
 
-  /* 컨테이너 */
-  .container{
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 28px 20px 20px;
-    background:#fff;
-  }
+  <style>
+    :root {
+      --ink: #222;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --panel: #f8fafc;
+      --accent: #b91c1c;
 
-  /* 하이라이트 카드 */
-  .highlight{
-    display:block;
-    grid-template-columns: 1fr 1fr;
-    gap:16px;
-    margin: 18px 0 26px;
-  }
-  .card{
-    border:1px solid var(--line);
-    border-left:6px solid var(--orange);
-    background: #fff5f5;
-    padding:16px 18px;
-    font-weight:600;
-    color:#8a1f1f;
-  }
-  .card strong{ color: var(--orange); }
-  .info{
-    border:1px solid var(--line);
-    border-left:6px solid var(--teal);
-    background: #fff5f5;
-    padding:16px 18px;
-    color:#7b1e1e;
-    font-weight:600;
-  }
-  .info strong{ color: var(--teal-dark); }
+      --fs-body: clamp(15px, 1.1vw + .2rem, 18px);
+      --fs-h1: clamp(24px, 1.2vw + 1rem, 34px);
+      --fs-sm: clamp(13px, .8vw + .3rem, 15px);
+    }
 
-  /* 공지 리스트 */
-  .section-title{
-    margin: 28px 0 10px;
-    color: var(--navy);
-    font-weight:800;
-    font-size:20px;
-  }
-  .notes{
-    margin:0;
-    padding-left:20px;
-  }
-  .notes li{ margin:8px 0; }
-  .accent{ color: var(--orange); font-weight:700; }
+    body {
+      margin: 0;
+      background: #fff;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      text-align: center;
+      padding: 40px 20px;
+      font-size: var(--fs-body);
+      line-height: 1.7;
+    }
 
-  /* CTA */
-  .cta-wrap{
-    margin-top:22px;
-    display:flex; gap:12px; flex-wrap:wrap;
-  }
-  .btn{
-    display:inline-block;
-    padding:12px 18px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:700;
-    border:2px solid transparent;
-    transition:transform .05s ease, background .2s ease, border-color .2s ease;
-  }
-  .btn-primary{
-    background: linear-gradient(180deg, var(--teal), var(--teal-dark));
-    color:#fff;
-  }
-  .btn-primary:hover{ transform: translateY(-1px); }
-  .btn-ghost{
-    background:#fff;
-    color:var(--navy);
-    border-color: var(--navy);
-  }
+    h1 {
+      font-size: var(--fs-h1);
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
 
-  /* 구분선 */
-  .rule{
-    height:3px; background: linear-gradient(90deg, var(--teal), var(--navy));
-    border:0; margin:28px 0;
-  }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-  /* 링크/접근성 보조 */
-  .url{ word-break: break-all; }
-  a:focus-visible{ outline:2px dashed var(--orange); outline-offset:2px; }
+    .box {
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      padding: 22px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: left;
+    }
 
-  /* 푸터(전폭) */
-  .footer{
-    width:100%;
-    background: linear-gradient(90deg, rgba(123,30,30,.95), rgba(215,38,56,.95));
-    color:#fff; text-align:center;
-    padding:22px 16px; font-weight:700;
-  }
-  .footer a{ color:#fff; text-decoration: underline; }
+    .countdown {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 12px 0 20px;
+      color: #b91c1c;
+    }
 
-  @media (max-width:720px){
-    .title{ font-size:32px; }
-    .highlight{ grid-template-columns: 1fr; }
-  }
-</style>
+    .note-list {
+      margin: 0;
+      padding-left: 18px;
+    }
 
+    .note-list li {
+      margin-bottom: 8px;
+      font-size: var(--fs-sm);
+    }
+
+    .highlight {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .loading {
+      margin-top: 30px;
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+
+    .warning-box {
+      background: #fff7f7;
+      border: 1px solid #f3c1c1;
+      color: #b91c1c;
+      padding: 18px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-size: var(--fs-sm);
+      line-height: 1.8;
+    }
+  </style>
+
+  <script>
+    // 목표 시간 (오늘 14:00)
+    const targetTime = new Date();
+    targetTime.setHours(14, 0, 0, 0);
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetTime - now;
+
+      if (distance <= 0) {
+        document.querySelector(".countdown").innerHTML = "00:00:00";
+        window.location.href = "https://gumimarathon.com/";
+        return;
+      }
+
+      const hours = String(Math.floor(distance / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+
+      document.querySelector(".countdown").innerHTML = `${hours}:${minutes}:${seconds}`;
+    }
+
+    setInterval(updateCountdown, 1000);
+  </script>
 </head>
+
 <body>
-  <!-- 헤더 -->
-  <header class="hero">
-    <div class="hero-inner">
-      <div>
-        <div class="badge">2025 GWACHEON MARATHON</div>
-        <h1 class="title">2025 과천마라톤대회 오픈 공지</h1>
-        <div class="subtitle">참가자 여러분의 많은 관심과 참여를 기다립니다.</div>
+  <div class="wrap">
+
+    <h1>2026 구미 박정희 마라톤 참가접수 안내</h1>
+
+    <div class="countdown">--:--:--</div>
+
+    <div class="box">
+      <h2 style="margin-top:0; font-size:20px;">참가 전 꼭 확인해 주세요</h2>
+      <ul class="note-list">
+        <li>올해 참가 정원은 선착순 <strong class="highlight">10,000명</strong>입니다.</li>
+        <li>풀·하프 코스는 <strong class="highlight">만 19세 이상</strong>, 10km 코스는 <strong class="highlight">만 14세 이상</strong>
+          참여 가능합니다.</li>
+        <li>5km 코스는 남녀노소 누구나 참여할 수 있습니다.</li>
+        <li>참가자 전원에게 공식 기념품, 배번호·기록칩, 완주메달, 간식 등이 제공됩니다.</li>
+        <li>지역별 무료셔틀버스(서울·인천·대전·울산·부산 왕복)가 운행됩니다.<br>
+          (지역별 선착순 마감되며, 신청 인원이 적을 경우 취소될 수 있음)</li>
+        <li>구미시 내 무료셔틀버스가 운영됩니다.(별도 공지)</li>
+        <li>30명 이상 단체는 텐트 1동 임대 혜택이 제공됩니다.</li>
+      </ul>
+
+      <div class="warning-box">
+        <strong>💡 입금 관련 안내(반드시 확인)</strong><br>
+        • 참가 신청 후 <strong>3일 이내</strong> 입금하지 않으시면 신청 취소됩니다.<br>
+        • 입금 시 반드시 <strong>성함 + 생년월일</strong> 형식으로 입력해 주세요.<br>
+        • 예시: 홍길동260301<br><br>
+
+        • <strong class="highlight">신청 정보와 입금자명이 일치하지 않는 경우</strong> 입금 확인이 지연되거나 예금주 불일치로 인해 <strong>반환이 어려울 수
+          있습니다.</strong><br>
+        • 참가 신청이 접수된 이후에만 정상적으로 입금 확인·배정이 가능합니다.
       </div>
     </div>
-  </header>
-
-  <!-- 본문 -->
-  <main class="container">
-    <section>
-      <h3>잠시 후 14:00부터 참가 접수가 시작됩니다.</h3>
-      <div class="info">
-        - 신청자 기준으로 코스별 정원이 차면 선착순 마감됩니다.<br>
-          (신청자 기준 마감이니, 입금은 잘 확인하시고 천천히 해주세요.)<br>
-        - <span class="accent">신청 먼저 해주시고, 8월 31일(일)까지 입금을 완료</span>해 주세요.<br />
-        - 입금하실 때에는 성함+생년월일 꼭 기재해 주세요.</strong><br>
-      </div>
-      <div class="highlight">
-        <div class="card">
-          📅 대회일시&nbsp;&nbsp;|&nbsp;&nbsp;<strong>2025-11-09(일)</strong><br />
-          ⏰ 운영시간&nbsp;&nbsp;|&nbsp;&nbsp;<strong>08:00 집결 · 09:00 출발</strong><br />
-          📝 접수시작&nbsp;&nbsp;|&nbsp;&nbsp;<strong class="accent">2025-08-25(월) 14:00</strong><br />
-          👥 참가인원&nbsp;&nbsp;|&nbsp;&nbsp;<strong>총 2,500명 (하프 700명 / 10km 800명 / 5km 1,000명)</strong>
-        </div>
-      </div>
-
-      <h2 class="section-title">유의사항</h2>
-      <ul class="notes">
-        <li>중복 신청 및 중복 입금에 유의해 주세요. <span class="accent">중복 입금 시 환불 절차가 번거로울 수 있습니다.</span></li>
-        <li>접수 마감 후 안내되는 <span class="accent">입금 기한 내 입금 완료</span> 시 참가 확정됩니다.</li>
-        <li><span class="accent">선착순 마감 이후에는 코스 변경이 불가</span>합니다.</li>
-        <li>단, <span class="accent">입금 전에는</span> 신청 내역 조회를 통해 직접 코스 변경이 가능합니다.</li>
-        <li>입금 후 <span class="accent">입금 확인까지 2~3일 이상</span> 소요될 수 있으니 참고해 주세요.</li>
-      </ul>
-    </section>
-  </main>
-
-  <!-- 전폭 푸터 -->
-  <footer class="footer">
-    여러분의 많은 관심과 성원에 감사드립니다.<br>
-    2025 과천마라톤대회 운영사무국 · 공식 홈페이지:
-    <a href="https://www.gcrun.co.kr" target="_blank" rel="noopener">www.gcrun.co.kr</a>
-  </footer>
+  </div>
 </body>
+
 </html>
