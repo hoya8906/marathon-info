@@ -11,7 +11,6 @@
       --ink: #222;
       --muted: #6b7280;
       --line: #e5e7eb;
-      --panel: #f8fafc;
       --accent: #b91c1c;
 
       --fs-body: clamp(15px, 1.1vw + .2rem, 18px);
@@ -43,29 +42,38 @@
 
     .box {
       background: #fff7f7;
-      border: 2px solid #b91c1c;
+      border: 2px solid var(--accent);
       padding: 25px;
       border-radius: 12px;
       margin: 20px 0;
       text-align: left;
     }
 
+    .summary-box {
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      padding: 18px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-size: var(--fs-sm);
+    }
+
     .warning-title {
       font-size: 22px;
       font-weight: 800;
-      color: #b91c1c;
+      color: var(--accent);
       margin-bottom: 14px;
       text-align: center;
     }
 
     .highlight {
-      color: #b91c1c;
+      color: var(--accent);
       font-weight: 800;
     }
 
     .example-box {
       background: #fff;
-      border: 1px dashed #b91c1c;
+      border: 1px dashed var(--accent);
       padding: 12px;
       text-align: center;
       font-size:18px;
@@ -74,7 +82,7 @@
     }
 
     .final-alert {
-      background:#b91c1c;
+      background:var(--accent);
       color:white;
       text-align:center;
       padding:14px;
@@ -87,6 +95,7 @@
   </style>
 
   <script>
+    // 카운트다운 (14:00)
     const targetTime = new Date();
     targetTime.setHours(14, 0, 0, 0);
 
@@ -117,13 +126,22 @@
   <h1>2026 경기수원국제하프마라톤 참가접수</h1>
   <div class="countdown" style="color:#b91c1c; font-weight:700; font-size:38px;">--:--:--</div>
 
+  <!-- ▶️ 필수 요강 요약 -->
+  <div class="summary-box">
+    ▪ 하프: <strong class="highlight">19세 이상</strong> │ 10km: <strong class="highlight">14세 이상</strong> │ 5km: 제한 없음<br>
+    ▪ 참가자 전원 기념품·배번호·완주메달·간식 제공<br>
+    ▪ <strong class="highlight">단체(30명↑): 인당 5,000원 할인 + 텐트 지원</strong><br>
+    ▪ 선착순 <strong class="highlight">10,000명</strong> 마감
+  </div>
+
+  <!-- ▶️ 경고 및 준수 안내 -->
   <div class="box">
 
     <div class="warning-title">⚠️ 반드시 확인 후 신청 및 입금해주세요</div>
 
     <ul style="padding-left:20px; margin:0; line-height:1.9; font-size:var(--fs-sm);">
       <li><strong class="highlight">참가 신청은 1번만</strong> 진행해 주세요. (중복 신청 금지)</li>
-      <li><strong class="highlight">입금도 1회만</strong> 진행해 주세요. (중복 입금 발생 시 환불 처리 지연)</li>
+      <li><strong class="highlight">입금도 1회만</strong> 진행해 주세요. (중복 입금 시 환불 지연)</li>
       <li>입금은 신청 후 <strong class="highlight">7일 이내</strong> 가능합니다.</li>
       <li>입금자명은 반드시 <strong class="highlight">"성함 + 생년월일(6자리)"</strong>로 작성해야 합니다. (단체는 단체명)</li>
     </ul>
@@ -134,20 +152,15 @@
     </div>
 
     <p style="font-size:var(--fs-sm); margin:0; line-height:1.8;">
-      ※ 입금자명, 신청자 정보 또는 단체명 불일치 시 <strong>입금확인이 불가능하며 참가 미확정으로 처리됩니다.</strong><br>
-      모든 불이익은 참가자 본인에게 귀속됩니다.
+      ※ 입금자명·신청자 정보 또는 단체명 불일치 시 <strong>입금확인 불가 및 참가 미확정</strong> 처리됩니다.<br>
+      발생되는 모든 불이익은 참가자 본인 책임입니다.
     </p>
 
     <div class="final-alert">
-      🚨 생년월일 미기재 · 중복 신청 · 중복 입금 → <u>입금확인 지연 및 참가 불확정</u>
+      🚨 생년월일 미기재 · 중복 신청 · 중복 입금<br>
+      → <u>입금확인 지연 및 참가 불확정</u>
     </div>
   </div>
-
-  <p style="font-size:15px; margin-top:20px; color:#6b7280;">
-    ※ 참가 정원 10,000명(코스별 선착순 마감) <br>
-    ※ 30명 이상 단체 인당 5,000원 할인 및 텐트 1동 임대 혜택 제공 <br>
-  </p>
-
 </div>
 
 <?php include('../inc/chat.inc') ?>
