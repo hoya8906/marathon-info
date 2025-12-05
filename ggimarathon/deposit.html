@@ -7,28 +7,18 @@
 <style>
   body { font-family: Pretendard, sans-serif; padding: 20px; line-height: 1.5; color: #222; }
   h2 { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
-
   table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px; }
   th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
   th { background: #ececec; font-weight: 600; }
-
-  #search { 
-    width: 300px; padding: 8px; 
-    font-size: 15px; 
-    margin-bottom: 15px; 
-    border: 1px solid #aaa; 
-    border-radius: 4px;
+  #search {
+    width: 300px; padding: 8px; font-size: 15px;
+    margin-bottom: 15px; border: 1px solid #aaa; border-radius: 4px;
   }
-
-  .alert { color: #d60000; font-weight: 600; }
-
+  .alert { color: #c40000; font-weight: 600; }
   .notice {
-    margin-top: 20px;
-    padding: 15px;
-    background: #fff7d4;
-    border: 1px solid #ebcf79;
-    border-radius: 6px;
-    font-size: 14px;
+    margin-top: 20px; padding: 15px;
+    background: #fff7d4; border: 1px solid #ebcf79;
+    border-radius: 6px; font-size: 14px;
   }
   .notice strong { color: #b20000; }
 </style>
@@ -38,86 +28,65 @@
 
 <h2>입금자를 찾습니다</h2>
 
-<input type="text" id="search" placeholder="이름 / 입금자명 / 생년월일 검색">
+<input type="text" id="search" placeholder="텍스트 입력하여 검색">
 
 <table id="table">
-  <thead>
-    <tr>
-      <th>번호</th>
-      <th>입금일시</th>
-      <th>입금자명</th>
-      <th>금액</th>
-      <th>적요</th>
-      <th>처리점</th>
-      <th>비고</th>
-    </tr>
-  </thead>
+  <thead></thead>
   <tbody></tbody>
 </table>
 
 <div class="notice">
   <strong>참가비 입금 시 생년월일 미기재 or 참가 미등록 상태</strong>인 경우,<br>
-  위 내용을 확인하신 후 <strong>성함, 생년월일 + 입금 내역</strong>을 촬영하여<br>
-  카카오톡으로 사진 첨부하여 전달 부탁드립니다. <br><br>
+  위 내용을 확인하신 후 <strong>성함, 생년월일 + 입금 내역 사진</strong>을<br>
+  카카오톡으로 첨부하여 전달 부탁드립니다.<br><br>
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
-<!-- SheetJS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
 <script>
-const filePath = "./data/deposit.xlsx";
-
-const columnMap = {
-  "번호": "연번",
-  "입금일시": "입금일시",
-  "입금자명": "입금자명",
-  "금액": "입금액",
-  "적요": "적요",
-  "처리점": "처리점",
-  "비고": "내용"
-};
-
-const displayColumns = [
-  "번호","입금일시","입금자명",
-  "금액","적요","처리점","비고"
-];
-
-fetch(filePath)
+fetch("./data/deposit.xlsx")
   .then(res => res.arrayBuffer())
   .then(data => {
     const wb = XLSX.read(data, { type: "array" });
     const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet);
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
+    const thead = document.querySelector("#table thead");
     const tbody = document.querySelector("#table tbody");
-    tbody.innerHTML = "";
 
-    rows.forEach(r => {
-      const tr = document.createElement("tr");
+    // 헤더 생성
+    let header = rows[0];
+    let trHead = document.createElement("tr");
+    header.forEach(col => {
+      let th = document.createElement("th");
+      th.textContent = col;
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
 
-      displayColumns.forEach(col => {
-        const td = document.createElement("td");
-        td.textContent = r[columnMap[col]] ?? "";
-
-        // 불확실 항목 강조
-        if (col === "비고" && td.textContent !== "")
+    // 데이터 생성
+    rows.slice(1).forEach(row => {
+      let tr = document.createElement("tr");
+      row.forEach((cell, idx) => {
+        let td = document.createElement("td");
+        td.textContent = cell ?? "";
+        // 마지막 컬럼에 내용 있으면 강조
+        if (idx === row.length - 1 && td.textContent !== "") {
           td.classList.add("alert");
-
+        }
         tr.appendChild(td);
       });
-
       tbody.appendChild(tr);
     });
-  });
 
-// 검색 기능
-document.querySelector("#search")
-  .addEventListener("input", function() {
-    const val = this.value.toLowerCase();
-    document.querySelectorAll("#table tbody tr").forEach(tr => {
-      tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none";
-    });
+    // 검색
+    document.querySelector("#search")
+      .addEventListener("input", function () {
+        let v = this.value.toLowerCase();
+        tbody.querySelectorAll("tr").forEach(tr => {
+          tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
+        });
+      });
   });
 </script>
 
