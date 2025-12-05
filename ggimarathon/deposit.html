@@ -6,27 +6,22 @@
 
 <style>
   html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+    height: 100%; margin: 0; padding: 0;
     font-family: Pretendard, sans-serif;
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
     background: #fafafa;
-    overflow: hidden; /* 전체 페이지 스크롤 제거 */
+    overflow: hidden;
   }
 
   h2 {
     margin: 18px 20px 10px;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 22px; font-weight: 700;
     flex-shrink: 0;
   }
 
   #controls {
     flex-shrink: 0;
-    display: flex;
-    gap: 10px;
+    display: flex; gap: 10px;
     padding: 0 20px 10px;
     align-items: center;
   }
@@ -40,8 +35,8 @@
   #search { flex: 1; }
 
   .table-wrap {
-    flex: 1 1 auto;     /* 남는 공간 꽉 채움 */
-    min-height: 0;      /* flex overflow fix */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: auto;
     background: #fff;
@@ -79,7 +74,7 @@
     font-weight: 700;
   }
 
-  /* 📌 NOTICE를 항상 아래 고정 */
+  /* 아래 안내문구 고정 */
   .notice {
     flex-shrink: 0;
     position: fixed;
@@ -92,12 +87,31 @@
     line-height: 1.45;
   }
 
-  /* NOTICE 공간 확보 */
   .bottom-space {
-    height: 70px;
+    height: 80px;
     flex-shrink: 0;
   }
 
+  /* 로딩 스피너 */
+  #loading {
+    position: fixed;
+    top: 0; left:0;
+    width: 100%; height: 100%;
+    background: rgba(255,255,255,.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .loader {
+    width: 38px; height: 38px;
+    border: 4px solid #ccc;
+    border-top-color: #007aff;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg);} }
+  .hidden { display:none!important; }
 </style>
 </head>
 
@@ -117,7 +131,6 @@
 </table>
 </div>
 
-<!-- Notice 고정하므로 아래 여유공간 확보 -->
 <div class="bottom-space"></div>
 
 <div class="notice">
@@ -126,117 +139,123 @@
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
+<div id="loading" class="hidden">
+  <div class="loader"></div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
 let workbook, header, tableData = [], sortState = {};
 let amountColIdx = -1;
 const filePath = "./data/deposit.xlsx";
 
-/*------------------------------
-  숫자 포맷(콤마 자동 처리)
-------------------------------*/
+/** 숫자 포맷: 콤마·공백·문자 제거 후 숫자로 변환 **/
 const formatNumber = (v) => {
   if (v === null || v === undefined) return v;
-  let s = String(v).replace(/,/g, "").replace(/\s/g, "");
+  let s = String(v).replace(/[^\d.-]/g, "");
   if (s === "" || isNaN(s)) return v;
   return Number(s).toLocaleString();
 };
 
-/*------------------------------
-  Excel 로드
-------------------------------*/
+// 로딩 표시 시작
+document.querySelector("#loading").classList.remove("hidden");
+
+// Excel 로드
 fetch(filePath)
   .then(r => r.arrayBuffer())
   .then(buffer => {
-    workbook = XLSX.read(buffer, { type: "array" });
-    const sel = document.querySelector("#sheetSelect");
+    workbook = XLSX.read(buffer, { type:"array" });
 
+    const sel = document.querySelector("#sheetSelect");
     workbook.SheetNames.forEach(s =>
-      sel.add(new Option(s, s))
+      sel.add(new Option(s,s))
     );
 
     loadSheet(sel.value);
     sel.onchange = () => loadSheet(sel.value);
   });
 
-function loadSheet(name) {
+function loadSheet(name){
   const rows = XLSX.utils.sheet_to_json(
-    workbook.Sheets[name],
-    { header: 1 }
+    workbook.Sheets[name], { header:1 }
   );
 
   header = rows[0] || [];
-  tableData = rows.slice(1);
+
+  // 🔥 빈 행 제거
+  tableData = rows.slice(1)
+    .filter(row => row.some(v =>
+      v !== null && v !== "" && v !== undefined
+    ));
 
   detectAmountColumn();
   renderHeader();
   renderTable(tableData);
+
+  // 로딩 종료
+  document.querySelector("#loading").classList.add("hidden");
+
+  // 스크롤 상단으로 초기화
+  document.querySelector(".table-wrap").scrollTop = 0;
 }
 
-/*------------------------------
-  금액 컬럼 판별 : 헤더 > 숫자비율 우선
-------------------------------*/
-function detectAmountColumn() {
+// 금액열 판별
+function detectAmountColumn(){
   amountColIdx = -1;
-
-  // 1) 헤더 우선
-  header.forEach((h, i) => {
-    if (typeof h === "string" && /(금액|원|\(원\))/g.test(h))
+  header.forEach((h,i)=>{
+    if(typeof h==="string" && /(금액|원|\(원\))/g.test(h))
       amountColIdx = i;
   });
-  if (amountColIdx !== -1) return;
+  if(amountColIdx !== -1) return;
 
-  // 2) 숫자 가장 많은 열 추정 (fallback)
-  let scores = header.map(() => 0);
-  tableData.forEach(row => row.forEach((v, i) => {
-    let s = String(v).replace(/,/g,"").replace(/\s/g,"");
-    if(s !== "" && !isNaN(s)) scores[i]++;
+  let scores = header.map(()=>0);
+  tableData.forEach(r=>r.forEach((v,i)=>{
+    let s=String(v).replace(/[^\d.-]/g,"");
+    if(s!=="" && !isNaN(s)) scores[i]++;
   }));
-  
-  let idx = scores.indexOf(Math.max(...scores));
-  amountColIdx = idx <= 0 ? 1 : idx;
+  let idx=scores.indexOf(Math.max(...scores));
+  amountColIdx = idx<=0 ? 1 : idx;
 }
 
-/*------------------------------
-  테이블 렌더링
-------------------------------*/
-function renderHeader() {
-  const thead = document.querySelector("#table thead");
-  thead.innerHTML = "";
-  const tr = document.createElement("tr");
+function renderHeader(){
+  const thead=document.querySelector("#table thead");
+  thead.innerHTML="";
+  const tr=document.createElement("tr");
 
-  // 자동 순번
-  const thNo = document.createElement("th");
-  thNo.textContent = "순번";
+  const thNo=document.createElement("th");
+  thNo.textContent="순번";
   tr.appendChild(thNo);
 
-  header.slice(1).forEach((c, i) => {
-    const th = document.createElement("th");
-    th.textContent = c;
-    th.onclick = () => sortTable(i + 1, th);
+  header.slice(1).forEach((c,i)=>{
+    const th=document.createElement("th");
+    th.textContent=c;
+    th.onclick=()=>sortTable(i+1,th);
     tr.appendChild(th);
   });
 
   thead.appendChild(tr);
 }
 
-function renderTable(data) {
-  const tbody = document.querySelector("#table tbody");
-  tbody.innerHTML = "";
+function renderTable(data){
+  const tbody=document.querySelector("#table tbody");
+  tbody.innerHTML="";
 
-  data.forEach((row, idx) => {
-    const tr = document.createElement("tr");
+  data.forEach((row,idx)=>{
+    const tr=document.createElement("tr");
 
-    const tdNo = document.createElement("td");
-    tdNo.textContent = idx + 1;
+    const tdNo=document.createElement("td");
+    tdNo.textContent=idx+1;
     tr.appendChild(tdNo);
 
-    row.slice(1).forEach((v, i) => {
-      const realIdx = i + 1;
-      const td = document.createElement("td");
-      if(realIdx === amountColIdx) v = formatNumber(v);
-      td.textContent = v ?? "";
-      if(realIdx === row.length - 1 && v) td.classList.add("alert");
+    row.slice(1).forEach((v,i)=>{
+      const realIdx=i+1;
+      const td=document.createElement("td");
+      if(realIdx === amountColIdx)
+        v = formatNumber(v);
+      td.textContent=v??"";
+      if(realIdx===row.length-1 && v)
+        td.classList.add("alert");
       tr.appendChild(td);
     });
 
@@ -244,62 +263,52 @@ function renderTable(data) {
   });
 }
 
-/*------------------------------
-  정렬 기능
-------------------------------*/
-function sortTable(idx, th) {
-  if(idx === 0) return;
+function sortTable(idx,th){
+  if(idx===0) return;
 
-  const order = sortState[idx] === "asc" ? "desc" : "asc";
-  sortState[idx] = order;
+  const order = sortState[idx]==="asc" ? "desc":"asc";
+  sortState[idx]=order;
 
   document.querySelectorAll("th")
-    .forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
-  th.classList.add(order === "asc" ? "sorted-asc" : "sorted-desc");
+    .forEach(h=>h.classList.remove("sorted-asc","sorted-desc"));
+  th.classList.add(order==="asc" ? "sorted-asc":"sorted-desc");
 
   tableData.sort((a,b)=>{
-    let A = String(a[idx] ?? "").replace(/,/g,"");
-    let B = String(b[idx] ?? "").replace(/,/g,"");
-    let nA = parseFloat(A), nB = parseFloat(B);
-
-    if(!isNaN(nA) && !isNaN(nB))
-      return order==="asc" ? nA-nB : nB-nA;
+    let A=String(a[idx]??"").replace(/[^\d.-]/g,"");
+    let B=String(b[idx]??"").replace(/[^\d.-]/g,"");
+    const nA=parseFloat(A), nB=parseFloat(B);
+    if(!isNaN(nA)&&!isNaN(nB))
+      return order==="asc"?nA-nB:nB-nA;
     return order==="asc"
-      ? A.localeCompare(B)
-      : B.localeCompare(A);
+      ?String(a[idx]).localeCompare(b[idx])
+      :String(b[idx]).localeCompare(a[idx]);
   });
 
   renderTable(tableData);
 }
 
-/*------------------------------
-  검색 기능:
-  첫 열(순번) + 마지막 열(비고) 제외 전체 검색
-------------------------------*/
+// 검색 기능
 document.querySelector("#search").oninput = function(){
-  const q = this.value.toLowerCase();
-  const tbody = document.querySelector("#table tbody");
+  const q=this.value.toLowerCase();
+  const tbody=document.querySelector("#table tbody");
 
-  Array.from(tbody.rows).forEach((tr, i)=>{
-    let visible = false;
-    const row = tableData[i];
-
-    row.slice(1, row.length-1).forEach(v=>{
-      if(String(v).toLowerCase().includes(q)) visible = true;
+  Array.from(tbody.rows).forEach((tr,i)=>{
+    let visible=false;
+    const row=tableData[i];
+    row.slice(1,row.length-1).forEach(v=>{
+      if(String(v).toLowerCase().includes(q)) visible=true;
     });
-
     tr.style.display = visible ? "" : "none";
   });
-
   reindex();
 };
 
 function reindex(){
   const rows=document.querySelectorAll("#table tbody tr");
-  let n=1;
+  let num=1;
   rows.forEach(tr=>{
     if(tr.style.display!=="none")
-      tr.cells[0].textContent=n++;
+      tr.cells[0].textContent=num++;
   });
 }
 </script>
