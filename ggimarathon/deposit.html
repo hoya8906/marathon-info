@@ -5,22 +5,58 @@
 <title>입금자를 찾습니다</title>
 
 <style>
-  body { font-family: Pretendard, sans-serif; padding: 20px; line-height: 1.5; color: #222; }
-  h2 { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px; }
-  th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-  th { background: #ececec; font-weight: 600; }
-  #search {
-    width: 300px; padding: 8px; font-size: 15px;
-    margin-bottom: 15px; border: 1px solid #aaa; border-radius: 4px;
+  body { font-family: Pretendard, sans-serif; margin: 20px; }
+  h2 { margin-bottom: 15px; }
+
+  #controls { margin-bottom: 10px; display: flex; gap: 10px; }
+
+  #sheetSelect {
+    padding: 8px; border: 1px solid #aaa;
+    border-radius: 4px;
   }
+
+  #search {
+    flex: 1; padding: 8px; 
+    border: 1px solid #aaa; border-radius: 4px;
+  }
+
+  .table-wrap {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+
+  th {
+    background: #eee;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  th.sorted-asc::after { content: " ▲"; }
+  th.sorted-desc::after { content: " ▼"; }
+
   .alert { color: #c40000; font-weight: 600; }
+
   .notice {
     margin-top: 20px; padding: 15px;
     background: #fff7d4; border: 1px solid #ebcf79;
     border-radius: 6px; font-size: 14px;
   }
-  .notice strong { color: #b20000; }
 </style>
 </head>
 
@@ -28,66 +64,149 @@
 
 <h2>입금자를 찾습니다</h2>
 
-<input type="text" id="search" placeholder="텍스트 입력하여 검색">
+<div id="controls">
+  <select id="sheetSelect"></select>
+  <input type="text" id="search" placeholder="검색 (이름/생년월일 등)">
+</div>
 
+<div class="table-wrap">
 <table id="table">
   <thead></thead>
   <tbody></tbody>
 </table>
+</div>
 
 <div class="notice">
-  <strong>참가비 입금 시 생년월일 미기재 or 참가 미등록 상태</strong>인 경우,<br>
-  위 내용을 확인하신 후 <strong>성함, 생년월일 + 입금 내역 사진</strong>을<br>
-  카카오톡으로 첨부하여 전달 부탁드립니다.<br><br>
+  생년월일 미기재 / 참가 미등록 상태 시<br>
+  <strong>성함 + 생년월일 + 입금내역 사진 첨부</strong>하여 카카오톡 문의 바랍니다.<br><br>
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-fetch("./data/deposit.xlsx")
+let workbook;
+let tableData = [];
+let header = [];
+let sortState = {};
+
+const filePath = "./data/deposit.xlsx";
+
+// 숫자 자동 콤마
+const formatNumber = (val) => {
+  if (!isFinite(val)) return val;
+  return Number(val).toLocaleString();
+};
+
+// Excel 읽기
+fetch(filePath)
   .then(res => res.arrayBuffer())
   .then(data => {
-    const wb = XLSX.read(data, { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    workbook = XLSX.read(data, { type: "array" });
 
-    const thead = document.querySelector("#table thead");
-    const tbody = document.querySelector("#table tbody");
-
-    // 헤더 생성
-    let header = rows[0];
-    let trHead = document.createElement("tr");
-    header.forEach(col => {
-      let th = document.createElement("th");
-      th.textContent = col;
-      trHead.appendChild(th);
-    });
-    thead.appendChild(trHead);
-
-    // 데이터 생성
-    rows.slice(1).forEach(row => {
-      let tr = document.createElement("tr");
-      row.forEach((cell, idx) => {
-        let td = document.createElement("td");
-        td.textContent = cell ?? "";
-        // 마지막 컬럼에 내용 있으면 강조
-        if (idx === row.length - 1 && td.textContent !== "") {
-          td.classList.add("alert");
-        }
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
+    // 시트 선택 UI 생성
+    const sheetSelect = document.querySelector("#sheetSelect");
+    workbook.SheetNames.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      sheetSelect.appendChild(opt);
     });
 
-    // 검색
-    document.querySelector("#search")
-      .addEventListener("input", function () {
-        let v = this.value.toLowerCase();
-        tbody.querySelectorAll("tr").forEach(tr => {
-          tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
-        });
-      });
+    // 첫 시트 로드
+    loadSheet(workbook.SheetNames[0]);
   });
+
+function loadSheet(sheetName) {
+  const sheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+  header = rows[0];
+  tableData = rows.slice(1);
+
+  renderHeader();
+  renderTable(tableData);
+}
+
+function renderHeader() {
+  const thead = document.querySelector("#table thead");
+  thead.innerHTML = "";
+
+  const tr = document.createElement("tr");
+  header.forEach((col, idx) => {
+    const th = document.createElement("th");
+    th.textContent = col;
+    th.addEventListener("click", () => sortTable(idx, th));
+    tr.appendChild(th);
+  });
+
+  thead.appendChild(tr);
+}
+
+function renderTable(data) {
+  const tbody = document.querySelector("#table tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+    row.forEach((val, i) => {
+      const td = document.createElement("td");
+
+      // 숫자(금액) 콤마 적용
+      if (i === 3) val = formatNumber(val);
+
+      td.textContent = val ?? "";
+
+      // 비고 강조
+      if (i === row.length - 1 && td.textContent) td.classList.add("alert");
+
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function sortTable(colIdx, th) {
+  const currentOrder = sortState[colIdx] === "asc" ? "desc" : "asc";
+  sortState[colIdx] = currentOrder;
+
+  document.querySelectorAll("th").forEach(h => {
+    h.classList.remove("sorted-asc","sorted-desc");
+  });
+
+  th.classList.add(currentOrder === "asc"
+    ? "sorted-asc"
+    : "sorted-desc"
+  );
+
+  tableData.sort((a, b) => {
+    const vA = a[colIdx] ?? "";
+    const vB = b[colIdx] ?? "";
+    const numA = parseFloat(vA);
+    const numB = parseFloat(vB);
+
+    if (!isNaN(numA) && !isNaN(numB))
+      return currentOrder === "asc" ? numA - numB : numB - numA;
+
+    return currentOrder === "asc"
+      ? String(vA).localeCompare(String(vB))
+      : String(vB).localeCompare(String(vA));
+  });
+
+  renderTable(tableData);
+}
+
+// 검색
+document.querySelector("#search").addEventListener("input", function () {
+  const v = this.value.toLowerCase();
+  document.querySelectorAll("#table tbody tr").forEach(tr => {
+    tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
+  });
+});
+
+// 시트 변경
+document.querySelector("#sheetSelect").addEventListener("change", e => {
+  loadSheet(e.target.value);
+});
 </script>
 
 </body>
