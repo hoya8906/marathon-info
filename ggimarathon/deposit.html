@@ -6,61 +6,98 @@
 
 <style>
   html, body {
-    height:100%; margin:0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
     font-family: Pretendard, sans-serif;
-    display:flex; flex-direction:column;
-    background:#fafafa;
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    overflow: hidden; /* 전체 페이지 스크롤 제거 */
   }
 
-  h2 { margin:18px 20px 10px; font-size:22px; font-weight:700; }
+  h2 {
+    margin: 18px 20px 10px;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
 
   #controls {
-    display:flex; gap:10px;
-    padding:0 20px 10px;
-    align-items:center;
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 10px;
+    align-items: center;
   }
+
   #sheetSelect, #search {
-    padding:10px; font-size:15px;
-    border-radius:6px; border:1px solid #bbb;
+    padding: 10px;
+    font-size: 15px;
+    border-radius: 6px;
+    border: 1px solid #bbb;
   }
-  #search { flex:1; }
+  #search { flex: 1; }
 
   .table-wrap {
-    flex:1; overflow-y:auto; overflow-x:auto;
-    border-top:2px solid #555;
-    background:#fff;
+    flex: 1 1 auto;     /* 남는 공간 꽉 채움 */
+    min-height: 0;      /* flex overflow fix */
+    overflow-y: auto;
+    overflow-x: auto;
+    background: #fff;
+    border-top: 2px solid #555;
   }
 
   table {
-    width:100%; min-width:900px;
-    border-collapse:collapse;
-    font-size:15px;
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 15px;
   }
 
   th, td {
-    border:1px solid #ddd;
-    padding:10px; white-space:nowrap;
-    text-align:center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    white-space: nowrap;
+    text-align: center;
   }
 
   th {
-    background:#f2f2f2;
-    position:sticky; top:0;
-    cursor:pointer; font-weight:600;
+    background: #f2f2f2;
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    font-weight: 600;
+    z-index: 10;
   }
 
-  th.sorted-asc::after { content:" ▲"; }
-  th.sorted-desc::after { content:" ▼"; }
+  th.sorted-asc::after { content: " ▲"; }
+  th.sorted-desc::after { content: " ▼"; }
 
-  .alert { color:#c40000; font-weight:700; }
+  .alert {
+    color: #c40000;
+    font-weight: 700;
+  }
 
+  /* 📌 NOTICE를 항상 아래 고정 */
   .notice {
-    font-size:14px;
-    background:#fff7d4;
-    border-top:1px solid #ebcf79;
-    padding:14px 20px;
-    line-height:1.4;
+    flex-shrink: 0;
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    background: #fff7d4;
+    border-top: 1px solid #ebcf79;
+    padding: 14px 20px;
+    font-size: 14px;
+    line-height: 1.45;
   }
+
+  /* NOTICE 공간 확보 */
+  .bottom-space {
+    height: 70px;
+    flex-shrink: 0;
+  }
+
 </style>
 </head>
 
@@ -80,54 +117,55 @@
 </table>
 </div>
 
+<!-- Notice 고정하므로 아래 여유공간 확보 -->
+<div class="bottom-space"></div>
+
 <div class="notice">
   생년월일 미기재 또는 참가 미등록 시<br>
   <strong>성함 + 생년월일 + 입금내역 사진</strong> 첨부하여 문의해주세요.<br>
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let workbook, header, tableData = [], sortState={};
+let workbook, header, tableData = [], sortState = {};
 let amountColIdx = -1;
-
 const filePath = "./data/deposit.xlsx";
 
-// 금액 Formatting
+/*------------------------------
+  숫자 포맷(콤마 자동 처리)
+------------------------------*/
 const formatNumber = (v) => {
-  if(v === null || v === "" || isNaN(v)) return v;
-  return Number(v).toLocaleString();
+  if (v === null || v === undefined) return v;
+  let s = String(v).replace(/,/g, "").replace(/\s/g, "");
+  if (s === "" || isNaN(s)) return v;
+  return Number(s).toLocaleString();
 };
 
-// Excel 로드
+/*------------------------------
+  Excel 로드
+------------------------------*/
 fetch(filePath)
   .then(r => r.arrayBuffer())
-  .then(data => {
-    workbook = XLSX.read(data, { type:"array" });
-
+  .then(buffer => {
+    workbook = XLSX.read(buffer, { type: "array" });
     const sel = document.querySelector("#sheetSelect");
-    workbook.SheetNames.forEach(s => sel.add(new Option(s,s)));
+
+    workbook.SheetNames.forEach(s =>
+      sel.add(new Option(s, s))
+    );
 
     loadSheet(sel.value);
     sel.onchange = () => loadSheet(sel.value);
   });
 
-// 금액 열 자동 판별
-function detectAmountColumn(){
-  let scores = header.map(()=>0);
-  tableData.forEach(r=>r.forEach((v,i)=>{
-    if(!isNaN(v) && v !== null && v !== "") scores[i]++;
-  }));
-  let idx = scores.indexOf(Math.max(...scores));
-  amountColIdx = idx <= 0 ? 1 : idx;
-}
-
-function loadSheet(name){
+function loadSheet(name) {
   const rows = XLSX.utils.sheet_to_json(
-      workbook.Sheets[name], { header:1 });
+    workbook.Sheets[name],
+    { header: 1 }
+  );
 
-  header = rows[0];
+  header = rows[0] || [];
   tableData = rows.slice(1);
 
   detectAmountColumn();
@@ -135,42 +173,70 @@ function loadSheet(name){
   renderTable(tableData);
 }
 
-function renderHeader(){
+/*------------------------------
+  금액 컬럼 판별 : 헤더 > 숫자비율 우선
+------------------------------*/
+function detectAmountColumn() {
+  amountColIdx = -1;
+
+  // 1) 헤더 우선
+  header.forEach((h, i) => {
+    if (typeof h === "string" && /(금액|원|\(원\))/g.test(h))
+      amountColIdx = i;
+  });
+  if (amountColIdx !== -1) return;
+
+  // 2) 숫자 가장 많은 열 추정 (fallback)
+  let scores = header.map(() => 0);
+  tableData.forEach(row => row.forEach((v, i) => {
+    let s = String(v).replace(/,/g,"").replace(/\s/g,"");
+    if(s !== "" && !isNaN(s)) scores[i]++;
+  }));
+  
+  let idx = scores.indexOf(Math.max(...scores));
+  amountColIdx = idx <= 0 ? 1 : idx;
+}
+
+/*------------------------------
+  테이블 렌더링
+------------------------------*/
+function renderHeader() {
   const thead = document.querySelector("#table thead");
   thead.innerHTML = "";
   const tr = document.createElement("tr");
 
-  const thNo=document.createElement("th");
-  thNo.textContent="순번";
+  // 자동 순번
+  const thNo = document.createElement("th");
+  thNo.textContent = "순번";
   tr.appendChild(thNo);
 
-  header.slice(1).forEach((c,i)=>{
-    const th=document.createElement("th");
+  header.slice(1).forEach((c, i) => {
+    const th = document.createElement("th");
     th.textContent = c;
-    th.onclick = ()=>sortTable(i+1,th);
+    th.onclick = () => sortTable(i + 1, th);
     tr.appendChild(th);
   });
 
   thead.appendChild(tr);
 }
 
-function renderTable(data){
-  const tbody=document.querySelector("#table tbody");
-  tbody.innerHTML="";
+function renderTable(data) {
+  const tbody = document.querySelector("#table tbody");
+  tbody.innerHTML = "";
 
-  data.forEach((row,idx)=>{
-    const tr=document.createElement("tr");
+  data.forEach((row, idx) => {
+    const tr = document.createElement("tr");
 
-    const tdNo=document.createElement("td");
-    tdNo.textContent=idx+1;
+    const tdNo = document.createElement("td");
+    tdNo.textContent = idx + 1;
     tr.appendChild(tdNo);
 
-    row.slice(1).forEach((v,i)=>{
-      const td=document.createElement("td");
-      const col=i+1;
-      if(col === amountColIdx) v = formatNumber(v);
-      td.textContent=v ?? "";
-      if(col === row.length-1 && v) td.classList.add("alert");
+    row.slice(1).forEach((v, i) => {
+      const realIdx = i + 1;
+      const td = document.createElement("td");
+      if(realIdx === amountColIdx) v = formatNumber(v);
+      td.textContent = v ?? "";
+      if(realIdx === row.length - 1 && v) td.classList.add("alert");
       tr.appendChild(td);
     });
 
@@ -178,52 +244,62 @@ function renderTable(data){
   });
 }
 
-function sortTable(idx, th){
-  if(idx===0) return;
-  const order = sortState[idx]==="asc"?"desc":"asc";
-  sortState[idx]=order;
+/*------------------------------
+  정렬 기능
+------------------------------*/
+function sortTable(idx, th) {
+  if(idx === 0) return;
+
+  const order = sortState[idx] === "asc" ? "desc" : "asc";
+  sortState[idx] = order;
 
   document.querySelectorAll("th")
-    .forEach(th => th.classList.remove("sorted-asc","sorted-desc"));
-  th.classList.add(order==="asc"?"sorted-asc":"sorted-desc");
+    .forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
+  th.classList.add(order === "asc" ? "sorted-asc" : "sorted-desc");
 
   tableData.sort((a,b)=>{
-    const A=a[idx]??"", B=b[idx]??"";
-    const nA=parseFloat(A), nB=parseFloat(B);
-    if(!isNaN(nA)&&!isNaN(nB))
-      return order==="asc"?nA-nB:nB-nA;
+    let A = String(a[idx] ?? "").replace(/,/g,"");
+    let B = String(b[idx] ?? "").replace(/,/g,"");
+    let nA = parseFloat(A), nB = parseFloat(B);
+
+    if(!isNaN(nA) && !isNaN(nB))
+      return order==="asc" ? nA-nB : nB-nA;
     return order==="asc"
-      ?String(A).localeCompare(String(B))
-      :String(B).localeCompare(String(A));
+      ? A.localeCompare(B)
+      : B.localeCompare(A);
   });
+
   renderTable(tableData);
 }
 
-// 검색 — 첫열(순번) & 마지막열(비고) 제외 전체 검색
+/*------------------------------
+  검색 기능:
+  첫 열(순번) + 마지막 열(비고) 제외 전체 검색
+------------------------------*/
 document.querySelector("#search").oninput = function(){
-  const q=this.value.toLowerCase();
-  const tbody=document.querySelector("#table tbody");
+  const q = this.value.toLowerCase();
+  const tbody = document.querySelector("#table tbody");
 
-  Array.from(tbody.rows).forEach((tr, rowIdx)=>{
-    let found=false;
-    const visibleCols = tableData[rowIdx].slice(1, -1); // 첫X, 마지막X
-    visibleCols.forEach(v=>{
-      if(String(v).toLowerCase().includes(q)) found=true;
+  Array.from(tbody.rows).forEach((tr, i)=>{
+    let visible = false;
+    const row = tableData[i];
+
+    row.slice(1, row.length-1).forEach(v=>{
+      if(String(v).toLowerCase().includes(q)) visible = true;
     });
-    tr.style.display = found ? "" : "none";
+
+    tr.style.display = visible ? "" : "none";
   });
 
-  // 🔥 검색 후 자동 번호 재정렬
   reindex();
 };
 
 function reindex(){
-  const rows = document.querySelectorAll("#table tbody tr");
-  let idx=1;
+  const rows=document.querySelectorAll("#table tbody tr");
+  let n=1;
   rows.forEach(tr=>{
-    if(tr.style.display!=="none"){
-      tr.cells[0].textContent=idx++;
-    }
+    if(tr.style.display!=="none")
+      tr.cells[0].textContent=n++;
   });
 }
 </script>
