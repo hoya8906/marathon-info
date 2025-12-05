@@ -5,57 +5,61 @@
 <title>입금자를 찾습니다</title>
 
 <style>
-  body { font-family: Pretendard, sans-serif; margin: 20px; }
-  h2 { margin-bottom: 15px; }
-
-  #controls { margin-bottom: 10px; display: flex; gap: 10px; }
-
-  #sheetSelect {
-    padding: 8px; border: 1px solid #aaa;
-    border-radius: 4px;
+  html, body {
+    height:100%; margin:0;
+    font-family: Pretendard, sans-serif;
+    display:flex; flex-direction:column;
+    background:#fafafa;
   }
 
-  #search {
-    flex: 1; padding: 8px; 
-    border: 1px solid #aaa; border-radius: 4px;
+  h2 { margin:18px 20px 10px; font-size:22px; font-weight:700; }
+
+  #controls {
+    display:flex; gap:10px;
+    padding:0 20px 10px;
+    align-items:center;
   }
+  #sheetSelect, #search {
+    padding:10px; font-size:15px;
+    border-radius:6px; border:1px solid #bbb;
+  }
+  #search { flex:1; }
 
   .table-wrap {
-    max-height: 500px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
+    flex:1; overflow-y:auto; overflow-x:auto;
+    border-top:2px solid #555;
+    background:#fff;
   }
 
   table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 15px;
+    width:100%; min-width:900px;
+    border-collapse:collapse;
+    font-size:15px;
   }
 
   th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
+    border:1px solid #ddd;
+    padding:10px; white-space:nowrap;
+    text-align:center;
   }
 
   th {
-    background: #eee;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    cursor: pointer;
-    user-select: none;
+    background:#f2f2f2;
+    position:sticky; top:0;
+    cursor:pointer; font-weight:600;
   }
 
-  th.sorted-asc::after { content: " ▲"; }
-  th.sorted-desc::after { content: " ▼"; }
+  th.sorted-asc::after { content:" ▲"; }
+  th.sorted-desc::after { content:" ▼"; }
 
-  .alert { color: #c40000; font-weight: 600; }
+  .alert { color:#c40000; font-weight:700; }
 
   .notice {
-    margin-top: 20px; padding: 15px;
-    background: #fff7d4; border: 1px solid #ebcf79;
-    border-radius: 6px; font-size: 14px;
+    font-size:14px;
+    background:#fff7d4;
+    border-top:1px solid #ebcf79;
+    padding:14px 20px;
+    line-height:1.4;
   }
 </style>
 </head>
@@ -66,7 +70,7 @@
 
 <div id="controls">
   <select id="sheetSelect"></select>
-  <input type="text" id="search" placeholder="검색 (이름/생년월일 등)">
+  <input type="text" id="search" placeholder="검색 (이름/생년월일)">
 </div>
 
 <div class="table-wrap">
@@ -77,136 +81,151 @@
 </div>
 
 <div class="notice">
-  생년월일 미기재 / 참가 미등록 상태 시<br>
-  <strong>성함 + 생년월일 + 입금내역 사진 첨부</strong>하여 카카오톡 문의 바랍니다.<br><br>
+  생년월일 미기재 또는 참가 미등록 시<br>
+  <strong>성함 + 생년월일 + 입금내역 사진</strong> 첨부하여 문의해주세요.<br>
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let workbook;
-let tableData = [];
-let header = [];
-let sortState = {};
+let workbook, header, tableData = [], sortState={};
+let amountColIdx = -1;
 
 const filePath = "./data/deposit.xlsx";
 
-// 숫자 자동 콤마
-const formatNumber = (val) => {
-  if (!isFinite(val)) return val;
-  return Number(val).toLocaleString();
+// 금액 Formatting
+const formatNumber = (v) => {
+  if(v === null || v === "" || isNaN(v)) return v;
+  return Number(v).toLocaleString();
 };
 
-// Excel 읽기
+// Excel 로드
 fetch(filePath)
-  .then(res => res.arrayBuffer())
+  .then(r => r.arrayBuffer())
   .then(data => {
-    workbook = XLSX.read(data, { type: "array" });
+    workbook = XLSX.read(data, { type:"array" });
 
-    // 시트 선택 UI 생성
-    const sheetSelect = document.querySelector("#sheetSelect");
-    workbook.SheetNames.forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      sheetSelect.appendChild(opt);
-    });
+    const sel = document.querySelector("#sheetSelect");
+    workbook.SheetNames.forEach(s => sel.add(new Option(s,s)));
 
-    // 첫 시트 로드
-    loadSheet(workbook.SheetNames[0]);
+    loadSheet(sel.value);
+    sel.onchange = () => loadSheet(sel.value);
   });
 
-function loadSheet(sheetName) {
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+// 금액 열 자동 판별
+function detectAmountColumn(){
+  let scores = header.map(()=>0);
+  tableData.forEach(r=>r.forEach((v,i)=>{
+    if(!isNaN(v) && v !== null && v !== "") scores[i]++;
+  }));
+  let idx = scores.indexOf(Math.max(...scores));
+  amountColIdx = idx <= 0 ? 1 : idx;
+}
+
+function loadSheet(name){
+  const rows = XLSX.utils.sheet_to_json(
+      workbook.Sheets[name], { header:1 });
 
   header = rows[0];
   tableData = rows.slice(1);
 
+  detectAmountColumn();
   renderHeader();
   renderTable(tableData);
 }
 
-function renderHeader() {
+function renderHeader(){
   const thead = document.querySelector("#table thead");
   thead.innerHTML = "";
-
   const tr = document.createElement("tr");
-  header.forEach((col, idx) => {
-    const th = document.createElement("th");
-    th.textContent = col;
-    th.addEventListener("click", () => sortTable(idx, th));
+
+  const thNo=document.createElement("th");
+  thNo.textContent="순번";
+  tr.appendChild(thNo);
+
+  header.slice(1).forEach((c,i)=>{
+    const th=document.createElement("th");
+    th.textContent = c;
+    th.onclick = ()=>sortTable(i+1,th);
     tr.appendChild(th);
   });
 
   thead.appendChild(tr);
 }
 
-function renderTable(data) {
-  const tbody = document.querySelector("#table tbody");
-  tbody.innerHTML = "";
+function renderTable(data){
+  const tbody=document.querySelector("#table tbody");
+  tbody.innerHTML="";
 
-  data.forEach(row => {
-    const tr = document.createElement("tr");
-    row.forEach((val, i) => {
-      const td = document.createElement("td");
+  data.forEach((row,idx)=>{
+    const tr=document.createElement("tr");
 
-      // 숫자(금액) 콤마 적용
-      if (i === 3) val = formatNumber(val);
+    const tdNo=document.createElement("td");
+    tdNo.textContent=idx+1;
+    tr.appendChild(tdNo);
 
-      td.textContent = val ?? "";
-
-      // 비고 강조
-      if (i === row.length - 1 && td.textContent) td.classList.add("alert");
-
+    row.slice(1).forEach((v,i)=>{
+      const td=document.createElement("td");
+      const col=i+1;
+      if(col === amountColIdx) v = formatNumber(v);
+      td.textContent=v ?? "";
+      if(col === row.length-1 && v) td.classList.add("alert");
       tr.appendChild(td);
     });
+
     tbody.appendChild(tr);
   });
 }
 
-function sortTable(colIdx, th) {
-  const currentOrder = sortState[colIdx] === "asc" ? "desc" : "asc";
-  sortState[colIdx] = currentOrder;
+function sortTable(idx, th){
+  if(idx===0) return;
+  const order = sortState[idx]==="asc"?"desc":"asc";
+  sortState[idx]=order;
 
-  document.querySelectorAll("th").forEach(h => {
-    h.classList.remove("sorted-asc","sorted-desc");
+  document.querySelectorAll("th")
+    .forEach(th => th.classList.remove("sorted-asc","sorted-desc"));
+  th.classList.add(order==="asc"?"sorted-asc":"sorted-desc");
+
+  tableData.sort((a,b)=>{
+    const A=a[idx]??"", B=b[idx]??"";
+    const nA=parseFloat(A), nB=parseFloat(B);
+    if(!isNaN(nA)&&!isNaN(nB))
+      return order==="asc"?nA-nB:nB-nA;
+    return order==="asc"
+      ?String(A).localeCompare(String(B))
+      :String(B).localeCompare(String(A));
   });
-
-  th.classList.add(currentOrder === "asc"
-    ? "sorted-asc"
-    : "sorted-desc"
-  );
-
-  tableData.sort((a, b) => {
-    const vA = a[colIdx] ?? "";
-    const vB = b[colIdx] ?? "";
-    const numA = parseFloat(vA);
-    const numB = parseFloat(vB);
-
-    if (!isNaN(numA) && !isNaN(numB))
-      return currentOrder === "asc" ? numA - numB : numB - numA;
-
-    return currentOrder === "asc"
-      ? String(vA).localeCompare(String(vB))
-      : String(vB).localeCompare(String(vA));
-  });
-
   renderTable(tableData);
 }
 
-// 검색
-document.querySelector("#search").addEventListener("input", function () {
-  const v = this.value.toLowerCase();
-  document.querySelectorAll("#table tbody tr").forEach(tr => {
-    tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
-  });
-});
+// 검색 — 첫열(순번) & 마지막열(비고) 제외 전체 검색
+document.querySelector("#search").oninput = function(){
+  const q=this.value.toLowerCase();
+  const tbody=document.querySelector("#table tbody");
 
-// 시트 변경
-document.querySelector("#sheetSelect").addEventListener("change", e => {
-  loadSheet(e.target.value);
-});
+  Array.from(tbody.rows).forEach((tr, rowIdx)=>{
+    let found=false;
+    const visibleCols = tableData[rowIdx].slice(1, -1); // 첫X, 마지막X
+    visibleCols.forEach(v=>{
+      if(String(v).toLowerCase().includes(q)) found=true;
+    });
+    tr.style.display = found ? "" : "none";
+  });
+
+  // 🔥 검색 후 자동 번호 재정렬
+  reindex();
+};
+
+function reindex(){
+  const rows = document.querySelectorAll("#table tbody tr");
+  let idx=1;
+  rows.forEach(tr=>{
+    if(tr.style.display!=="none"){
+      tr.cells[0].textContent=idx++;
+    }
+  });
+}
 </script>
 
 </body>
