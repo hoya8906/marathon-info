@@ -5,28 +5,39 @@
 <title>입금자를 찾습니다</title>
 
 <style>
-  body { font-family: Pretendard, sans-serif; padding: 20px; line-height:1.4; }
+  body { font-family: Pretendard, sans-serif; padding: 20px; line-height: 1.5; color: #222; }
   h2 { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 15px; }
-  th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
-  th { background: #f4f4f4; }
-  #search { width: 300px; padding: 6px; font-size: 15px; margin-bottom: 12px; }
-  .alert { color: red; font-weight: bold; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+  th { background: #ececec; font-weight: 600; }
+
+  #search { 
+    width: 300px; padding: 8px; 
+    font-size: 15px; 
+    margin-bottom: 15px; 
+    border: 1px solid #aaa; 
+    border-radius: 4px;
+  }
+
+  .alert { color: #d60000; font-weight: 600; }
+
   .notice {
     margin-top: 20px;
-    padding: 14px;
-    background: #fff6d6;
+    padding: 15px;
+    background: #fff7d4;
+    border: 1px solid #ebcf79;
     border-radius: 6px;
     font-size: 14px;
-    border: 1px solid #f1d484;
   }
-  .notice strong { color: #c40000; }
+  .notice strong { color: #b20000; }
 </style>
 </head>
 
 <body>
 
 <h2>입금자를 찾습니다</h2>
+
 <input type="text" id="search" placeholder="이름 / 입금자명 / 생년월일 검색">
 
 <table id="table">
@@ -36,8 +47,8 @@
       <th>입금일시</th>
       <th>입금자명</th>
       <th>금액</th>
-      <th>한글명</th>
-      <th>생년월일</th>
+      <th>적요</th>
+      <th>처리점</th>
       <th>비고</th>
     </tr>
   </thead>
@@ -51,41 +62,63 @@
   예) 입금자를 찾습니다. 1번 김수원 250101
 </div>
 
-<!-- SheetJS 라이브러리 -->
+<!-- SheetJS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
-  const filePath = "./data/deposit.xlsx";
+const filePath = "./data/deposit.xlsx";
 
-  fetch(filePath)
-    .then(res => res.arrayBuffer())
-    .then(data => {
-      const wb = XLSX.read(data, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet);
+const columnMap = {
+  "번호": "연번",
+  "입금일시": "입금일시",
+  "입금자명": "보낸분/받는분",
+  "금액": "입금액(원)",
+  "적요": "적요",
+  "처리점": "처리점",
+  "비고": "내용"
+};
 
-      const tbody = document.querySelector("#table tbody");
+const displayColumns = [
+  "번호","입금일시","입금자명",
+  "금액","적요","처리점","비고"
+];
 
-      rows.forEach(r => {
-        const tr = document.createElement("tr");
-        ["번호","입금일시","입금자명","금액","한글명","생년월일","비고"].forEach(col => {
-          const td = document.createElement("td");
-          td.textContent = r[col] ?? "";
-          if (col === "비고" && td.textContent.includes("확인"))
-            td.classList.add("alert");
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
+fetch(filePath)
+  .then(res => res.arrayBuffer())
+  .then(data => {
+    const wb = XLSX.read(data, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    const tbody = document.querySelector("#table tbody");
+    tbody.innerHTML = "";
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+
+      displayColumns.forEach(col => {
+        const td = document.createElement("td");
+        td.textContent = r[columnMap[col]] ?? "";
+
+        // 불확실 항목 강조
+        if (col === "비고" && td.textContent !== "")
+          td.classList.add("alert");
+
+        tr.appendChild(td);
       });
-    });
 
-  document.querySelector("#search")
-    .addEventListener("input", function() {
-      const v = this.value.toLowerCase();
-      document.querySelectorAll("#table tbody tr").forEach(tr => {
-        tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
-      });
+      tbody.appendChild(tr);
     });
+  });
+
+// 검색 기능
+document.querySelector("#search")
+  .addEventListener("input", function() {
+    const val = this.value.toLowerCase();
+    document.querySelectorAll("#table tbody tr").forEach(tr => {
+      tr.style.display = tr.innerText.toLowerCase().includes(val) ? "" : "none";
+    });
+  });
 </script>
 
 </body>
