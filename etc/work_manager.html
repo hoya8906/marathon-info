@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>근태관리 (관리자 등록형)</title>
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --accent:#2563eb; --danger:#dc2626; --ok:#059669; --warn:#d97706;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif; background:var(--bg); color:var(--ink)}
+    .wrap{max-width:1120px; margin:22px auto; padding:0 14px}
+    header{display:flex; align-items:flex-end; justify-content:space-between; gap:14px; margin-bottom:14px}
+    h1{margin:0; font-size:22px}
+    .sub{color:var(--muted); font-size:13px; margin-top:6px; line-height:1.5}
+    .grid{display:grid; grid-template-columns: 1.1fr 1.4fr; gap:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px}
+    .card h2{margin:0 0 10px; font-size:16px}
+    .row{display:grid; grid-template-columns: 120px 1fr; gap:10px; align-items:center; margin:10px 0}
+    .row label{color:var(--muted); font-size:13px}
+    input, select, textarea{
+      width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:10px; background:#fff;
+      font-size:14px; outline:none;
+    }
+    textarea{min-height:80px; resize:vertical}
+    .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+    button{
+      border:1px solid var(--line); background:#fff; color:var(--ink);
+      padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:650; font-size:13px;
+    }
+    button.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+    button.danger{background:var(--danger); border-color:var(--danger); color:#fff}
+    button.ghost{background:transparent}
+    button:disabled{opacity:.55; cursor:not-allowed}
+    .pill{display:inline-flex; gap:6px; align-items:center; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#fff; font-size:12px; color:var(--muted)}
+    .toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin:10px 0 8px}
+    .toolbar .left, .toolbar .right{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+    table{width:100%; border-collapse:collapse; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff}
+    th, td{padding:10px 10px; border-bottom:1px solid var(--line); font-size:13px; text-align:left; vertical-align:top}
+    th{background:#f9fafb; color:#374151; font-weight:700}
+    tr:last-child td{border-bottom:none}
+    .muted{color:var(--muted)}
+    .tag{display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700}
+    .t-normal{background:#ecfdf5; color:#047857; border:1px solid #a7f3d0}
+    .t-late{background:#fff7ed; color:#9a3412; border:1px solid #fed7aa}
+    .t-leave{background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe}
+    .t-early{background:#fef2f2; color:#b91c1c; border:1px solid #fecaca}
+    .t-ot{background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe}
+    .t-off{background:#f3f4f6; color:#374151; border:1px solid #e5e7eb}
+    .kpi{display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:10px}
+    @media (max-width: 640px){ .kpi{grid-template-columns:1fr} }
+    .kbox{border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff}
+    .kbox .k{font-size:12px; color:var(--muted)}
+    .kbox .v{font-size:18px; font-weight:800; margin-top:6px}
+    .hint{font-size:12px; color:var(--muted); line-height:1.6}
+    .split{display:flex; gap:10px; align-items:center}
+    .split > *{flex:1}
+    .small{font-size:12px}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>근태관리 (관리자 등록형)</h1>
+        <div class="sub">
+          · 이 페이지는 브라우저에 저장됩니다(localStorage).<br>
+          · 여러 PC에서 공유하려면 서버/Firebase 연동이 필요합니다.
+        </div>
+      </div>
+      <div class="pill" id="statusPill">저장소: localStorage</div>
+    </header>
+
+    <div class="grid">
+
+      <!-- LEFT: 직원 관리 + 데이터 관리 -->
+      <section class="card">
+        <h2>직원 관리</h2>
+
+        <div class="row">
+          <label>직원명</label>
+          <input id="empName" placeholder="예) 최규호" />
+        </div>
+        <div class="row">
+          <label>직원ID(선택)</label>
+          <input id="empId" placeholder="예) HOYA01 (없으면 자동 생성)" />
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="btnAddEmp">직원 추가</button>
+          <button class="ghost" id="btnResetEmp">입력 초기화</button>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="toolbar">
+          <div class="left">
+            <span class="muted small">등록 직원</span>
+          </div>
+          <div class="right">
+            <button id="btnExportJSON">JSON 내보내기</button>
+            <label class="small" style="display:inline-flex; gap:8px; align-items:center; cursor:pointer;">
+              <input type="file" id="fileImport" accept="application/json" style="display:none">
+              <span class="pill">JSON 불러오기</span>
+            </label>
+            <button class="danger" id="btnWipeAll" title="전체 데이터 초기화">전체 초기화</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:26%">직원ID</th>
+              <th>직원명</th>
+              <th style="width:16%">관리</th>
+            </tr>
+          </thead>
+          <tbody id="empTbody"></tbody>
+        </table>
+
+        <div style="height:12px"></div>
+        <div class="hint">
+          ※ 권장 운영: 직원 추가는 관리자만. 근태 입력도 관리자만(분쟁/오입력 최소화).
+        </div>
+      </section>
+
+      <!-- RIGHT: 근태 등록 + 리스트 -->
+      <section class="card">
+        <h2>근태 등록</h2>
+
+        <div class="row">
+          <label>대상 직원</label>
+          <select id="attEmp"></select>
+        </div>
+
+        <div class="row">
+          <label>날짜</label>
+          <input id="attDate" type="date" />
+        </div>
+
+        <div class="split">
+          <div class="row" style="margin:0">
+            <label>출근</label>
+            <input id="attIn" type="time" />
+          </div>
+          <div class="row" style="margin:0">
+            <label>퇴근</label>
+            <input id="attOut" type="time" />
+          </div>
+        </div>
+
+        <div class="row">
+          <label>근태유형</label>
+          <select id="attType">
+            <option value="NORMAL">정상</option>
+            <option value="LATE">지각</option>
+            <option value="LEAVE">반차/연차</option>
+            <option value="EARLY">조퇴</option>
+            <option value="OT">야근</option>
+            <option value="OFF">휴무</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>메모</label>
+          <textarea id="attMemo" placeholder="예) 외근 후 10:30 복귀 / 반차(오후)"></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="btnAddAtt">근태 저장</button>
+          <button id="btnResetAtt">입력 초기화</button>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--line); margin:16px 0">
+
+        <div class="toolbar">
+          <div class="left">
+            <div class="split" style="gap:8px">
+              <select id="filterEmp" title="직원 필터"></select>
+              <input id="filterMonth" type="month" title="월 필터" />
+            </div>
+          </div>
+          <div class="right">
+            <button id="btnExportCSV">CSV 내보내기</button>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="kbox">
+            <div class="k">선택 월 총 근무시간</div>
+            <div class="v" id="kTotalWork">0:00</div>
+          </div>
+          <div class="kbox">
+            <div class="k">선택 월 야근시간(OT)</div>
+            <div class="v" id="kTotalOT">0:00</div>
+          </div>
+          <div class="kbox">
+            <div class="k">선택 월 기록 수</div>
+            <div class="v" id="kCount">0</div>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:12%">날짜</th>
+              <th style="width:16%">직원</th>
+              <th style="width:10%">출근</th>
+              <th style="width:10%">퇴근</th>
+              <th style="width:12%">유형</th>
+              <th>메모</th>
+              <th style="width:16%">관리</th>
+            </tr>
+          </thead>
+          <tbody id="attTbody"></tbody>
+        </table>
+
+        <div style="height:10px"></div>
+        <div class="hint">
+          ※ 근무시간은 “출근~퇴근”으로 계산합니다(휴게시간/기본근무/지각기준 등은 필요 시 커스터마이즈 가능).
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+<script>
+/** ---------------------------
+ *  Storage Schema
+ *  data = {
+ *    employees: [{id, name}],
+ *    attendance: [{id, empId, date(YYYY-MM-DD), in, out, type, memo, createdAt}]
+ *  }
+ * --------------------------*/
+const KEY = "ATT_ADMIN_V1";
+const $ = (id)=>document.getElementById(id);
+
+function nowIso(){ return new Date().toISOString(); }
+function uid(prefix="id"){ return prefix + "_" + Math.random().toString(36).slice(2,10) + "_" + Date.now(); }
+
+function loadData(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw){
+    const seed = { employees: [], attendance: [] };
+    localStorage.setItem(KEY, JSON.stringify(seed));
+    return seed;
+  }
+  try{
+    const obj = JSON.parse(raw);
+    if(!obj.employees) obj.employees = [];
+    if(!obj.attendance) obj.attendance = [];
+    return obj;
+  }catch(e){
+    alert("저장된 데이터가 손상되었습니다. 초기화 후 다시 시도해주세요.");
+    return { employees: [], attendance: [] };
+  }
+}
+function saveData(data){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function setDefaults(){
+  // 날짜/월 기본값: 오늘
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  $("attDate").value = `${yyyy}-${mm}-${dd}`;
+  $("filterMonth").value = `${yyyy}-${mm}`;
+}
+
+function typeTag(type){
+  const map = {
+    NORMAL: ["정상","t-normal"],
+    LATE: ["지각","t-late"],
+    LEAVE: ["반차/연차","t-leave"],
+    EARLY: ["조퇴","t-early"],
+    OT: ["야근","t-ot"],
+    OFF: ["휴무","t-off"],
+  };
+  return map[type] || [type, "t-off"];
+}
+
+function toMin(t){ // "HH:MM" -> minutes
+  if(!t) return null;
+  const [h,m] = t.split(":").map(Number);
+  if(Number.isNaN(h)||Number.isNaN(m)) return null;
+  return h*60 + m;
+}
+function minToHM(min){
+  const h = Math.floor(min/60);
+  const m = Math.abs(min%60);
+  return `${h}:${String(m).padStart(2,"0")}`;
+}
+function calcWorkMin(att){
+  // 출근/퇴근이 모두 있을 때만 계산
+  const a = toMin(att.in), b = toMin(att.out);
+  if(a==null || b==null) return 0;
+  // 자정 넘어가는 케이스 단순 대응(퇴근이 더 이르면 +24h)
+  const diff = (b >= a) ? (b-a) : (b + 24*60 - a);
+  return Math.max(0, diff);
+}
+
+function getEmpName(data, empId){
+  const e = data.employees.find(x=>x.id===empId);
+  return e ? e.name : "(삭제된 직원)";
+}
+
+function renderAll(){
+  const data = loadData();
+  renderEmployees(data);
+  renderEmpSelects(data);
+  renderAttendance(data);
+  renderKPI(data);
+}
+
+function renderEmployees(data){
+  const tb = $("empTbody");
+  tb.innerHTML = "";
+  if(data.employees.length === 0){
+    tb.innerHTML = `<tr><td colspan="3" class="muted">등록된 직원이 없습니다.</td></tr>`;
+    return;
+  }
+  data.employees.forEach(e=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><code>${escapeHtml(e.id)}</code></td>
+      <td><strong>${escapeHtml(e.name)}</strong></td>
+      <td>
+        <button class="danger" data-del-emp="${e.id}">삭제</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  tb.querySelectorAll("[data-del-emp]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const empId = btn.getAttribute("data-del-emp");
+      const data2 = loadData();
+      const emp = data2.employees.find(x=>x.id===empId);
+      if(!emp) return;
+      const ok = confirm(`직원 삭제: ${emp.name}\n(주의) 기존 근태 기록은 "삭제된 직원"으로 남습니다. 계속할까요?`);
+      if(!ok) return;
+      data2.employees = data2.employees.filter(x=>x.id!==empId);
+      saveData(data2);
+      renderAll();
+    });
+  });
+}
+
+function renderEmpSelects(data){
+  const selects = [$("attEmp"), $("filterEmp")];
+  selects.forEach(sel=>{
+    const keep = sel.value;
+    sel.innerHTML = "";
+    if(sel.id === "filterEmp"){
+      sel.innerHTML += `<option value="__ALL__">전체 직원</option>`;
+    }
+    data.employees.forEach(e=>{
+      const opt = document.createElement("option");
+      opt.value = e.id;
+      opt.textContent = `${e.name} (${e.id})`;
+      sel.appendChild(opt);
+    });
+
+    // 복원 (가능할 때)
+    if(keep && [...sel.options].some(o=>o.value===keep)){
+      sel.value = keep;
+    }
+  });
+
+  // 직원이 없으면 근태 저장 버튼 비활성화
+  $("btnAddAtt").disabled = (data.employees.length === 0);
+}
+
+function getFilters(){
+  const emp = $("filterEmp").value || "__ALL__";
+  const month = $("filterMonth").value; // "YYYY-MM"
+  return { emp, month };
+}
+
+function filterAttendance(data){
+  const { emp, month } = getFilters();
+  let list = [...data.attendance];
+
+  if(month){
+    list = list.filter(a => (a.date || "").startsWith(month));
+  }
+  if(emp && emp !== "__ALL__"){
+    list = list.filter(a => a.empId === emp);
+  }
+
+  // 최신순
+  list.sort((a,b)=>{
+    const da = (a.date||"") + (a.in||"");
+    const db = (b.date||"") + (b.in||"");
+    return db.localeCompare(da);
+  });
+
+  return list;
+}
+
+function renderAttendance(data){
+  const tb = $("attTbody");
+  const list = filterAttendance(data);
+
+  tb.innerHTML = "";
+  if(list.length === 0){
+    tb.innerHTML = `<tr><td colspan="7" class="muted">조건에 해당하는 기록이 없습니다.</td></tr>`;
+    return;
+  }
+
+  list.forEach(a=>{
+    const [label, cls] = typeTag(a.type);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml((a.date||"").slice(5))}</td>
+      <td><strong>${escapeHtml(getEmpName(data, a.empId))}</strong><div class="muted small">${escapeHtml(a.empId)}</div></td>
+      <td>${escapeHtml(a.in || "-")}</td>
+      <td>${escapeHtml(a.out || "-")}</td>
+      <td><span class="tag ${cls}">${label}</span></td>
+      <td>${escapeHtml(a.memo || "")}</td>
+      <td>
+        <button data-edit-att="${a.id}">수정</button>
+        <button class="danger" data-del-att="${a.id}">삭제</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  tb.querySelectorAll("[data-del-att]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-del-att");
+      const ok = confirm("이 기록을 삭제할까요?");
+      if(!ok) return;
+      const data2 = loadData();
+      data2.attendance = data2.attendance.filter(x=>x.id!==id);
+      saveData(data2);
+      renderAll();
+    });
+  });
+
+  tb.querySelectorAll("[data-edit-att]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-edit-att");
+      const data2 = loadData();
+      const item = data2.attendance.find(x=>x.id===id);
+      if(!item) return;
+
+      // 폼에 로드
+      $("attEmp").value = item.empId;
+      $("attDate").value = item.date || "";
+      $("attIn").value = item.in || "";
+      $("attOut").value = item.out || "";
+      $("attType").value = item.type || "NORMAL";
+      $("attMemo").value = item.memo || "";
+
+      $("btnAddAtt").textContent = "근태 수정 저장";
+      $("btnAddAtt").dataset.editing = id;
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+}
+
+function renderKPI(data){
+  const list = filterAttendance(data);
+  let totalWork = 0;
+  let totalOT = 0;
+
+  list.forEach(a=>{
+    const w = calcWorkMin(a);
+    totalWork += w;
+    if(a.type === "OT") totalOT += w;
+  });
+
+  $("kTotalWork").textContent = minToHM(totalWork);
+  $("kTotalOT").textContent = minToHM(totalOT);
+  $("kCount").textContent = String(list.length);
+}
+
+function resetAttForm(){
+  $("attIn").value = "";
+  $("attOut").value = "";
+  $("attType").value = "NORMAL";
+  $("attMemo").value = "";
+  $("btnAddAtt").textContent = "근태 저장";
+  delete $("btnAddAtt").dataset.editing;
+}
+
+function resetEmpForm(){
+  $("empName").value = "";
+  $("empId").value = "";
+}
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+/** ---------------------------
+ * Events
+ * --------------------------*/
+$("btnAddEmp").addEventListener("click", ()=>{
+  const name = $("empName").value.trim();
+  let id = $("empId").value.trim();
+
+  if(!name){
+    alert("직원명을 입력해주세요.");
+    return;
+  }
+  const data = loadData();
+
+  if(!id){
+    // 자동 ID 생성: NAME + 4자리(충돌 방지)
+    const base = name.replace(/\s+/g,"").slice(0,6).toUpperCase() || "EMP";
+    let n = String(Math.floor(Math.random()*9000)+1000);
+    id = `${base}${n}`;
+  }
+
+  if(data.employees.some(e=>e.id===id)){
+    alert("이미 존재하는 직원ID입니다. 다른 ID로 입력해주세요.");
+    return;
+  }
+
+  data.employees.push({ id, name });
+  saveData(data);
+  resetEmpForm();
+  renderAll();
+});
+
+$("btnResetEmp").addEventListener("click", resetEmpForm);
+
+$("btnAddAtt").addEventListener("click", ()=>{
+  const data = loadData();
+  if(data.employees.length === 0){
+    alert("직원을 먼저 등록해주세요.");
+    return;
+  }
+  const empId = $("attEmp").value;
+  const date = $("attDate").value;
+  const inT = $("attIn").value;
+  const outT = $("attOut").value;
+  const type = $("attType").value;
+  const memo = $("attMemo").value.trim();
+
+  if(!empId){ alert("직원을 선택해주세요."); return; }
+  if(!date){ alert("날짜를 선택해주세요."); return; }
+
+  // 검증(업무용): 출근/퇴근은 OFF일 때 비워도 됨
+  if(type !== "OFF"){
+    if(inT && !/^\d{2}:\d{2}$/.test(inT)){ alert("출근시간 형식이 올바르지 않습니다."); return; }
+    if(outT && !/^\d{2}:\d{2}$/.test(outT)){ alert("퇴근시간 형식이 올바르지 않습니다."); return; }
+  }
+
+  const editingId = $("btnAddAtt").dataset.editing;
+
+  if(editingId){
+    const item = data.attendance.find(x=>x.id===editingId);
+    if(!item){ alert("수정 대상이 없습니다."); resetAttForm(); return; }
+    item.empId = empId;
+    item.date = date;
+    item.in = inT || "";
+    item.out = outT || "";
+    item.type = type;
+    item.memo = memo;
+  }else{
+    data.attendance.push({
+      id: uid("att"),
+      empId,
+      date,
+      in: inT || "",
+      out: outT || "",
+      type,
+      memo,
+      createdAt: nowIso()
+    });
+  }
+
+  saveData(data);
+  resetAttForm();
+  renderAll();
+});
+
+$("btnResetAtt").addEventListener("click", resetAttForm);
+
+$("filterEmp").addEventListener("change", ()=>{ renderAll(); });
+$("filterMonth").addEventListener("change", ()=>{ renderAll(); });
+
+$("btnWipeAll").addEventListener("click", ()=>{
+  const ok = confirm("전체 데이터를 초기화할까요? (직원/근태 모두 삭제)");
+  if(!ok) return;
+  localStorage.removeItem(KEY);
+  setDefaults();
+  renderAll();
+});
+
+$("btnExportJSON").addEventListener("click", ()=>{
+  const data = loadData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `attendance_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+$("fileImport").addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    if(!obj || !Array.isArray(obj.employees) || !Array.isArray(obj.attendance)){
+      alert("올바른 백업 파일 형식이 아닙니다.");
+      return;
+    }
+    const ok = confirm("불러오면 현재 데이터가 덮어써집니다. 진행할까요?");
+    if(!ok) return;
+    saveData(obj);
+    renderAll();
+  }catch(err){
+    alert("불러오기 실패: 파일이 손상되었거나 형식이 올바르지 않습니다.");
+  }finally{
+    e.target.value = "";
+  }
+});
+
+$("btnExportCSV").addEventListener("click", ()=>{
+  const data = loadData();
+  const list = filterAttendance(data);
+  const rows = [
+    ["date","empId","empName","in","out","type","memo"]
+  ];
+  list.forEach(a=>{
+    rows.push([
+      a.date||"",
+      a.empId||"",
+      getEmpName(data, a.empId),
+      a.in||"",
+      a.out||"",
+      a.type||"",
+      (a.memo||"").replaceAll("\n"," ")
+    ]);
+  });
+  const csv = rows.map(r=>r.map(v=>{
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replaceAll('"','""')}"` : s;
+  }).join(",")).join("\n");
+
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `attendance_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/** init */
+setDefaults();
+renderAll();
+</script>
+</body>
+</html>
