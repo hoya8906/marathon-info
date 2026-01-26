@@ -1,413 +1,460 @@
-<!-- FAQ WIDGET (faq.inc) -->
-<div id="faqWidget">
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>자주 묻는 질문(FAQ)</title>
+
   <style>
-    /* 버튼 */
-    #faqBtn{
-      position:fixed; right:0; top:50%; transform:translateY(-50%);
-      background:#0056b3; color:#fff; padding:18px 22px;
-      border-radius:30px 0 0 30px; cursor:pointer;
-      font-size:15px; font-weight:700; z-index:9999;
-      box-shadow:0 4px 10px rgba(0,0,0,.25);
-      user-select:none;
+    /* ====== Page Base ====== */
+    :root { --brand: #0056b3; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
+      background: #f6f7f9;
+      color: #222;
     }
-    #faqBtn:hover{ background:#003f82; }
-
-    /* 모달 배경 */
-    #faqModal{
-      display:none;
-      position:fixed; left:0; top:0; width:100%; height:100%;
-      background:rgba(0,0,0,.55);
-      z-index:99999;
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
     }
 
-    /* 모달 박스 */
-    #faqModalContent{
-      background:#fff; width:90%; max-width:900px; margin:60px auto;
-      border-radius:12px; max-height:85vh; overflow:hidden;
-      display:flex; flex-direction:column;
-      box-shadow:0 10px 25px rgba(0,0,0,.2);
+    /* ====== Header ====== */
+    .page-head{
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 18px 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .page-title{
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.2px;
+    }
+    .page-sub{
+      margin: 8px 0 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
-    .faq-header-area{
-      padding:20px 25px; border-bottom:1px solid #eee;
-      display:flex; justify-content:space-between; align-items:center;
+    /* ====== Nav & Search ====== */
+    .nav{
+      margin: 16px 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .faq-header-area h2{ margin:0; font-size:24px; color:#333; }
-    #faqClose{ font-size:28px; cursor:pointer; color:#666; line-height:1; }
-    #faqClose:hover{ color:#000; }
-
-    .faq-scroll-area{ padding:25px; overflow-y:auto; }
-
-    /* 네비/검색 */
-    .nav{ margin-bottom:20px; display:flex; flex-wrap:wrap; gap:10px; }
     .nav a{
-      color:#555; text-decoration:none; font-size:14px; font-weight:600;
-      background:#f1f3f5; padding:6px 12px; border-radius:20px;
+      color: #555;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      background: #f1f3f5;
+      padding: 7px 12px;
+      border-radius: 999px;
+      transition: all .2s ease;
     }
-    .nav a:hover{ background:#0056b3; color:#fff; }
+    .nav a:hover{ background: var(--brand); color:#fff; }
 
-    .search-box{ margin-bottom:30px; }
+    .search-box{
+      margin-top: 16px;
+      position: relative;
+    }
     .search-box input{
-      width:100%; padding:14px 15px; border:2px solid #eee;
-      border-radius:8px; font-size:16px; outline:none;
+      width: 100%;
+      padding: 14px 14px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border-color .2s ease;
+      outline: none;
+      background: #fff;
+      box-sizing: border-box;
     }
-    .search-box input:focus{ border-color:#0056b3; }
+    .search-box input:focus{ border-color: var(--brand); }
 
+    /* ====== Section Title ====== */
     .section-title{
-      font-size:18px; margin-top:40px; margin-bottom:12px;
-      font-weight:800; color:#0056b3;
-      border-left:4px solid #0056b3; padding-left:10px;
+      font-size: 18px;
+      margin: 26px 0 12px;
+      font-weight: 800;
+      color: var(--brand);
+      border-left: 4px solid var(--brand);
+      padding-left: 10px;
     }
 
-    /* 아코디언 */
-    .accordion{ border:1px solid #e1e1e1; border-radius:8px; overflow:hidden; margin-bottom:12px; background:#fff; }
+    /* ====== Accordion ====== */
+    .accordion{
+      background: #fff;
+      border: 1px solid #e1e1e1;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: box-shadow .2s ease, border-color .2s ease;
+    }
+    .accordion:hover{
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      border-color: #cfcfcf;
+    }
     .accordion-header{
-      padding:18px 20px; cursor:pointer; font-weight:700; font-size:16px;
-      display:flex; justify-content:space-between; align-items:center;
+      padding: 18px 18px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 16px;
+      color: #333;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
     }
-    .accordion-header::after{ content:'+'; color:#999; font-size:20px; font-weight:400; }
-    .accordion-header.active{ background:#f8f9fa; color:#0056b3; }
-    .accordion-header.active::after{ content:'-'; color:#0056b3; }
+    .accordion-header::after{
+      content: '+';
+      font-size: 20px;
+      color: #999;
+      font-weight: 400;
+    }
+    .accordion-header.active{
+      background: #f8f9fa;
+      color: var(--brand);
+    }
+    .accordion-header.active::after{
+      content: '-';
+      color: var(--brand);
+    }
 
-    .accordion-content{ max-height:0; overflow:hidden; transition:max-height .35s ease; background:#fafafa; }
-    .accordion-content.open{ border-top:1px solid #eee; }
+    .accordion-content{
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .35s ease-out;
+      background: #fafafa;
+      border-top: 1px solid transparent;
+    }
+    .accordion-content.open{ border-top-color: #eee; }
 
-    .faq-inner-body{ padding:20px 25px; font-size:15px; line-height:1.65; color:#444; }
+    .faq-inner-body{
+      padding: 18px 20px;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #444;
+    }
 
-    .styled-list{ list-style:none; padding:0; margin:0; }
-    .styled-list li{ position:relative; padding-left:22px; margin-bottom:8px; }
-    .styled-list li::before{ content:'✔'; position:absolute; left:0; top:0; color:#0056b3; font-weight:900; }
+    /* list */
+    .styled-list{ list-style: none; padding: 0; margin: 0; }
+    .styled-list li{
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 8px;
+    }
+    .styled-list li::before{
+      content: '✔';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--brand);
+      font-weight: 900;
+      font-size: 14px;
+    }
 
+    /* badges */
     .badge-title{
-      display:inline-block; padding:4px 10px; border-radius:4px;
-      background:#e7f5ff; color:#0056b3; font-weight:800; font-size:13px;
-      margin:15px 0 8px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #e7f5ff;
+      color: var(--brand);
+      font-weight: 900;
+      font-size: 13px;
+      margin: 14px 0 8px;
     }
+    .badge-title:first-child{ margin-top: 0; }
 
+    /* alert */
     .alert-box{
-      background:#fff3cd; border-left:4px solid #ffc107;
-      padding:15px; margin-top:15px; border-radius:4px;
-      color:#856404; font-size:14px;
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 14px;
+      margin-top: 14px;
+      border-radius: 6px;
+      color: #856404;
+      font-size: 14px;
     }
-    .alert-box.danger{ background:#f8d7da; border-left-color:#dc3545; color:#721c24; }
+    .alert-box.danger{
+      background: #f8d7da;
+      border-left-color: #dc3545;
+      color: #721c24;
+    }
+    .alert-box strong{ font-weight: 900; margin-right: 6px; }
 
-    @media (max-width:600px){
-      #faqModalContent{ width:100%; height:100%; margin:0; max-height:100vh; border-radius:0; }
-      .faq-scroll-area{ padding:18px; }
-      .faq-inner-body{ padding:15px 18px; }
+    /* ====== Sticky TOC (optional) ====== */
+    @media (min-width: 1024px){
+      .wrap{
+        padding-top: 34px;
+      }
     }
   </style>
+</head>
 
-  <div id="faqBtn">FAQ</div>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1 class="page-title">자주 묻는 질문(FAQ)</h1>
+      <p class="page-sub">
+        아래 검색창에서 키워드(예: 환불, 단체, 배번호)를 입력하면 관련 항목만 표시됩니다.
+      </p>
 
-  <div id="faqModal" aria-hidden="true">
-    <div id="faqModalContent" role="dialog" aria-modal="true" aria-label="FAQ">
-      <div class="faq-header-area">
-        <h2>자주 묻는 질문(FAQ)</h2>
-        <span id="faqClose" aria-label="닫기">&times;</span>
+      <nav class="nav" aria-label="FAQ 빠른 이동">
+        <a href="#apply">참가 신청</a>
+        <a href="#group">단체 신청</a>
+        <a href="#payment">입금 확인</a>
+        <a href="#refund">환불 안내</a>
+        <a href="#add_regist">추가 접수</a>
+        <a href="#goods">기념품/기록</a>
+        <a href="#onsite">현장 안내</a>
+      </nav>
+
+      <div class="search-box">
+        <input type="text" id="faqSearch" placeholder="궁금한 내용을 검색해보세요 (예: 환불, 단체, 배번호)" />
+      </div>
+    </header>
+
+    <!-- ====== 본문: 기존 모달 내용 그대로 ====== -->
+    <main id="faqRoot">
+
+      <h2 id="apply" class="section-title">참가 신청 확인 및 정보 수정</h2>
+      <div class="accordion">
+        <div class="accordion-header">참가 신청 내역 확인 및 정보 수정은 어떻게 하나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>홈페이지 상단 <strong>[참가신청] → [정보수정 및 입금확인]</strong> 클릭</li>
+            </ul>
+
+            <span class="badge-title">개인 참가자</span>
+            <ul class="styled-list">
+              <li>참가자 구분 ‘개인’ 선택 후 아이디/비밀번호 로그인</li>
+            </ul>
+
+            <span class="badge-title">단체 참가자</span>
+            <ul class="styled-list">
+              <li>참가자 구분 ‘단체’ 선택 후 대표자 아이디/비밀번호 로그인</li>
+            </ul>
+
+            <div class="alert-box">
+              <strong>Check!</strong> 신청 완료 후 일부 정보는 수정이 제한될 수 있습니다. 필요 시 운영사무국으로 문의 바랍니다.
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="faq-scroll-area">
-        <div class="nav">
-          <a href="#apply">참가 신청</a>
-          <a href="#group">단체 신청</a>
-          <a href="#payment">입금 확인</a>
-          <a href="#refund">환불 안내</a>
-          <a href="#add_regist">추가 접수</a>
-          <a href="#goods">기념품/기록</a>
-          <a href="#onsite">현장 안내</a>
-        </div>
-
-        <div class="search-box">
-          <input type="text" id="faqSearch" placeholder="궁금한 내용을 검색해보세요 (예: 환불, 단체, 배번호)">
-        </div>
-
-        <!-- ====== 이하 FAQ 본문은 기존 그대로 사용 ====== -->
-        <h3 id="apply" class="section-title">참가 신청 확인 및 정보 수정</h3>
-        <div class="accordion">
-          <div class="accordion-header">참가 신청 내역 확인 및 정보 수정은 어떻게 하나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>홈페이지 상단 <strong>[참가신청] → [정보수정 및 입금확인]</strong> 클릭</li>
-              </ul>
-
-              <span class="badge-title">개인 참가자</span>
-              <ul class="styled-list">
-                <li>참가자 구분 ‘개인’ 선택 후 아이디/비밀번호 로그인</li>
-              </ul>
-
-              <span class="badge-title">단체 참가자</span>
-              <ul class="styled-list">
-                <li>참가자 구분 ‘단체’ 선택 후 대표자 아이디/비밀번호 로그인</li>
-              </ul>
-
-              <div class="alert-box">
-                <strong>Check!</strong> 신청 완료 후 일부 정보는 수정이 제한될 수 있습니다. 필요 시 운영사무국으로 문의 바랍니다.
-              </div>
-            </div>
+      <h2 id="group" class="section-title">단체 참가 신청</h2>
+      <div class="accordion">
+        <div class="accordion-header">단체로 참가하려면 어떻게 신청하나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li><strong>2인 이상</strong>부터 단체 접수가 가능합니다.</li>
+              <li>단체 대표자가 팀원 전체를 일괄 신청해야 합니다. (대표자도 참가 시 명단 포함 필수)</li>
+              <li>홈페이지 상단 [참가신청] → [단체 신청] 메뉴를 이용하세요.</li>
+              <li>인원이 많을 경우 하나의 아이디로 동시 접속하여 등록 가능합니다.</li>
+            </ul>
           </div>
         </div>
-
-        <h3 id="group" class="section-title">단체 참가 신청</h3>
-        <div class="accordion">
-          <div class="accordion-header">단체로 참가하려면 어떻게 신청하나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li><strong>2인 이상</strong>부터 단체 접수가 가능합니다.</li>
-                <li>단체 대표자가 팀원 전체를 일괄 신청해야 합니다. (대표자도 참가 시 명단 포함 필수)</li>
-                <li>홈페이지 상단 [참가신청] → [단체 신청] 메뉴를 이용하세요.</li>
-                <li>인원이 많을 경우 하나의 아이디로 동시 접속하여 등록 가능합니다.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">단체 신청 후 참가자를 추가할 수 있나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>잔여 정원이 있을 경우에 한해 추가가 가능합니다.</li>
-                <li>[정보수정 및 입금확인] 로그인 후 하단 <strong>[참가자 추가]</strong> 버튼을 클릭하세요.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">개인 신청 후 단체로 전환할 수 있나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <span class="badge-title">전환 가능 여부</span>
-              <ul class="styled-list">
-                <li>개인 → 단체: <strong>가능</strong></li>
-                <li>단체 → 개인: <strong>불가능</strong></li>
-              </ul>
-              <div class="alert-box">
-                <strong>주의:</strong> 단체명으로 일괄 입금해야 단체 혜택이 적용됩니다. 개인 명의로 입금 시 개별 처리되어 혜택 제공이 어렵습니다.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <h3 id="payment" class="section-title">입금 확인</h3>
-        <div class="accordion">
-          <div class="accordion-header">입금 확인은 언제 되나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>평일 기준 <strong>2~3일 소요</strong>됩니다.</li>
-                <li>확인 완료 시 알림톡이 발송됩니다. (단체는 대표자에게 발송)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">입금 확인은 어디에서 하나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>홈페이지 → [참가신청] → <strong>[정보수정 및 입금확인]</strong> 메뉴에서 로그인 후 확인 가능합니다.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <h3 id="refund" class="section-title">환불 안내</h3>
-        <div class="accordion">
-          <div class="accordion-header">환불 신청 방법과 기한은 어떻게 되나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <span class="badge-title">환불 기한</span>
-              <ul class="styled-list">
-                <li><strong>2026년 2월 11일(수) 자정까지</strong> 신청 가능</li>
-                <li>기한 이후에는 물품 제작 등으로 인해 어떠한 사유로도 환불이 불가합니다.</li>
-              </ul>
-
-              <span class="badge-title">신청 방법</span>
-              <ul class="styled-list">
-                <li>[정보수정 및 입금확인] 로그인 → 페이지 하단 <strong>[환불신청]</strong> 버튼 클릭</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <h3 id="add_regist" class="section-title">추가 접수</h3>
-        <div class="accordion">
-          <div class="accordion-header">정해진 기간 외에 추가 접수를 받나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <span class="badge-title">진행 여부 판단</span>
-              <ul class="styled-list">
-                <li>정규 환불 기간 종료 후, 잔여 티켓 수량 등을 고려하여 추가 접수 여부를 결정합니다.</li>
-                <li>추가 접수 진행이 확정되면, <strong>홈페이지 공지사항</strong>을 통해 사전에 안내드립니다.</li>
-              </ul>
-
-              <div class="alert-box danger">
-                <strong>※ 중요:</strong> 추가 접수 기간에 신청하신 건은 <span style="text-decoration: underline;">환불이 절대 불가</span>하오니 신중히 신청해 주시기 바랍니다.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <h3 id="goods" class="section-title">배번호 · 기념품 · 기록</h3>
-        <div class="accordion">
-          <div class="accordion-header">배번호 및 기념품 수령 방법은?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>대회 1~2주 전 신청 시 입력한 주소로 <strong>택배 발송</strong>됩니다.</li>
-                <li>단체는 대표자 주소로 일괄 발송됩니다.</li>
-                <li>배번호 미지참 시 기록 측정이 불가합니다. (기록칩은 배번호 뒤 부착)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion">
-          <div class="accordion-header">완주 메달과 기록증은 어떻게 받나요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <span class="badge-title">메달</span>
-              <ul class="styled-list">
-                <li>전 종목 참가자에게 지급됩니다.</li>
-                <li>완주 후 현장 배부처에서 수령하세요.</li>
-              </ul>
-
-              <span class="badge-title">기록증</span>
-              <ul class="styled-list">
-                <li>완주 후 <strong>모바일로 자동 발송</strong>됩니다.</li>
-                <li>미수신 시 대회 종료 후 공지되는 링크에서 조회 가능합니다.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <h3 id="onsite" class="section-title">현장 안내</h3>
-        <div class="accordion">
-          <div class="accordion-header">대회 당일 현장 접수가 가능한가요?</div>
-          <div class="accordion-content">
-            <div class="faq-inner-body">
-              <ul class="styled-list">
-                <li>대회 당일 <strong>현장 접수는 불가</strong>합니다.</li>
-                <li>모든 참가 신청은 사전 온라인 접수만 가능합니다.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- ====== 본문 끝 ====== -->
       </div>
-    </div>
+
+      <div class="accordion">
+        <div class="accordion-header">단체 신청 후 참가자를 추가할 수 있나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>잔여 정원이 있을 경우에 한해 추가가 가능합니다.</li>
+              <li>[정보수정 및 입금확인] 로그인 후 하단 <strong>[참가자 추가]</strong> 버튼을 클릭하세요.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header">개인 신청 후 단체로 전환할 수 있나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <span class="badge-title">전환 가능 여부</span>
+            <ul class="styled-list">
+              <li>개인 → 단체: <strong>가능</strong></li>
+              <li>단체 → 개인: <strong>불가능</strong></li>
+            </ul>
+            <div class="alert-box">
+              <strong>주의:</strong> 단체명으로 일괄 입금해야 단체 혜택이 적용됩니다. 개인 명의로 입금 시 개별 처리되어 혜택 제공이 어렵습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="payment" class="section-title">입금 확인</h2>
+      <div class="accordion">
+        <div class="accordion-header">입금 확인은 언제 되나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>평일 기준 <strong>2~3일 소요</strong>됩니다.</li>
+              <li>확인 완료 시 알림톡이 발송됩니다. (단체는 대표자에게 발송)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header">입금 확인은 어디에서 하나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>홈페이지 → [참가신청] → <strong>[정보수정 및 입금확인]</strong> 메뉴에서 로그인 후 확인 가능합니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="refund" class="section-title">환불 안내</h2>
+      <div class="accordion">
+        <div class="accordion-header">환불 신청 방법과 기한은 어떻게 되나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <span class="badge-title">환불 기한</span>
+            <ul class="styled-list">
+              <li><strong>2026년 2월 11일(수) 자정까지</strong> 신청 가능</li>
+              <li>기한 이후에는 물품 제작 등으로 인해 어떠한 사유로도 환불이 불가합니다.</li>
+            </ul>
+
+            <span class="badge-title">신청 방법</span>
+            <ul class="styled-list">
+              <li>[정보수정 및 입금확인] 로그인 → 페이지 하단 <strong>[환불신청]</strong> 버튼 클릭</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="add_regist" class="section-title">추가 접수</h2>
+      <div class="accordion">
+        <div class="accordion-header">정해진 기간 외에 추가 접수를 받나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <span class="badge-title">진행 여부 판단</span>
+            <ul class="styled-list">
+              <li>정규 환불 기간 종료 후, 잔여 티켓 수량 등을 고려하여 추가 접수 여부를 결정합니다.</li>
+              <li>추가 접수 진행이 확정되면, <strong>홈페이지 공지사항</strong>을 통해 사전에 안내드립니다.</li>
+            </ul>
+
+            <div class="alert-box danger">
+              <strong>※ 중요:</strong> 추가 접수 기간에 신청하신 건은 <span style="text-decoration: underline;">환불이 절대 불가</span>하오니, 이 점 양지하시어 신중하게 신청해 주시기 바랍니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="goods" class="section-title">배번호 · 기념품 · 기록</h2>
+      <div class="accordion">
+        <div class="accordion-header">배번호 및 기념품 수령 방법은?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>대회 1~2주 전 신청 시 입력한 주소로 <strong>택배 발송</strong>됩니다.</li>
+              <li>단체는 대표자 주소로 일괄 발송됩니다.</li>
+              <li>배번호 미지참 시 기록 측정이 불가하니 꼭 지참해주세요. (기록칩은 배번호 뒤 부착)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header">완주 메달과 기록증은 어떻게 받나요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <span class="badge-title">메달</span>
+            <ul class="styled-list">
+              <li>전 종목 참가자에게 지급됩니다.</li>
+              <li>완주 후 현장 코스별 배부처에서 간식과 함께 수령하세요.</li>
+            </ul>
+
+            <span class="badge-title">기록증</span>
+            <ul class="styled-list">
+              <li>완주 후 <strong>모바일로 자동 발송</strong>됩니다. (별도 신청 X)</li>
+              <li>문자를 못 받으신 경우, 대회 종료 후 공지되는 링크에서 조회 및 저장이 가능합니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="onsite" class="section-title">현장 접수</h2>
+      <div class="accordion">
+        <div class="accordion-header">대회 당일 현장 접수가 가능한가요?</div>
+        <div class="accordion-content">
+          <div class="faq-inner-body">
+            <ul class="styled-list">
+              <li>대회 당일 <strong>현장 접수는 불가</strong>합니다.</li>
+              <li>원활한 대회 운영과 안전을 위해 모든 참가 신청은 사전 온라인 접수만 가능합니다.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </main>
   </div>
 
   <script>
-    (function(){
-      // 중복 include 방지
-      if (window.__FAQ_WIDGET_FORCE_INIT__) return;
-      window.__FAQ_WIDGET_FORCE_INIT__ = true;
+    // Accordion
+    document.querySelectorAll(".accordion-header").forEach(header => {
+      header.addEventListener("click", () => {
+        const content = header.nextElementSibling;
 
-      function init(){
-        var widget = document.getElementById('faqWidget');
-        if (!widget) return;
-
-        // ✅ head에 include돼도 body로 이동
-        if (widget.parentElement && widget.parentElement.tagName === 'HEAD') {
-          document.body.appendChild(widget);
-        }
-
-        window.FAQ_OPEN = function(){
-          var modal = document.getElementById('faqModal');
-          if (!modal) return;
-          modal.style.setProperty('display','block','important'); // ✅ 강제 표시
-          modal.setAttribute('aria-hidden','false');
-          document.body.style.overflow = 'hidden';
-        };
-
-        window.FAQ_CLOSE = function(){
-          var modal = document.getElementById('faqModal');
-          if (!modal) return;
-          modal.style.setProperty('display','none','important');
-          modal.setAttribute('aria-hidden','true');
-          document.body.style.overflow = 'auto';
-        };
-
-        // ✅ 이벤트 위임(스크립트 로딩 타이밍 문제 우회)
-        document.addEventListener('click', function(e){
-          if (e.target && e.target.id === 'faqBtn') window.FAQ_OPEN();
-          if (e.target && e.target.id === 'faqClose') window.FAQ_CLOSE();
-          if (e.target && e.target.id === 'faqModal') window.FAQ_CLOSE();
-        });
-
-        // ESC 닫기
-        document.addEventListener('keydown', function(e){
-          if (e.key === 'Escape') window.FAQ_CLOSE();
-        });
-
-        // Accordion
-        document.querySelectorAll('.accordion-header').forEach(function(header){
-          header.addEventListener('click', function(){
-            var content = header.nextElementSibling;
-
-            // 다른거 닫기
-            document.querySelectorAll('.accordion-content').forEach(function(c){
-              if (c !== content){
-                c.style.maxHeight = null;
-                c.classList.remove('open');
-              }
-            });
-            document.querySelectorAll('.accordion-header').forEach(function(h){
-              if (h !== header) h.classList.remove('active');
-            });
-
-            // 토글
-            var isOpen = content.classList.contains('open');
-            if (isOpen){
-              content.style.maxHeight = null;
-              content.classList.remove('open');
-              header.classList.remove('active');
-            } else {
-              content.style.maxHeight = content.scrollHeight + 'px';
-              content.classList.add('open');
-              header.classList.add('active');
-            }
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          content.classList.remove("open");
+          header.classList.remove("active");
+        } else {
+          // 다른거 닫기
+          document.querySelectorAll(".accordion-content").forEach(c => {
+            c.style.maxHeight = null;
+            c.classList.remove("open");
           });
-        });
+          document.querySelectorAll(".accordion-header").forEach(h => h.classList.remove("active"));
 
-        // Search
-        var search = document.getElementById('faqSearch');
-        if (search){
-          search.addEventListener('input', function(){
-            var keyword = (this.value || '').toLowerCase().trim();
-            document.querySelectorAll('.accordion').forEach(function(item){
-              var text = (item.innerText || '').toLowerCase();
-              item.style.display = (!keyword || text.includes(keyword)) ? 'block' : 'none';
-            });
-
-            // 섹션 타이틀 숨김/표시
-            document.querySelectorAll('.section-title').forEach(function(title){
-              var el = title.nextElementSibling;
-              var hasVisible = false;
-              while (el && !el.classList.contains('section-title')){
-                if (el.classList.contains('accordion') && el.style.display !== 'none'){
-                  hasVisible = true; break;
-                }
-                el = el.nextElementSibling;
-              }
-              title.style.display = (!keyword || hasVisible) ? 'block' : 'none';
-            });
-          });
+          content.style.maxHeight = content.scrollHeight + "px";
+          content.classList.add("open");
+          header.classList.add("active");
         }
-      }
+      });
+    });
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-      } else {
-        init();
-      }
-    })();
+    // Search filter
+    document.getElementById("faqSearch").addEventListener("input", function() {
+      const keyword = (this.value || "").toLowerCase().trim();
+      const items = document.querySelectorAll(".accordion");
+      const titles = document.querySelectorAll(".section-title");
+
+      items.forEach(item => {
+        const text = (item.innerText || "").toLowerCase();
+        item.style.display = (!keyword || text.includes(keyword)) ? "block" : "none";
+      });
+
+      // 섹션 타이틀: 아래에 보이는 아코디언이 하나라도 있으면 표시
+      titles.forEach(title => {
+        let el = title.nextElementSibling;
+        let hasVisible = false;
+
+        while (el && !el.classList.contains("section-title")) {
+          if (el.classList.contains("accordion") && el.style.display !== "none") {
+            hasVisible = true;
+            break;
+          }
+          el = el.nextElementSibling;
+        }
+        title.style.display = (!keyword || hasVisible) ? "block" : "none";
+      });
+    });
   </script>
-</div>
+</body>
+</html>
