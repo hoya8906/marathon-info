@@ -1,0 +1,229 @@
+<style>
+/* 전체 컨테이너 */
+.info-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: "Noto Sans KR", sans-serif;
+    color: #333;
+    padding: 20px 0;
+}
+
+/* 대제목 (섹션 구분용) */
+.main-heading {
+    font-size: 28px;
+    font-weight: 800;
+    color: #111;
+    margin: 60px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1DC5A3;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.main-heading:first-child {
+    margin-top: 0;
+}
+
+/* 중제목 (시설명 등) */
+.sub-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 30px 0 16px;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sub-title::before {
+    content: "";
+    display: block;
+    width: 5px;
+    height: 20px;
+    background-color: #1DC5A3;
+    border-radius: 4px;
+}
+
+/* 요약 정보 박스 (시설 정보 등) */
+.summary-info {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: #334155;
+    line-height: 1.6;
+}
+.summary-info p {
+    margin: 6px 0;
+    display: flex;
+    align-items: flex-start;
+}
+.summary-info p:first-child { margin-top: 0; }
+.summary-info p:last-child { margin-bottom: 0; }
+.summary-info strong {
+    color: #1e293b;
+    min-width: 75px;
+    display: inline-block;
+}
+.summary-info .highlight {
+    color: #ef4444; /* 강조 색상 */
+    font-weight: 700;
+}
+
+/* 링크 스타일 */
+.text-link {
+    color: #15A88B;
+    text-decoration: none;
+    font-weight: 700;
+    border-bottom: 1px dashed #7EE5CE;
+    transition: 0.2s;
+}
+.text-link:hover {
+    color: #0E7B65;
+    border-bottom-color: #0E7B65;
+}
+
+/* 테이블 공통 스타일 */
+.table-wrap {
+    overflow-x: auto;
+    margin-bottom: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    text-align: center;
+    font-size: 15px;
+    min-width: 600px; /* 모바일에서 깨짐 방지 */
+}
+.info-table th, .info-table td {
+    border: 1px solid #e2e8f0;
+    padding: 12px 10px;
+}
+.info-table th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* 유의사항 박스 */
+.notice-box {
+    background: #f0fdfa; /* 연한 청록색 */
+    border: 1px solid #ccfbf1;
+    border-radius: 12px;
+    padding: 24px 30px;
+    margin: 20px 0 40px;
+}
+.notice-box h4 {
+    margin: 0 0 16px;
+    color: #0f766e;
+    font-size: 18px;
+    font-weight: 700;
+}
+.notice-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #334155;
+    line-height: 1.8;
+    font-size: 15px;
+}
+.notice-list li {
+    margin-bottom: 8px;
+}
+.notice-list li strong {
+    color: #ef4444; /* 빨간색 강조 */
+}
+
+/* 아주 강력한 강조용 스타일 (탑승 미보장 안내용) */
+.notice-list li .super-highlight {
+    color: #dc2626; /* 더 진한 빨강 */
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* 신청 버튼 영역 */
+.apply-btn-wrap {
+    text-align: center;
+    margin: 60px 0 40px;
+}
+.btn-apply-main {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1DC5A3;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 18px 56px;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(29, 197, 163, 0.3);
+}
+.btn-apply-main:hover {
+    background-color: #15A88B;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(29, 197, 163, 0.4);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .main-heading { font-size: 24px; }
+    .btn-apply-main { font-size: 18px; width: 100%; box-sizing: border-box; }
+}
+</style>
+
+<div class="info-container">
+
+    <h2 class="main-title main-heading">🚌 관외 셔틀버스 운행 및 신청 안내</h2>
+    
+    <div class="notice-box">
+        <h4>🚨 셔틀버스 신청 전 필수 유의사항</h4>
+        <ul class="notice-list">
+            <li>셔틀버스는 유료로 운행됩니다.</li>
+            <li>지역별 신청 인원이 미달될 경우, 셔틀버스 운영이 취소될 수 있습니다.</li>
+            <li><strong>셔틀버스 미운행을 사유로 참가비 환불은 불가합니다.</strong></li>
+            <li><strong>셔틀버스 운행 계획은 대회 운영 상황에 따라 변경될 수 있습니다.</strong></li>
+        </ul>
+    </div>
+
+    <h3 class="sub-title">지역별 탑승 장소 및 시간</h3>
+    <div class="table-wrap">
+        <table class="info-table">
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 55%;">
+                <col style="width: 30%;">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>지역</th>
+                    <th>탑승 장소</th>
+                    <th>탑승 시간</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>서울 A</td><td>서울역 스퀘어빌딩 앞</td><td class="highlight">오전 03:30</td></tr>
+                <tr><td>서울 B</td><td>잠실종합운동장 6번 출구 앞</td><td class="highlight">오전 03:30</td></tr>
+                <tr><td>인천</td><td>인천터미널역 2번 출구 앞</td><td class="highlight">오전 03:30</td></tr>
+                <tr><td>수원</td><td>수원역 4번 출구 앞</td><td class="highlight">오전 04:00</td></tr>
+                <tr><td>대전</td><td>월드컵경기장 P5 주차장 (CU 앞)</td><td class="highlight">오전 05:00</td></tr>
+                <tr><td>대구 A</td><td>반월당 동아쇼핑 정문</td><td class="highlight">오전 05:00</td></tr>
+                <tr><td>대구 B</td><td>홈플러스 성서점</td><td class="highlight">오전 05:30</td></tr>
+                <tr><td>울산</td><td>신복로터리 (버스환승장)</td><td class="highlight">오전 05:00</td></tr>
+                <tr><td>부산</td><td>교대 국제신문 맞은편</td><td class="highlight">오전 04:00</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="apply-btn-wrap">
+        <a href="https://forms.gle/6S4U8swCJojxdb1MA" target="_blank" class="btn-apply-main">
+            셔틀버스 신청하기
+        </a>
+    </div>
+
+</div>

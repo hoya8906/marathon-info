@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .pt-event-wrapper {
+            --pt-main-green: #76b82a;
+            --pt-soft-pink: #fbe4eb;
+            --pt-point-pink: #ff69b4;
+            --pt-bg-light: #f9f9f9;
+            --pt-text-dark: #333;
+            --pt-alert-red: #d32f2f;
+
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: var(--pt-bg-light);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        .pt-event-card {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+        }
+
+        .pt-content-area {
+            padding: 35px 25px;
+            text-align: center;
+            background: linear-gradient(180deg, #ffffff 0%, var(--pt-soft-pink) 100%);
+        }
+
+        /* [상단 배치] 물품 현장 수령 안내 */
+        .pt-notice-container {
+            background-color: #fff;
+            padding: 30px 20px;
+            border-radius: 20px;
+            border: 2px solid var(--pt-point-pink);
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.1);
+        }
+
+        .pt-notice-tag {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--pt-point-pink);
+            color: #fff;
+            padding: 4px 18px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .pt-notice-text {
+            font-size: 1.15rem;
+            color: var(--pt-text-dark);
+            line-height: 1.7;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        .pt-notice-text b {
+            color: var(--pt-point-pink);
+            font-weight: 800;
+        }
+
+        .pt-alert-text {
+            display: block;
+            margin-top: 10px;
+            color: var(--pt-alert-red);
+            font-weight: 800;
+            font-size: 1.2rem;
+            background: #fff0f0;
+            padding: 8px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* [하단 배치] 현장접수 안내 */
+        .pt-highlight-container {
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 25px 20px;
+            border-radius: 20px;
+            border: 2px solid var(--pt-main-green);
+        }
+
+        .pt-main-title {
+            color: var(--pt-main-green);
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .pt-info-detail {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--pt-text-dark);
+            margin: 8px 0;
+        }
+
+        .pt-info-detail strong {
+            display: inline-block;
+            background: var(--pt-main-green);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 6px;
+        }
+
+        .pt-badge-location {
+            display: block;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #666;
+            background: rgba(118, 184, 42, 0.08);
+            padding: 10px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="pt-event-wrapper">
+        <article class="pt-event-card">
+            <div class="pt-content-area">
+
+                <div class="pt-notice-container">
+                    <span class="pt-notice-tag">추가접수자 기념품 수령 공지</span>
+                    <p class="pt-notice-text">
+                        <span class="pt-alert-text">
+                            <b>3월 27일(금)부터</b> 신청/결제하신 분은<br>
+                            ⚠️ 택배 발송이 되지 않습니다.</span>
+                        배번호 및 기념품은 대회장 <b>운영본부</b>에서<br>
+                        <b>현장 수령</b>하실 수 있습니다.<br>
+                    </p>
+                </div>
+
+                <div class="pt-highlight-container">
+                    <h2 class="pt-main-title">🌸 대회 당일 현장접수 안내 🌸</h2>
+
+                    <p class="pt-info-detail">
+                        <strong>장소</strong> 무대 옆 현장접수 부스
+                    </p>
+
+                    <div class="pt-badge-location">
+                        일시: 4/4(토) 09:00 ~ 12:00<br>
+                        장소: 이충레포츠 공원 광장
+                    </div>
+                </div>
+
+            </div>
+        </article>
+    </div>
+
+</body>
+
+</html>

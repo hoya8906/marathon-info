@@ -1,0 +1,95 @@
+<div class="parking-warning-box">
+    <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L1 21H23L12 2Z" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9V13" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17H12.01" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <p>
+        대회장 주변 주차 공간이 <strong>매우 협소</strong>합니다.<br>
+        가급적 <span>대중교통 및 셔틀버스</span>를 이용해 주세요.
+    </p>
+    
+    <p class="sub-text">
+        <strong>화서역 ↔ 수원종합운동장</strong><br>
+        왕복 무료 셔틀버스를 운행합니다.
+    </p>
+
+    <a href="https://www.kgmarathon.co.kr/kgmarathon/text/map" class="btn-shuttle" target="_blank">
+        대회장 찾아오시는길 & 셔틀버스 정보 확인
+    </a>
+</div>
+
+<style>
+    .parking-warning-box {
+        width: 100%;
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 30px 20px;
+        border: 3px solid #ff0000;
+        border-radius: 15px;
+        background-color: #fff5f5;
+        text-align: center;
+        box-sizing: border-box;
+        box-shadow: 0 10px 20px rgba(255, 0, 0, 0.1);
+    }
+
+    .icon-wrap svg {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+        animation: blink 1s infinite; /* 반짝이는 효과 */
+    }
+
+    .parking-warning-box h3 {
+        color: #ff0000;
+        font-size: 24px;
+        font-weight: 900;
+        margin: 0 0 15px 0;
+        letter-spacing: -1px;
+    }
+
+    .parking-warning-box p {
+        font-size: 17px;
+        color: #333;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .parking-warning-box p span {
+        color: #ff0000;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+
+    .parking-warning-box .sub-text {
+        font-size: 15px;
+        color: #666;
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .btn-shuttle {
+        display: block;
+        margin-top: 20px;
+        background: #222;
+        color: #fff !important;
+        text-decoration: none;
+        padding: 15px 0;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-shuttle:hover {
+        background: #ff0000;
+        transform: scale(1.02);
+    }
+
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+</style>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 접두사 pt- 를 사용하여 외부 CSS와의 충돌을 방지합니다. */
+        .pt-event-wrapper {
+            --pt-main-green: #76b82a;
+            --pt-soft-pink: #fbe4eb;
+            --pt-point-pink: #ff69b4;
+            --pt-bg-light: #f9f9f9;
+            
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background-color: var(--pt-bg-light);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        .pt-event-card {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #eeeeee;
+        }
+
+        .pt-content-area {
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, #ffffff, var(--pt-soft-pink));
+        }
+
+        .pt-highlight-container {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            border-radius: 15px;
+            border: 3px solid var(--pt-main-green);
+            box-shadow: 0 4px 12px rgba(118, 184, 42, 0.15);
+        }
+
+        .pt-main-title {
+            color: var(--pt-main-green);
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            letter-spacing: -0.5px;
+            word-break: keep-all;
+        }
+
+        .pt-info-detail {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333333;
+            margin: 10px 0;
+        }
+
+        .pt-info-detail strong {
+            color: var(--pt-main-green);
+            margin-right: 5px;
+        }
+
+        .pt-badge-location {
+            display: inline-block;
+            background-color: var(--pt-point-pink);
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(255, 105, 180, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<div class="pt-event-wrapper">
+    <article class="pt-event-card">
+
+        <div class="pt-content-area">
+            <div class="pt-highlight-container">
+                <h2 class="pt-main-title">🌸 대회 당일 현장접수 가능 🌸</h2>
+                
+                <p class="pt-info-detail">
+                    <strong>접수처</strong> 무대 옆 현장접수 부스
+                </p>
+
+                <div class="pt-badge-location">
+                    4/4(토) 09:00~12:00 이충레포츠 공원 광장
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+
+</body>
+</html>
