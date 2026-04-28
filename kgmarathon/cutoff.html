@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>경기마라톤대회 구간별 컷오프 및 안전 안내</title>
+    <style>
+        body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; line-height: 1.6; color: #333; max-width: 950px; margin: 20px auto; padding: 20px; }
+        .notice-container { border: 3px solid #d32f2f; border-radius: 12px; padding: 10px; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .main-title { color: #d32f2f; font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 10px; }
+        .sub-title { text-align: center; font-size: 1.1em; color: #666; margin-bottom: 25px; }
+        
+        /* 테이블 스타일 */
+        .table-wrapper { overflow-x: auto; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; table-layout: fixed; }
+        th { background-color: #1a237e; color: white; padding: 6px; font-size: 0.9em; }
+        td { border: 1px solid #e0e0e0; padding: 4px; text-align: center; font-size: 0.85em; word-break: keep-all; }
+        .route-text { text-align: left; font-size: 0.8em; line-height: 1.4; }
+        .cutoff-time { color: #d32f2f; font-weight: bold; background-color: #ffebee; }
+        
+        /* 컬럼 너비 지정 */
+        th:nth-child(1) { width: 30px; }
+        th:nth-child(2) { width: 90px; }
+        th:nth-child(3), th:nth-child(4) { width: 50px; }
+        th:nth-child(5) { width: 60px; }
+        
+        /* 강력 경고 박스 */
+        .danger-box { background-color: #fdeaea; border-left: 5px solid #d32f2f; padding: 10px; margin: 10px 0; }
+        .danger-title { color: #d32f2f; font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+        .danger-content { font-size: 1.05em; font-weight: 600; color: #222; }
+        .highlight-red { color: #d32f2f; text-decoration: underline; }
+
+        /* 안내 리스트 */
+        .info-list { list-style: none; padding: 0; }
+        .info-list li { position: relative; padding-left: 25px; margin-bottom: 6px; font-weight: 500; }
+        .info-list li::before { content: '⚠️'; position: absolute; left: 0; top: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="notice-container">
+    <h1 class="main-title">구간별 컷오프 및 안전 안내</h1>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>위치</th>
+                    <th>거리</th>
+                    <th>선두</th>
+                    <th>후미</th>
+                    <th>해제시간</th>
+                    <th>구간 상세 경로</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>①</td><td>START~3km</td><td>08:30</td><td>08:48</td><td class="cutoff-time">13:40</td><td class="route-text">수원종합운동장 ↔ 송죽삼거리 ↔ 정자공원 육교 (5km 코스 반환점) ↔ 청솔마을 사거리</td></tr>
+                <tr><td>②</td><td>4km~6km</td><td>08:42</td><td>09:12</td><td class="cutoff-time">10:30</td><td class="route-text">청솔마을 사거리 ↔ 천천초교 사거리 ↔ 안죽골 삼거리 (풀/하프/10km 1차 반환점)</td></tr>
+                <tr><td>③</td><td>6km~7km</td><td>08:51</td><td>09:15</td><td class="cutoff-time">10:30</td><td class="route-text">청솔마을 사거리 → 근로복지관 삼거리 → 성대역 사거리</td></tr>
+                <tr><td>④</td><td>7km~10km</td><td>08:54</td><td>09:30</td><td class="cutoff-time">10:40</td><td class="route-text">성대역 사거리 → 구운사거리</td></tr>
+                <tr><td>⑤</td><td>11km~13km</td><td>08:58</td><td>10:00</td><td class="cutoff-time">10:50</td><td class="route-text">구운사거리 → 행정타운 사거리 → 수원델타플렉스 사거리</td></tr>
+                <tr><td>⑥</td><td>14km~15km</td><td>09:15</td><td>10:10</td><td class="cutoff-time">11:00</td><td class="route-text">수원델타플렉스 사거리 → 기안교차로</td></tr>
+                <tr><td>⑦</td><td>16km~18km</td><td>09:22</td><td>10:31</td><td class="cutoff-time">11:00</td><td class="route-text">기안교차로 → 용주사 교차로</td></tr>
+                <tr><td>⑧</td><td>19km~20km</td><td>09:32</td><td>10:38</td><td class="cutoff-time">11:30</td><td class="route-text">용주사 교차로 → 효행로 교차로 → 융건릉 사거리</td></tr>
+                <tr><td>⑨</td><td>22km~25km</td><td>09:38</td><td>11:11</td><td class="cutoff-time">11:30</td><td class="route-text">융건릉 사거리 → 수원대삼거리 → 수영오거리</td></tr>
+                <tr><td>⑩</td><td>26km~27km</td><td>09:51</td><td>11:25</td><td class="cutoff-time">11:40</td><td class="route-text">수영오거리 → 오목천교 → 수원델타플렉스 사거리</td></tr>
+                <tr><td>⑪</td><td>27km~32km</td><td>09:55</td><td>12:03</td><td class="cutoff-time">12:20</td><td class="route-text">수원델타플렉스 사거리 → 탑동 지하차도 → 상구운 지하차도 → 성균관대 사거리</td></tr>
+                <tr><td>⑫</td><td>32km~36.5km</td><td>10:15</td><td>12:39</td><td class="cutoff-time">12:50</td><td class="route-text">성균관대 사거리 → 성대역 사거리 → 근로복지관 삼거리 → 화서역 삼거리 → 화서지하차도 위 (풀코스 3차 반환)</td></tr>
+                <tr><td>⑭</td><td>37km~39km</td><td>10:35</td><td>13:09</td><td class="cutoff-time">13:20</td><td class="route-text">화서지하차도 → 화서역 삼거리 → 근로복지관 삼거리</td></tr>
+                <tr><td>⑮</td><td>40km~골인</td><td>10:47</td><td>13:30</td><td class="cutoff-time">13:40</td><td class="route-text">근로복지관 삼거리 → 송죽삼거리 → 월계사거리 → 수원종합운동장</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="danger-box">
+        <div class="danger-title">🚨 통제 해제 후 주행 즉시 중단 및 회송버스 탑승 안내</div>
+        <div class="danger-content">
+            각 구간별 지정된 <span class="highlight-red">통제 해제 시간 이후에는 도로의 교통 통제가 즉시 해제되어 차량 소통이 시작</span>됩니다. <br>
+            참가자는 본인의 안전을 위해 레이스를 즉시 중단하고 안내에 따라 회송버스에 탑승해주시기 바랍니다.
+        </div>
+    </div>
+
+    <ul class="info-list">
+        <li>통제 해제와 동시에 주로 내 배치된 <strong>경찰, 모범운전자, 안전 요원 및 운영 스탭이 철수</strong>하여 사고 발생 시 보호를 받을 수 없습니다.</li>
+        <li>주로에 마련된 <strong>급수대 및 의료 지원 시설 역시 운영을 종료</strong>하므로 비상 상황(탈수, 부상 등)에 대응이 불가능합니다.</li>
+        <li>일반 차량과의 혼용 주행은 <span class="highlight-red">치명적인 인명 사고로 이어질 수 있으므로 즉시 중단</span>해야 합니다.</li>
+    </ul>
+
+    <p style="text-align: center; margin-top: 25px; font-weight: bold; color: #1a237e; font-size: 1.1em;">
+        "참가자 여러분의 안전이 기록보다 최우선입니다. 운영 요원의 지시에 적극 협조 바랍니다."
+    </p>
+</div>
+
+</body>
+</html>
