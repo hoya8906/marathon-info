@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 네임스페이스 접두사 'yj2026-' 사용으로 독립성 확보 */
+        .yj2026-popup-outer {
+            all: unset;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+            box-sizing: border-box;
+            background-color: #f4f4f4;
+        }
+
+        .yj2026-card {
+            width: 100%;
+            max-width: 700px; /* 병렬 배치를 위해 가로폭을 넓힘 */
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        /* 상단 헤더 */
+        .yj2026-top-banner {
+            background: #e74c3c;
+            background-image: radial-gradient(#d63031 20%, transparent 20%);
+            background-size: 15px 15px;
+            color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .yj2026-title-main {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        /* 본문 */
+        .yj2026-content-body {
+            padding: 30px;
+        }
+
+        .yj2026-notice {
+            text-align: center;
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        /* 병렬 리스트 핵심 스타일 */
+        .yj2026-winner-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3열 배치 */
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        /* 모바일 대응: 화면이 작아지면 2열이나 1열로 변경 */
+        @media (max-width: 600px) {
+            .yj2026-winner-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .yj2026-column-box {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            background: #fdfdfd;
+        }
+
+        .yj2026-grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .yj2026-grid-table th {
+            background: #f8f9fa;
+            padding: 8px;
+            color: #2ecc71; /* 포인트 그린 */
+            border-bottom: 1.5px solid #2ecc71;
+            font-weight: 700;
+        }
+
+        .yj2026-grid-table td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        .yj2026-grid-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 하단 푸터 */
+        .yj2026-bottom-info {
+            background: #f9f9f9;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eee;
+        }
+
+        .yj2026-green-text {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="yj2026-popup-outer">
+    <div class="yj2026-card">
+        <header class="yj2026-top-banner">
+            <h1 class="yj2026-title-main">2026 영주소백산마라톤대회<br>고향사랑기부 이벤트 당첨자 발표</h1>
+        </header>
+
+        <div class="yj2026-content-body">
+            <p class="yj2026-notice">
+                2026 영주소백산마라톤대회 고향사랑기부 이벤트에 참여해 주신 모든 분들께 깊이 감사드립니다.<br>
+                본 이벤트 당첨자를 다음과 같이 안내드리며, 당첨자에 대한 사은품 발송은 완료되었음을 알려드립니다.<br>
+                앞으로도 고향사랑기부제에 많은 관심과 참여를 부탁드립니다. 감사합니다.
+            </p>
+
+            <div class="yj2026-winner-grid">
+                <div class="yj2026-column-box">
+                    <table class="yj2026-grid-table">
+                        <thead><tr><th>No</th><th>이름</th><th>번호</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>박*기</td><td>5528</td></tr>
+                            <tr><td>2</td><td>김*랑</td><td>0555</td></tr>
+                            <tr><td>3</td><td>김*진</td><td>9954</td></tr>
+                            <tr><td>4</td><td>이*환</td><td>8815</td></tr>
+                            <tr><td>5</td><td>이*우</td><td>1834</td></tr>
+                            <tr><td>6</td><td>공*현</td><td>0550</td></tr>
+                            <tr><td>7</td><td>조*희</td><td>0529</td></tr>
+                            <tr><td>8</td><td>장*일</td><td>5462</td></tr>
+                            <tr><td>9</td><td>고*만</td><td>3530</td></tr>
+                            <tr><td>10</td><td>최*웅</td><td>1465</td></tr>
+                            <tr><td>11</td><td>이*호</td><td>3480</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="yj2026-column-box">
+                    <table class="yj2026-grid-table">
+                        <thead><tr><th>No</th><th>이름</th><th>번호</th></tr></thead>
+                        <tbody>
+                            <tr><td>12</td><td>윤*욱</td><td>7118</td></tr>
+                            <tr><td>13</td><td>오*진</td><td>0748</td></tr>
+                            <tr><td>14</td><td>임*기</td><td>5397</td></tr>
+                            <tr><td>15</td><td>고*철</td><td>3129</td></tr>
+                            <tr><td>16</td><td>최*수</td><td>0114</td></tr>
+                            <tr><td>17</td><td>박*석</td><td>2798</td></tr>
+                            <tr><td>18</td><td>남*석</td><td>6827</td></tr>
+                            <tr><td>19</td><td>이*중</td><td>2973</td></tr>
+                            <tr><td>20</td><td>권*기</td><td>2160</td></tr>
+                            <tr><td>21</td><td>우*은</td><td>2777</td></tr>
+                            <tr><td>22</td><td>이*진</td><td>8668</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="yj2026-column-box">
+                    <table class="yj2026-grid-table">
+                        <thead><tr><th>No</th><th>이름</th><th>번호</th></tr></thead>
+                        <tbody>
+                            <tr><td>23</td><td>김*정</td><td>6947</td></tr>
+                            <tr><td>24</td><td>이*섭</td><td>7371</td></tr>
+                            <tr><td>25</td><td>유*범</td><td>2519</td></tr>
+                            <tr><td>26</td><td>이*림</td><td>8600</td></tr>
+                            <tr><td>27</td><td>권*우</td><td>3543</td></tr>
+                            <tr><td>28</td><td>안*호</td><td>0599</td></tr>
+                            <tr><td>29</td><td>최*섭</td><td>3573</td></tr>
+                            <tr><td>30</td><td>이*흠</td><td>8712</td></tr>
+                            <tr><td>31</td><td>홍*숙</td><td>6883</td></tr>
+                            <tr><td>32</td><td>이*윤</td><td>0628</td></tr>
+                            <tr><td>33</td><td>곽*정</td><td>6488</td></tr>
+                            <tr><td>34</td><td>정*근</td><td>6891</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="yj2026-bottom-info">
+            문의: 영주시청 세무과 (054-639-6452)
+        </footer>
+    </div>
+</div>
+
+</body>
+</html>
