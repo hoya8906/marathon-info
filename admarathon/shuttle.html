@@ -8,6 +8,17 @@
     padding: 20px 0;
 }
 
+/* 마감된 행 스타일 */
+.info-table tr.sold-out td {
+    color: #94a3b8; /* 글씨 색상을 흐리게 */
+}
+/* 마감 텍스트 강조 */
+.info-table tr.sold-out .status-close {
+    color: #ef4444; /* 마감은 빨간색으로 */
+    font-weight: 800;
+    margin-left: 6px;
+}
+
 /* 대제목 (섹션 구분용) */
 .main-heading {
     font-size: 28px;
@@ -207,17 +218,62 @@
                     <th>탑승 시간</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td>서울 A</td><td>서울역 스퀘어빌딩 앞</td><td class="highlight">오전 03:30</td></tr>
-                <tr><td>서울 B</td><td>잠실종합운동장 6번 출구 앞</td><td class="highlight">오전 03:30</td></tr>
-                <tr><td>인천</td><td>인천터미널역 2번 출구 앞</td><td class="highlight">오전 03:30</td></tr>
-                <tr><td>수원</td><td>수원역 4번 출구 앞</td><td class="highlight">오전 04:00</td></tr>
-                <tr><td>대전</td><td>월드컵경기장 P5 주차장 (CU 앞)</td><td class="highlight">오전 05:00</td></tr>
-                <tr><td>대구 A</td><td>반월당 동아쇼핑 정문</td><td class="highlight">오전 05:00</td></tr>
-                <tr><td>대구 B</td><td>홈플러스 성서점</td><td class="highlight">오전 05:30</td></tr>
-                <tr><td>울산</td><td>신복로터리 (버스환승장)</td><td class="highlight">오전 05:00</td></tr>
-                <tr><td>부산</td><td>교대 국제신문 맞은편</td><td class="highlight">오전 04:00</td></tr>
-            </tbody>
+           <tbody>
+    <!-- 서울 A (마감 적용) -->
+    <tr class="sold-out">
+        <td>서울 A</td>
+        <td>서울역 스퀘어빌딩 앞 <span class="status-close">[마감]</span></td>
+        <td>오전 03:30</td>
+    </tr>
+    <!-- 서울 B (마감 적용) -->
+    <tr class="sold-out">
+        <td>서울 B</td>
+        <td>잠실종합운동장 6번 출구 앞 <span class="status-close">[마감]</span></td>
+        <td>오전 03:30</td>
+    </tr>
+    <!-- 인천 (마감 적용) -->
+    <tr class="sold-out">
+        <td>인천</td>
+        <td>인천터미널역 2번 출구 앞 <span class="status-close">[마감]</span></td>
+        <td>오전 03:30</td>
+    </tr>
+    <!-- 수원 (마감 적용) -->
+    <tr class="sold-out">
+        <td>수원</td>
+        <td>수원역 4번 출구 앞 <span class="status-close">[마감]</span></td>
+        <td>오전 04:00</td>
+    </tr>
+    <!-- 대전 (정상 운행) -->
+    <tr>
+        <td>대전</td>
+        <td>월드컵경기장 P5 주차장 (CU 앞)</td>
+        <td class="highlight">오전 05:00</td>
+    </tr>
+    <!-- 대구 A (정상 운행) -->
+    <tr>
+        <td>대구 A</td>
+        <td>반월당 동아쇼핑 정문</td>
+        <td class="highlight">오전 05:00</td>
+    </tr>
+    <!-- 대구 B (정상 운행) -->
+    <tr>
+        <td>대구 B</td>
+        <td>홈플러스 성서점</td>
+        <td class="highlight">오전 05:30</td>
+    </tr>
+    <!-- 울산 (마감 적용) -->
+    <tr class="sold-out">
+        <td>울산</td>
+        <td>신복로터리 (버스환승장) <span class="status-close">[마감]</span></td>
+        <td>오전 05:00</td>
+    </tr>
+    <!-- 부산 (마감 적용) -->
+    <tr class="sold-out">
+        <td>부산</td>
+        <td>교대 국제신문 맞은편 <span class="status-close">[마감]</span></td>
+        <td>오전 04:00</td>
+    </tr>
+</tbody>
         </table>
     </div>
 
