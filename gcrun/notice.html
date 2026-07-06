@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 과천마라톤대회 오픈 공지</title>
+    <style>
+        /* 기본 스타일 리셋 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        body {
+            background-color: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: #fefce1; /* 포스터의 연노랑 배경색 */
+            border: 1px solid #e2e0c5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 상단 멀티컬러 스트라이프 */
+        .top-stripe {
+            height: 18px;
+            display: flex;
+            width: 100%;
+        }
+        .stripe-red    { flex: 1; background-color: #e63946; }
+        .stripe-orange { flex: 1; background-color: #f4a261; }
+        .stripe-yellow { flex: 1; background-color: #e9c46a; }
+        .stripe-green  { flex: 1; background-color: #2a9d8f; }
+        .stripe-blue   { flex: 1; background-color: #264653; }
+
+        /* 배경 엠블럼 스타일 - 자연스럽게 녹아들도록 투명도 및 위치 설정 */
+        .bg-emblem {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            width: 90px;
+            height: auto;
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        /* 내부 콘텐츠 패딩 - 중간중간 상하여백 축소 반영 */
+        .content {
+            padding: 30px 30px 25px 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 헤더 섹션 - 여백 축소 */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .sub-title {
+            font-size: 14px;
+            color: #e63946;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        .main-title {
+            font-size: 32px;
+            color: #eb5e8d;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .intro-text {
+            font-size: 15px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* 핵심 정보 테이블 구조 상자 - 여백 축소 */
+        .info-box {
+            background-color: #ffffff;
+            border-left: 5px solid #eb5e8d;
+            border-radius: 4px;
+            padding: 18px 25px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+        .info-label {
+            width: 90px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-value {
+            color: #555;
+            font-weight: 500;
+        }
+        /* 강조 텍스트 */
+        .highlight-accent {
+            color: #e63946;
+            font-weight: bold;
+        }
+
+        /* 안내 공지 상자 - 여백 축소 */
+        .notice-box {
+            background-color: #ffffff;
+            border-left: 5px solid #00a896;
+            border-radius: 4px;
+            padding: 18px 25px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .notice-box strong {
+            color: #00a896;
+        }
+        .website-link {
+            margin-top: 8px;
+            display: inline-block;
+            color: #028090;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dashed #028090;
+        }
+
+        /* 유의사항 섹션 - 여백 축소 */
+        .caution-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 10px;
+        }
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 4px;
+            height: 16px;
+            background-color: #eb5e8d;
+        }
+        .caution-list {
+            list-style: none;
+        }
+        .caution-list li {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 8px;
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: #555;
+        }
+        .caution-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #eb5e8d;
+            font-weight: bold;
+        }
+
+        /* 하단 사전 안내 문구 - 여백 축소 */
+        .footer-desc {
+            font-size: 13.5px;
+            color: #666;
+            line-height: 1.6;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        /* 하단 배너 */
+        .footer-banner {
+            background-color: #4cb050;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .footer-banner .thx {
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        .footer-banner a {
+            color: #ffff00;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 상단 포스터 아이덴티티 스트라이프 -->
+    <div class="top-stripe">
+        <div class="stripe-red"></div>
+        <div class="stripe-orange"></div>
+        <div class="stripe-yellow"></div>
+        <div class="stripe-green"></div>
+        <div class="stripe-blue"></div>
+    </div>
+
+    <!-- 시 승격 40주년 엠블럼 이미지 삽입 -->
+    <img src="https://www.gccity.go.kr/portal/img/content/05/sub110205_img2.png" alt="과천시 승격 40주년 엠블럼" class="bg-emblem">
+
+    <div class="content">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="sub-title">2026 GWACHEON MARATHON</div>
+            <h1 class="main-title">2026 과천마라톤대회 오픈 공지</h1>
+            <p class="intro-text">참가자 여러분의 많은 관심과 참여를 기다립니다.</p>
+        </div>
+
+        <!-- 대회 개요 정보 정보 상자 -->
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label">📅 대회일시</span>
+                <span class="info-value highlight-accent">2026-11-08(일)</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">⏰ 운영시간</span>
+                <span class="info-value">07:00 집결 · 08:00 출발</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">📝 접수시작</span>
+                <span class="info-value highlight-accent">2026-07-20(월) 10:00</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">👥 참가인원</span>
+                <span class="info-value">총 <span class="highlight-accent">3,000명</span> (하프 1,000명 / 10km 1,000명 / 5km 1,000명)</span>
+            </div>
+        </div>
+
+        <!-- 안내 사항 상자 -->
+        <div class="notice-box">
+            <strong>i 안내 |</strong> 상세 접수 일정과 방법은 별도 공지로 안내드립니다.<br>
+            형평성을 위해 메일 접수 없이 홈페이지를 통한 <strong>온라인 접수만</strong> 운영합니다.<br>
+            🔗 공식 홈페이지 | <a href="http://www.gcrun.co.kr" class="website-link" target="_blank">www.gcrun.co.kr</a>
+        </div>
+
+        <!-- 유의사항 -->
+        <div class="caution-section">
+            <h2 class="section-title">유의사항</h2>
+            <ul class="caution-list">
+                <li><span class="highlight-accent">7월 20일(월) 오후 10시부터</span> 선착순 마감으로 코스별 정원이 차면 접수가 종료됩니다.</li>
+                <li>본 대회는 접수 기준 마감으로 <span class="highlight-accent">결제는 나중에</span> 하셔도 됩니다.</li>
+                <li><span class="highlight-accent">5km 코스의 경우</span> 한정 수량만큼 <strong>과천시민 특별 모집</strong>을 진행합니다. 등록 시 입력하신 주소지 기준으로 확인하며, 과천 시민이 아닌 경우 예고 없이 참가 취소 처리될 수 있습니다. (한정 수량 마감 시 과천 시민이시더라도 일반 코스로 신청하셔야 합니다.)</li>
+                <li>확정 이후에는 <span class="highlight-accent">코스 변경 및 환불이 제한</span>될 수 있으니 신중히 선택해 주세요.</li>
+            </ul>
+        </div>
+
+        <!-- 사전 안내 문구 -->
+        <div class="footer-desc">
+            본 공지는 참가자분들이 원활히 준비하실 수 있도록 제공되는 사전 안내입니다.<br>
+            추가 정보는 홈페이지를 통해 순차적으로 공지하겠습니다.<br>
+            (홈페이지는 현재 리뉴얼 중이므로, 내용이 변경될 수 있습니다.)
+        </div>
+    </div>
+
+    <!-- 하단 푸터 배너 -->
+    <div class="footer-banner">
+        <span class="thx">여러분의 많은 관심과 성원에 감사드립니다.</span><br>
+        2026 과천마라톤대회 운영사무국 · 공식 홈페이지: <a href="http://www.gcrun.co.kr" target="_blank">www.gcrun.co.kr</a>
+    </div>
+</div>
+
+</body>
+</html>
