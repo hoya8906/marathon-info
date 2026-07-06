@@ -3,47 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025 과천마라톤대회 오픈 공지</title>
+    <title>2026 과천마라톤대회 오픈 공지</title>
     <style>
-        /* 기본 스타일 리셋 */
-        * {
+        /* 독립형 과천마라톤 A4 안내문 컴포넌트 */
+        body.gcn-notice-page {
+            background-color: #f4f4f4;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .gcn-notice,
+        .gcn-notice * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Noto Sans KR', sans-serif;
         }
-        body {
-            background-color: #f4f4f4;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
 
-        /* 메인 컨테이너 */
-        .container {
-            width: 100%;
-            max-width: 800px;
+        /* 메인 컨테이너 - A4 비율(1 : 1.414) 캡처용 */
+        .gcn-notice {
+            width: 800px;
+            height: 1131px;
             background-color: #fefce1; /* 포스터의 연노랑 배경색 */
             border: 1px solid #e2e0c5;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 상단 멀티컬러 스트라이프 */
-        .top-stripe {
+        .gcn-notice__top-stripe {
             height: 18px;
             display: flex;
             width: 100%;
         }
-        .stripe-red    { flex: 1; background-color: #e63946; }
-        .stripe-orange { flex: 1; background-color: #f4a261; }
-        .stripe-yellow { flex: 1; background-color: #e9c46a; }
-        .stripe-green  { flex: 1; background-color: #2a9d8f; }
-        .stripe-blue   { flex: 1; background-color: #264653; }
+        .gcn-notice__stripe-red    { flex: 1; background-color: #e63946; }
+        .gcn-notice__stripe-orange { flex: 1; background-color: #f4a261; }
+        .gcn-notice__stripe-yellow { flex: 1; background-color: #e9c46a; }
+        .gcn-notice__stripe-green  { flex: 1; background-color: #2a9d8f; }
+        .gcn-notice__stripe-blue   { flex: 1; background-color: #264653; }
 
         /* 배경 엠블럼 스타일 - 자연스럽게 녹아들도록 투명도 및 위치 설정 */
-        .bg-emblem {
+        .gcn-notice__emblem {
             position: absolute;
             top: 50px;
             right: 20px;
@@ -54,56 +60,60 @@
         }
 
         /* 내부 콘텐츠 패딩 - 중간중간 상하여백 축소 반영 */
-        .content {
-            padding: 30px 30px 25px 30px;
+        .gcn-notice__content {
+            padding: 38px 40px 34px 40px;
             position: relative;
             z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         /* 헤더 섹션 - 여백 축소 */
-        .header {
+        .gcn-notice__header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 34px;
         }
-        .sub-title {
-            font-size: 14px;
+        .gcn-notice__sub-title {
+            font-size: 15px;
             color: #e63946;
             font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        .main-title {
-            font-size: 32px;
-            color: #eb5e8d;
-            font-weight: 900;
             margin-bottom: 8px;
         }
-        .intro-text {
-            font-size: 15px;
+        .gcn-notice__main-title {
+            font-size: 38px;
+            color: #eb5e8d;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+        .gcn-notice__intro-text {
+            font-size: 16px;
             color: #555;
             font-weight: 500;
         }
 
         /* 핵심 정보 테이블 구조 상자 - 여백 축소 */
-        .info-box {
+        .gcn-notice__info-box {
             background-color: #ffffff;
             border-left: 5px solid #eb5e8d;
             border-radius: 4px;
-            padding: 18px 25px;
-            margin-bottom: 15px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
-        .info-item {
+        .gcn-notice__info-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 10px;
-            font-size: 15px;
+            margin-bottom: 13px;
+            font-size: 16px;
         }
-        .info-item:last-child {
+        .gcn-notice__info-item:last-child {
             margin-bottom: 0;
         }
-        .info-label {
-            width: 90px;
+        .gcn-notice__info-label {
+            width: 100px;
             font-weight: bold;
             color: #333;
             display: flex;
@@ -112,33 +122,33 @@
             flex-shrink: 0;
             margin-top: 1px;
         }
-        .info-value {
+        .gcn-notice__info-value {
             color: #555;
             font-weight: 500;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         /* 강조 텍스트 */
-        .highlight-accent {
+        .gcn-notice__highlight {
             color: #e63946;
             font-weight: bold;
         }
 
         /* 안내 공지 상자 - 여백 축소 */
-        .notice-box {
+        .gcn-notice__notice-box {
             background-color: #ffffff;
             border-left: 5px solid #00a896;
             border-radius: 4px;
-            padding: 18px 25px;
-            margin-bottom: 25px;
-            font-size: 14px;
-            line-height: 1.4;
+            padding: 22px 28px;
+            margin-bottom: 32px;
+            font-size: 15px;
+            line-height: 1.55;
             color: #444;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
-        .notice-box strong {
+        .gcn-notice__notice-box strong {
             color: #00a896;
         }
-        .website-link {
+        .gcn-notice__website-link {
             margin-top: 8px;
             display: inline-block;
             color: #028090;
@@ -148,38 +158,38 @@
         }
 
         /* 유의사항 섹션 - 여백 축소 */
-        .caution-section {
-            margin-bottom: 25px;
+        .gcn-notice__caution-section {
+            margin-bottom: 28px;
         }
-        .section-title {
-            font-size: 18px;
+        .gcn-notice__section-title {
+            font-size: 21px;
             color: #333;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             position: relative;
             padding-left: 10px;
         }
-        .section-title::before {
+        .gcn-notice__section-title::before {
             content: '';
             position: absolute;
             left: 0;
-            top: 4px;
+            top: 5px;
             width: 4px;
-            height: 16px;
+            height: 19px;
             background-color: #eb5e8d;
         }
-        .caution-list {
+        .gcn-notice__caution-list {
             list-style: none;
         }
-        .caution-list li {
+        .gcn-notice__caution-list li {
             position: relative;
             padding-left: 15px;
-            margin-bottom: 8px;
-            font-size: 14.5px;
-            line-height: 1.4;
+            margin-bottom: 10px;
+            font-size: 15.3px;
+            line-height: 1.5;
             color: #555;
         }
-        .caution-list li::before {
+        .gcn-notice__caution-list li::before {
             content: '•';
             position: absolute;
             left: 0;
@@ -188,108 +198,141 @@
         }
 
         /* 하단 사전 안내 문구 - 여백 축소 */
-        .footer-desc {
-            font-size: 13.5px;
+        .gcn-notice__footer-desc {
+            font-size: 14.2px;
             color: #666;
-            line-height: 1.4;
+            line-height: 1.55;
             text-align: center;
             background: rgba(255, 255, 255, 0.5);
-            padding: 12px;
+            padding: 16px;
             border-radius: 4px;
         }
 
         /* 하단 배너 */
-        .footer-banner {
+        .gcn-notice__footer-banner {
             background-color: #4cb050;
             color: #ffffff;
             text-align: center;
-            padding: 20px 20px;
+            padding: 22px 20px;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
-        .footer-banner .thx {
+        .gcn-notice__footer-banner .gcn-notice__thanks {
             font-size: 16px;
             font-weight: bold;
             display: block;
             color: #fff;
         }
-        .footer-banner a {
+        .gcn-notice__footer-banner a {
             color: #ffff00;
             text-decoration: underline;
             font-weight: bold;
         }
+
+        /* 인쇄/PDF 저장 시 A4 크기 기준 */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body.gcn-notice-page {
+                padding: 0;
+                background: #fff;
+            }
+
+            .gcn-notice {
+                width: 210mm;
+                height: 297mm;
+                box-shadow: none;
+                border: 0;
+            }
+        }
+
+        /* 화면이 좁을 때만 축소 */
+        @media (max-width: 799px) {
+            body.gcn-notice-page {
+                padding: 10px;
+            }
+
+            .gcn-notice {
+                width: 100%;
+                height: auto;
+                min-height: calc((100vw - 20px) * 1.414);
+            }
+        }
     </style>
 </head>
-<body>
+<body class="gcn-notice-page">
 
-<div class="container">
+<div class="gcn-notice">
     <!-- 상단 포스터 아이덴티티 스트라이프 -->
-    <div class="top-stripe">
-        <div class="stripe-red"></div>
-        <div class="stripe-orange"></div>
-        <div class="stripe-yellow"></div>
-        <div class="stripe-green"></div>
-        <div class="stripe-blue"></div>
+    <div class="gcn-notice__top-stripe">
+        <div class="gcn-notice__stripe-red"></div>
+        <div class="gcn-notice__stripe-orange"></div>
+        <div class="gcn-notice__stripe-yellow"></div>
+        <div class="gcn-notice__stripe-green"></div>
+        <div class="gcn-notice__stripe-blue"></div>
     </div>
 
     <!-- 시 승격 40주년 엠블럼 이미지 삽입 -->
-    <img src="https://marathon-info.pages.dev/gcrun/image/40th.png" alt="과천시 승격 40주년 엠블럼" class="bg-emblem">
+    <img src="https://marathon-info.pages.dev/gcrun/image/40th.png" alt="과천시 승격 40주년 엠블럼" class="gcn-notice__emblem">
 
-    <div class="content">
+    <div class="gcn-notice__content">
         <!-- 헤더 -->
-        <div class="header">
-            <div class="sub-title">2026 GWACHEON MARATHON</div>
-            <h1 class="main-title">2026 과천마라톤대회 오픈 공지</h1>
-            <p class="intro-text">참가자 여러분의 많은 관심과 참여를 기다립니다.</p>
+        <div class="gcn-notice__header">
+            <div class="gcn-notice__sub-title">2026 GWACHEON MARATHON</div>
+            <h1 class="gcn-notice__main-title">2026 과천마라톤대회 오픈 공지</h1>
+            <p class="gcn-notice__intro-text">참가자 여러분의 많은 관심과 참여를 기다립니다.</p>
         </div>
 
         <!-- 대회 개요 정보 정보 상자 -->
-        <div class="info-box">
-            <div class="info-item">
-                <span class="info-label">📅 대회일시</span>
-                <span class="info-value highlight-accent">2026-11-08(일)</span>
+        <div class="gcn-notice__info-box">
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">📅 대회일시</span>
+                <span class="gcn-notice__info-value gcn-notice__highlight">2026-11-08(일)</span>
             </div>
-            <div class="info-item">
-                <span class="info-label">⏰ 운영시간</span>
-                <span class="info-value">07:00 집결 · 08:00 출발</span>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">⏰ 운영시간</span>
+                <span class="gcn-notice__info-value">07:00 집결 · 08:00 출발</span>
             </div>
-            <div class="info-item">
-                <span class="info-label">📝 접수시작</span>
-                <span class="info-value highlight-accent">2026-07-20(월) 10:00</span>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">📝 접수시작</span>
+                <span class="gcn-notice__info-value gcn-notice__highlight">2026-07-20(월) 10:00</span>
             </div>
-            <div class="info-item">
-                <span class="info-label">👥 참가인원</span>
-                <span class="info-value">총 <span class="highlight-accent">3,000명</span> (하프 1,000명 / 10km 1,000명 / 5km 1,000명)</span>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">👥 참가인원</span>
+                <span class="gcn-notice__info-value">총 <span class="gcn-notice__highlight">3,000명</span> (하프 1,000명 / 10km 1,000명 / 5km 1,000명)</span>
             </div>
-            <div class="info-item">
-                <span class="info-label">💵 참 가 비</span>
-                <span class="info-value">하프 45,000원 / 10km 40,000원 / 5km 30,000원 <br>(5km 과천시민 특별 모집: <span class="highlight-accent">25,000원</span>)</span>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">💵 참 가 비</span>
+                <span class="gcn-notice__info-value">하프 45,000원 / 10km 40,000원 / 5km 30,000원 <br>(5km 과천시민 특별 모집: <span class="gcn-notice__highlight">25,000원</span>)</span>
             </div>
         </div>
 
         <!-- 안내 사항 상자 -->
-        <div class="notice-box">
+        <div class="gcn-notice__notice-box">
             형평성을 위해 메일 접수 없이 홈페이지를 통한 <strong>온라인 접수만</strong> 운영합니다.<br>
-            🔗 공식 홈페이지 | <a href="http://www.gcrun.co.kr" class="website-link" target="_blank">www.gcrun.co.kr</a>
+            🔗 공식 홈페이지 | <a href="http://www.gcrun.co.kr" class="gcn-notice__website-link" target="_blank">www.gcrun.co.kr</a>
         </div>
 
         <!-- 유의사항 -->
-        <div class="caution-section">
-            <h2 class="section-title">유의사항</h2>
-            <ul class="caution-list">
-                <li><span class="highlight-accent">7월 20일(월) 오후 10시부터</span> 선착순 마감으로 코스별 정원이 차면 접수가 종료됩니다.</li>
-                <li><span class="highlight-accent">5km 코스의 경우</span> 한정 수량만큼 <strong>과천시민 특별 모집</strong>을 진행합니다. <br>
-                    등록 시 입력하신 주소지 기준 과천 주소가 아닌 경우 <span class="highlight-accent">예고 없이</span> 참가 취소 처리될 수 있습니다.<br>
+        <div class="gcn-notice__caution-section">
+            <h2 class="gcn-notice__section-title">유의사항</h2>
+            <ul class="gcn-notice__caution-list">
+                <li><span class="gcn-notice__highlight">7월 20일(월) 오후 10시부터</span> 선착순 마감으로 코스별 정원이 차면 접수가 종료됩니다.</li>
+                <li><span class="gcn-notice__highlight">5km 코스의 경우</span> 한정 수량만큼 <strong>과천시민 특별 모집</strong>을 진행합니다. <br>
+                    등록 시 입력하신 주소지 기준 과천 주소가 아닌 경우 <span class="gcn-notice__highlight">예고 없이</span> 참가 취소 처리될 수 있습니다.<br>
                     (한정 수량 마감 시 과천 시민이시더라도 일반 코스로 신청하셔야 합니다.)</li>
-                <li>참가 신청 후 <span class="highlight-accent">참가신청 &gt; 신청내역조회</span> 페이지에서 결제까지 완료되어야 최종 참가 확정됩니다.</li>
-                <li>결제 방법은 <span class="highlight-accent">1) 카드 결제</span> 또는 <span class="highlight-accent">2) 가상계좌 발행 후 입금 (발행 후 24시간 이내)</span> 두 가지 방식으로 가능합니다.</li>
-                <li><span class="highlight-accent">단체의 경우</span> <strong>단체장이 단체 생성 → 단체원 등록 → 참가비 결제</strong>까지 완료되어야 참가 신청이 최종 확정됩니다.</li>
-                <li>참가 확정 이후에는 <span class="highlight-accent">코스 변경 및 환불이 제한</span>될 수 있으니 신중히 선택해 주세요.</li>
+                <li>참가 신청 후 <span class="gcn-notice__highlight">참가신청 &gt; 신청내역조회</span> 페이지에서 결제까지 완료되어야 최종 참가 확정됩니다.</li>
+                <li>결제 방법은 <span class="gcn-notice__highlight">1) 카드 결제</span> 또는 <span class="gcn-notice__highlight">2) 가상계좌 발행 후 입금 (발행 후 24시간 이내)</span> 두 가지 방식으로 가능합니다.</li>
+                <li><span class="gcn-notice__highlight">단체의 경우</span> <strong>단체장이 단체 생성 → 단체원 등록 → 참가비 결제</strong>까지 완료되어야 참가 신청이 최종 확정됩니다.</li>
+                <li>참가 확정 이후에는 <span class="gcn-notice__highlight">코스 변경 및 환불이 제한</span>될 수 있으니 신중히 선택해 주세요.</li>
             </ul>
         </div>
 
         <!-- 사전 안내 문구 -->
-        <div class="footer-desc">
+        <div class="gcn-notice__footer-desc">
             본 공지는 참가자분들이 원활히 준비하실 수 있도록 제공되는 사전 안내입니다.<br>
             추가 정보는 홈페이지를 통해 순차적으로 공지하겠습니다.<br>
             (홈페이지는 현재 리뉴얼 중이므로, 내용이 변경될 수 있습니다.)
@@ -297,8 +340,8 @@
     </div>
 
     <!-- 하단 푸터 배너 -->
-    <div class="footer-banner">
-        <span class="thx">여러분의 많은 관심과 성원에 감사드립니다.</span><br>
+    <div class="gcn-notice__footer-banner">
+        <span class="gcn-notice__thanks">여러분의 많은 관심과 성원에 감사드립니다.</span><br>
         2026 과천마라톤대회 운영사무국 · 공식 홈페이지: <a href="http://www.gcrun.co.kr" target="_blank">www.gcrun.co.kr</a>
     </div>
 </div>
