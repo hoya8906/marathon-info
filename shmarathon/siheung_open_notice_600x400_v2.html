@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 시흥시전국하프마라톤대회 참가접수 오픈 안내</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef5fb;
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+        }
+
+        .siheung-open-banner,
+        .siheung-open-banner * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .siheung-open-banner {
+            width: 600px;
+            position: relative;
+            overflow: hidden;
+            color: #082e5f;
+            border-radius: 0;
+            background:
+                radial-gradient(circle at 88% 15%, rgba(255,255,255,.72) 0 54px, transparent 55px),
+                radial-gradient(circle at 10% 92%, rgba(255,122,0,.28) 0 70px, transparent 71px),
+                linear-gradient(135deg, #b7e5f7 0%, #8ec9e8 42%, #7461a8 100%);
+            box-shadow: 0 10px 28px rgba(0, 31, 74, .18);
+        }
+
+        .siheung-open-banner::before {
+            content: '';
+            position: absolute;
+            left: -70px;
+            right: -70px;
+            bottom: -76px;
+            height: 190px;
+            border-radius: 50% 50% 0 0;
+            background: rgba(8, 46, 95, .28);
+            transform: rotate(-4deg);
+        }
+
+        .siheung-open-banner::after {
+            content: '';
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            right: -85px;
+            bottom: -95px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.18);
+            border: 28px solid rgba(255,255,255,.16);
+        }
+
+        .siheung-open-banner__stripe {
+            position: relative;
+            z-index: 3;
+            height: 14px;
+            display: flex;
+        }
+
+        .siheung-open-banner__stripe span:nth-child(1) { flex: 1; background: #082e5f; }
+        .siheung-open-banner__stripe span:nth-child(2) { flex: 1; background: #02a7df; }
+        .siheung-open-banner__stripe span:nth-child(3) { flex: 1; background: #81d8f7; }
+        .siheung-open-banner__stripe span:nth-child(4) { flex: 1; background: #ff7a00; }
+        .siheung-open-banner__stripe span:nth-child(5) { flex: 1; background: #6d4b9c; }
+
+        .siheung-open-banner__content {
+            position: relative;
+            z-index: 2;
+            height: calc(100% - 14px);
+            padding: 30px 38px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .siheung-open-banner__eyebrow {
+            width: fit-content;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: rgba(8, 46, 95, .94);
+            color: #fff;
+            font-size: 12px;
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: .06em;
+            margin-bottom: 12px;
+        }
+
+        .siheung-open-banner__title {
+            font-size: 30px;
+            line-height: 1.18;
+            font-weight: 950;
+            letter-spacing: -0.055em;
+            color: #082e5f;
+            text-shadow: 0 2px 0 rgba(255,255,255,.38);
+        }
+
+        .siheung-open-banner__title strong {
+            color: #d94f00;
+        }
+
+        .siheung-open-banner__main-card {
+            margin-top: 18px;
+            width: 100%;
+            border-radius: 22px;
+            background: rgba(255,255,255,.92);
+            border: 2px solid rgba(255,255,255,.75);
+            box-shadow: 0 16px 28px rgba(7, 35, 84, .18);
+            padding: 21px 26px 22px;
+        }
+
+        .siheung-open-banner__label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 13px;
+            border-radius: 999px;
+            background: #ff7a00;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 11px;
+        }
+
+        .siheung-open-banner__date {
+            font-size: 32px;
+            line-height: 1.18;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+            color: #082e5f;
+        }
+
+        .siheung-open-banner__date span {
+            color: #ff6b00;
+        }
+
+        .siheung-open-banner__limit {
+            margin-top: 8px;
+            font-size: 17px;
+            font-weight: 850;
+            color: #27425f;
+        }
+
+        .siheung-open-banner__note {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            border-radius: 15px;
+            background: rgba(8, 46, 95, .94);
+            color: #fff;
+            padding: 12px 16px;
+            font-size: 13px;
+            line-height: 1.45;
+            font-weight: 750;
+            word-break: keep-all;
+        }
+
+        .siheung-open-banner__note strong {
+            color: #ffbf66;
+            font-weight: 950;
+        }
+
+        .siheung-open-banner__site {
+            white-space: nowrap;
+            font-size: 13px;
+            font-weight: 900;
+            color: #ffbf66;
+        }
+    </style>
+</head>
+<body>
+    <div class="siheung-open-banner">
+        <div class="siheung-open-banner__stripe" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="siheung-open-banner__content">
+            <div class="siheung-open-banner__eyebrow">2026 SIHEUNG HALF MARATHON</div>
+
+            <h1 class="siheung-open-banner__title">
+                2026 제<strong>12</strong>회<br>
+                시흥시전국하프마라톤대회
+            </h1>
+
+            <section class="siheung-open-banner__main-card">
+                <div class="siheung-open-banner__label">참가 신청 접수 오픈</div>
+                <div class="siheung-open-banner__date">
+                    <span>2026. 07. 22.(수)</span> 14:00부터
+                </div>
+                <p class="siheung-open-banner__limit">선착순 5,000명 마감 시까지</p>
+            </section>
+
+            <div class="siheung-open-banner__note">
+                <p>대회 일정, 종목, 참가비 등 자세한 내용은 <strong>대회 요강</strong>을 참고해주시기 바랍니다.</p>
+                <div class="siheung-open-banner__site">www.shmarathon.kr</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

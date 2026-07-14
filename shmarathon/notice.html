@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 시흥시전국하프마라톤대회 오픈 공지</title>
+    <style>
+        /* 독립형 시흥마라톤 A4 안내문 컴포넌트 */
+        body.shn-notice-page {
+            background-color: #e8f4fb;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .shn-notice,
+        .shn-notice * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+        }
+
+        .shn-notice {
+            width: 800px;
+            height: 1131px;
+            position: relative;
+            overflow: hidden;
+            color: #102b57;
+            background:
+                radial-gradient(circle at 78% 8%, rgba(255,255,255,.65) 0 90px, transparent 91px),
+                linear-gradient(180deg, #a9d8ee 0%, #a6d4ea 38%, #8fa9d2 68%, #76559c 100%);
+            box-shadow: 0 4px 18px rgba(0,0,0,.12);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shn-notice::before,
+        .shn-notice::after {
+            content: '';
+            position: absolute;
+            left: -8%;
+            right: -8%;
+            height: 220px;
+            border-radius: 50% 50% 0 0;
+            pointer-events: none;
+        }
+
+        .shn-notice::before {
+            top: 515px;
+            background: rgba(53, 98, 154, .28);
+            transform: rotate(-4deg);
+        }
+
+        .shn-notice::after {
+            bottom: -92px;
+            background: rgba(73, 34, 118, .35);
+            transform: rotate(5deg);
+        }
+
+        .shn-notice__top-stripe {
+            height: 24px;
+            min-height: 24px;
+            flex: 0 0 24px;
+            display: flex;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .shn-notice__stripe-navy   { flex: 1; background-color: #082e5f; }
+        .shn-notice__stripe-blue   { flex: 1; background-color: #02a7df; }
+        .shn-notice__stripe-sky    { flex: 1; background-color: #81d8f7; }
+        .shn-notice__stripe-orange { flex: 1; background-color: #ff7a00; }
+        .shn-notice__stripe-purple { flex: 1; background-color: #6d4b9c; }
+
+        .shn-notice__content {
+            position: relative;
+            z-index: 3;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px 46px 24px; /* 키비주얼 제거에 따른 상단 패딩 소폭 조정 */
+        }
+
+        .shn-notice__header {
+            margin-bottom: 24px;
+        }
+
+        .shn-notice__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 8px 15px;
+            margin-bottom: 16px;
+            border-radius: 999px;
+            background: rgba(8, 46, 95, .92);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: .04em;
+        }
+
+        .shn-notice__title {
+            color: #082e5f;
+            font-size: 38px;
+            line-height: 1.25;
+            font-weight: 950;
+            letter-spacing: -0.045em;
+            text-shadow:
+                0 2px 0 rgba(255,255,255,.35),
+                0 2px 8px rgba(255,255,255,.25);
+        }
+
+        .shn-notice__title-orange {
+            color: #d94f00;
+        }
+
+        .shn-notice__subtitle {
+            margin-top: 12px;
+            color: #153a70;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.45;
+        }
+
+        .shn-notice__open-card {
+            background: rgba(255,255,255,.9);
+            border: 3px solid rgba(255,255,255,.75);
+            border-left: 10px solid #ff7a00;
+            border-radius: 22px;
+            padding: 22px 26px;
+            box-shadow: 0 18px 34px rgba(7, 35, 84, .18);
+            margin-bottom: 20px;
+        }
+
+        .shn-notice__open-label {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 999px;
+            color: #fff;
+            background: #ff7a00;
+            font-size: 15px;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .shn-notice__open-title {
+            font-size: 26px;
+            line-height: 1.35;
+            font-weight: 950;
+            letter-spacing: -0.035em;
+            color: #092f63;
+        }
+
+        .shn-notice__open-title strong {
+            color: #ff6b00;
+        }
+
+        .shn-notice__open-desc {
+            margin-top: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #496079;
+            line-height: 1.55;
+            word-break: keep-all;
+        }
+
+        .shn-notice__info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .shn-notice__info-card {
+            min-height: 92px;
+            border-radius: 18px;
+            background: rgba(255,255,255,.88);
+            box-shadow: 0 10px 22px rgba(6, 38, 89, .12);
+            padding: 16px 20px;
+            border: 1px solid rgba(255,255,255,.72);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .shn-notice__info-label {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: 999px;
+            color: #fff;
+            background: #0b376e;
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            width: fit-content;
+        }
+
+        .shn-notice__info-value {
+            font-size: 16px;
+            line-height: 1.4;
+            font-weight: 850;
+            color: #263e63;
+            word-break: keep-all;
+        }
+
+        .shn-notice__info-value--accent {
+            color: #ff6b00;
+        }
+
+        .shn-notice__notice-box {
+            border-radius: 18px;
+            background: rgba(7, 42, 89, .92);
+            color: #fff;
+            padding: 18px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 14px 28px rgba(7, 35, 84, .18);
+        }
+
+        .shn-notice__notice-title {
+            font-size: 18px;
+            font-weight: 950;
+            margin-bottom: 10px;
+            color: #ffb34d;
+        }
+
+        .shn-notice__notice-list {
+            list-style: none;
+        }
+
+        .shn-notice__notice-list li {
+            position: relative;
+            padding-left: 16px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+
+        .shn-notice__notice-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .shn-notice__notice-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #ff7a00;
+            font-weight: 900;
+        }
+
+        .shn-notice__footer-note {
+            margin-top: auto;
+            border-radius: 16px;
+            background: rgba(255,255,255,.75);
+            color: #27425f;
+            padding: 14px 18px;
+            font-size: 13px;
+            line-height: 1.55;
+            text-align: center;
+            word-break: keep-all;
+        }
+
+        .shn-notice__footer-banner {
+            position: relative;
+            z-index: 4;
+            min-height: 62px;
+            background: #082e5f;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 14px 22px;
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 700;
+        }
+
+        .shn-notice__footer-banner strong {
+            color: #ffb34d;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body.shn-notice-page {
+                background: #fff;
+            }
+
+            .shn-notice {
+                width: 210mm;
+                height: 297mm;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 799px) {
+            body.shn-notice-page {
+                padding: 10px;
+            }
+
+            .shn-notice {
+                width: 100%;
+                height: auto;
+                min-height: calc((100vw - 20px) * 1.414);
+            }
+        }
+    </style>
+</head>
+<body class="shn-notice-page">
+
+<div class="shn-notice">
+    <div class="shn-notice__top-stripe" aria-hidden="true">
+        <div class="shn-notice__stripe-navy"></div>
+        <div class="shn-notice__stripe-blue"></div>
+        <div class="shn-notice__stripe-sky"></div>
+        <div class="shn-notice__stripe-orange"></div>
+        <div class="shn-notice__stripe-purple"></div>
+    </div>
+
+    <div class="shn-notice__content">
+        <div class="shn-notice__header">
+            <div class="shn-notice__eyebrow">2026 SIHEUNG HALF MARATHON</div>
+            <h1 class="shn-notice__title">
+                2026 제<span class="shn-notice__title-orange">12</span>회 시흥시전국하프마라톤대회<br>
+                공식 참가 신청 오픈 공지
+            </h1>
+            <p class="shn-notice__subtitle">
+                거북섬의 푸른 바다와 함께 달리는 2026 제12회 시흥시전국하프마라톤대회가 참가 접수를 시작합니다.
+            </p>
+        </div>
+
+        <div class="shn-notice__open-card">
+            <span class="shn-notice__open-label">참가접수 오픈</span>
+            <div class="shn-notice__open-title">
+                <strong>2026. 07. 22.(수) 14:00부터</strong><br>
+                선착순 5,000명 마감시까지
+            </div>
+            <p class="shn-notice__open-desc">
+                참가를 희망하시는 분은 공식 홈페이지에서 안내되는 신청 정보를 확인하신 뒤 접수해주시기 바랍니다.
+            </p>
+        </div>
+
+        <div class="shn-notice__info-grid">
+            <div class="shn-notice__info-card">
+                <span class="shn-notice__info-label">대회일시</span>
+                <div class="shn-notice__info-value shn-notice__info-value--accent">2026. 10. 05.(월) 09:00 출발</div>
+            </div>
+            <div class="shn-notice__info-card">
+                <span class="shn-notice__info-label">대회장소</span>
+                <div class="shn-notice__info-value">한국공학대학교 제2캠퍼스</div>
+            </div>
+            <div class="shn-notice__info-card">
+                <span class="shn-notice__info-label">참가종목</span>
+                <div class="shn-notice__info-value">5km코스, 10km코스, 하프코스</div>
+            </div>
+            <div class="shn-notice__info-card">
+                <span class="shn-notice__info-label">접수인원</span>
+                <div class="shn-notice__info-value">선착순 <span class="shn-notice__info-value--accent">5,000명</span></div>
+            </div>
+        </div>
+
+        <div class="shn-notice__notice-box">
+            <div class="shn-notice__notice-title">접수 안내</div>
+            <ul class="shn-notice__notice-list">
+                <li>접수는 공식 홈페이지를 통한 온라인 접수로 진행됩니다.</li>
+                <li>종목별 접수 현황에 따라 조기 마감될 수 있으니 일정에 유의해주시기 바랍니다.</li>
+                <li>세부 운영 안내 및 참가자 유의사항은 홈페이지 공지를 통해 순차적으로 안내됩니다.</li>
+            </ul>
+        </div>
+
+        <div class="shn-notice__footer-note">
+            본 공지는 참가자분들이 원활히 준비하실 수 있도록 제공되는 사전 안내입니다.<br>
+            대회 운영 상황에 따라 세부 내용은 변경될 수 있으며, 최종 안내는 공식 홈페이지 공지를 기준으로 합니다.
+        </div>
+    </div>
+
+    <div class="shn-notice__footer-banner">
+        <div>
+            주최_ 시흥시체육회 &nbsp;|&nbsp; 주관_ 경기일보 · 시흥시육상연맹<br>
+            접수 홈페이지_ <strong>www.shmarathon.kr</strong> &nbsp;|&nbsp; 문의_ <strong>1588-4929</strong>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
