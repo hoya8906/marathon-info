@@ -50,6 +50,14 @@
       height: 500px;
       border-radius: 8px;
     }
+    /* 툴팁 전용 커스텀 스타일 */
+    .custom-tooltip {
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 6px;
+      padding: 6px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
     .legend {
       display: flex;
       gap: 15px;
@@ -103,7 +111,7 @@
 
   <div id="map"></div>
 
-  <!-- 범례 (왕복 구분) -->
+  <!-- 범례 -->
   <div class="legend">
     <div class="legend-item">
       <div class="legend-color" style="background: #007bff;"></div>
@@ -114,7 +122,7 @@
       <span>반환 후 (오는 길)</span>
     </div>
     <div class="legend-item" style="margin-left: 10px;">
-      <span>💧 2.5km 간격 급수대</span>
+      <span>💧 2.5km 간격 급수대 (마우스 올려서 확인)</span>
     </div>
   </div>
 
@@ -138,7 +146,7 @@
   let currentDisplayPoints = [];
   let currentType = 'ALL';
 
-  // 설정값 (사용자 지정 반영)
+  // 설정값
   const TURN_10K_DIST = 5.6;   // 10km 반환점 (5.6km 지점)
   const TURN_HALF_DIST = 10.65; // 하프 반환점 (10.65km 지점)
   const WATER_INTERVAL = 2.5;  // 급수대 간격 (2.5km)
@@ -228,7 +236,6 @@
     }
   }
 
-  // 특정 거리에 가장 가까운 좌표 포인트 찾기
   function findPointAtDistance(points, targetDist) {
     let closest = points[0];
     let minDiff = Math.abs(points[0].dist - targetDist);
@@ -251,10 +258,8 @@
     if (allTrackPoints.length === 0) return;
 
     if (type === '10K') {
-      // 10K: 출발 -> 5.6km 반환점 -> 출발점 복귀 (약 11.2km 코스)
       const outbound = allTrackPoints.filter(p => p.dist <= TURN_10K_DIST);
       const turnPt = findPointAtDistance(allTrackPoints, TURN_10K_DIST);
-      // 복귀 구간 생성 (반환점에서 역순으로 동일 거리 이동)
       const inbound = outbound.slice().reverse().map(p => ({
         ...p,
         dist: turnPt.dist + (turnPt.dist - p.dist)
@@ -262,7 +267,6 @@
       currentDisplayPoints = [...outbound, ...inbound];
 
     } else if (type === 'HALF') {
-      // 하프: 출발 -> 10.65km 반환점 -> 출발점 복귀 (약 21.3km 코스)
       const outbound = allTrackPoints.filter(p => p.dist <= TURN_HALF_DIST);
       const turnPt = findPointAtDistance(allTrackPoints, TURN_HALF_DIST);
       const inbound = outbound.slice().reverse().map(p => ({
@@ -278,7 +282,7 @@
     drawCourseAndChart();
   }
 
-  // 5. 코스/반환점/급수대 마커 및 경로 그리기
+  // 5. 코스/반환점/급수대 마커 및 툴팁(Hover) 그리기
   function drawCourseAndChart() {
     markersGroup.clearLayers();
     if (outboundPolyline) map.removeLayer(outboundPolyline);
@@ -287,12 +291,11 @@
     const totalPts = currentDisplayPoints.length;
     if (totalPts === 0) return;
 
-    // 절반 위치(반환점) 구분
     const halfIndex = Math.floor(totalPts / 2);
     const outboundPts = currentDisplayPoints.slice(0, halfIndex + 1).map(p => [p.lat, p.lng]);
     const inboundPts = currentDisplayPoints.slice(halfIndex).map(p => [p.lat, p.lng]);
 
-    // 반환 전 코스선 (파란색)
+    // 가는 길 (파란색)
     outboundPolyline = L.polyline(outboundPts, {
       color: '#007bff',
       weight: 6,
@@ -301,7 +304,7 @@
       lineJoin: 'round'
     }).addTo(map);
 
-    // 반환 후 코스선 (주황색)
+    // 오는 길 (주황색)
     inboundPolyline = L.polyline(inboundPts, {
       color: '#ff5500',
       weight: 4,
@@ -311,37 +314,58 @@
       lineJoin: 'round'
     }).addTo(map);
 
+    // 공통 툴팁 옵션 (마우스 호버 시 바로 뜸)
+    const tooltipOptions = {
+      permanent: false,      // 마우스 올렸을 때만 표시
+      direction: 'top',      // 마커 위쪽으로 표시
+      className: 'custom-tooltip',
+      offset: [0, -5]
+    };
+
     // ① 출발점 / 도착점 마커
     const startPt = currentDisplayPoints[0];
     const endPt = currentDisplayPoints[totalPts - 1];
-    L.marker([startPt.lat, startPt.lng]).addTo(markersGroup).bindPopup('🏁 <b>START (관문체육공원)</b>');
-    L.marker([endPt.lat, endPt.lng]).addTo(markersGroup).bindPopup('🎯 <b>FINISH</b>');
 
-    // ② 반환점 마커 (10K / HALF / 전체에 맞게 수동 배치)
+    L.marker([startPt.lat, startPt.lng]).addTo(markersGroup)
+      .bindTooltip('🏁 START (관문체육공원)', tooltipOptions);
+
+    L.marker([endPt.lat, endPt.lng]).addTo(markersGroup)
+      .bindTooltip('🎯 FINISH', tooltipOptions);
+
+    // ② 반환점 마커
     const turnPt = currentDisplayPoints[halfIndex];
     let turnLabel = '반환점';
-    if (currentType === '10K') turnLabel = `🔄 <b>10KM 반환점 (${TURN_10K_DIST}km 지점)</b>`;
-    else if (currentType === 'HALF') turnLabel = `🔄 <b>하프 반환점 (${TURN_HALF_DIST}km 지점)</b>`;
-    else turnLabel = `🔄 <b>반환점 (${turnPt.dist.toFixed(2)}km 지점)</b>`;
+    if (currentType === '10K') turnLabel = `🔄 10KM 반환점 (${TURN_10K_DIST}km 지점)`;
+    else if (currentType === 'HALF') turnLabel = `🔄 하프 반환점 (${TURN_HALF_DIST}km 지점)`;
+    else turnLabel = `🔄 반환점 (${turnPt.dist.toFixed(2)}km 지점)`;
     
-    L.marker([turnPt.lat, turnPt.lng]).addTo(markersGroup).bindPopup(turnLabel);
+    L.marker([turnPt.lat, turnPt.lng]).addTo(markersGroup)
+      .bindTooltip(turnLabel, tooltipOptions);
 
-    // ③ 2.5km 간격 급수대 마커 찍기
+    // ③ 2.5km 간격 급수대 마커 (호버 툴팁)
     const totalDist = currentDisplayPoints[totalPts - 1].dist;
     for (let targetD = WATER_INTERVAL; targetD < totalDist; targetD += WATER_INTERVAL) {
       const waterPt = findPointAtDistance(currentDisplayPoints, targetD);
       
-      // 급수대 블루 원형 마커 아이콘
-      L.circleMarker([waterPt.lat, waterPt.lng], {
+      const circleMarker = L.circleMarker([waterPt.lat, waterPt.lng], {
         color: '#0056b3',
         fillColor: '#00aaff',
         fillOpacity: 0.9,
-        radius: 7
-      }).addTo(markersGroup)
-        .bindPopup(`💧 <b>급수대 (${waterPt.dist.toFixed(1)}km 지점)</b><br>생수 및 이온음료 제공`);
+        radius: 8
+      }).addTo(markersGroup);
+
+      // 마우스 오버 시 급수대 위치 및 정보 즉시 표시
+      circleMarker.bindTooltip(
+        `💧 급수대 (${waterPt.dist.toFixed(1)}km)<br><span style="font-weight:normal; font-size:11px;">생수 및 이온음료 제공</span>`, 
+        tooltipOptions
+      );
+
+      // 마우스 올렸을 때 마커 살짝 커지는 애니메이션 효과
+      circleMarker.on('mouseover', function () { this.setRadius(11); });
+      circleMarker.on('mouseout', function () { this.setRadius(8); });
     }
 
-    // 통계 정보
+    // 패널 정보
     const maxEle = Math.max(...currentDisplayPoints.map(p => p.ele));
     const minEle = Math.min(...currentDisplayPoints.map(p => p.ele));
     document.getElementById('distInfo').innerText = `총 거리: ${totalDist.toFixed(2)} km`;
