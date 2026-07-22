@@ -25,10 +25,17 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     .filter-group {
       display: flex;
       gap: 10px;
-      margin-bottom: 15px;
       align-items: center;
     }
     .btn-course {
@@ -45,12 +52,37 @@
       background: #007bff;
       color: white;
     }
+    .btn-fullscreen {
+      padding: 8px 16px;
+      border: 1px solid #333;
+      background: #333;
+      color: white;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-fullscreen:hover {
+      background: #555;
+    }
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+    }
     #map {
       width: 100%;
       height: 500px;
       border-radius: 8px;
     }
-    /* 툴팁 전용 커스텀 스타일 */
+    /* 전체 화면 모드일 때 지도 높이 100% 조정 */
+    #map:fullscreen {
+      height: 100vh !important;
+      border-radius: 0;
+    }
+    #map:-webkit-full-screen {
+      height: 100vh !important;
+      border-radius: 0;
+    }
+    /* 툴팁 커스텀 스타일 */
     .custom-tooltip {
       font-size: 13px;
       font-weight: bold;
@@ -64,6 +96,7 @@
       margin-top: 10px;
       font-size: 13px;
       color: #555;
+      flex-wrap: wrap;
     }
     .legend-item {
       display: flex;
@@ -99,17 +132,22 @@
 <body>
 
 <div class="container">
-  <h2 style="margin-top:0;">🏃‍♂️ 과천 마라톤 코스 & 고도 분석</h2>
+  <div class="header-bar">
+    <h2 style="margin:0;">🏃‍♂️ 과천 마라톤 코스 & 고도 분석</h2>
+    <button class="btn-fullscreen" onclick="toggleFullscreen()">⛶ 전체 화면 보기</button>
+  </div>
 
   <!-- 종목 필터 버튼 -->
-  <div class="filter-group">
+  <div class="filter-group" style="margin-bottom: 15px;">
     <span><strong>코스 선택:</strong></span>
     <button class="btn-course active" onclick="filterCourse('ALL')">전체 코스</button>
     <button class="btn-course" onclick="filterCourse('10K')">10km 코스</button>
     <button class="btn-course" onclick="filterCourse('HALF')">하프 코스</button>
   </div>
 
-  <div id="map"></div>
+  <div class="map-wrapper">
+    <div id="map"></div>
+  </div>
 
   <!-- 범례 -->
   <div class="legend">
@@ -121,8 +159,11 @@
       <div class="legend-color" style="background: #ff5500;"></div>
       <span>반환 후 (오는 길)</span>
     </div>
-    <div class="legend-item" style="margin-left: 10px;">
-      <span>💧 2.5km 간격 급수대 (마우스 올려서 확인)</span>
+    <div class="legend-item">
+      <span>💧 2.5km 간격 급수대</span>
+    </div>
+    <div class="legend-item">
+      <span>🚩 0.68km 대회장 진입로</span>
     </div>
   </div>
 
@@ -146,12 +187,13 @@
   let currentDisplayPoints = [];
   let currentType = 'ALL';
 
-  // 설정값
-  const TURN_10K_DIST = 5.6;   // 10km 반환점 (5.6km 지점)
-  const TURN_HALF_DIST = 10.65; // 하프 반환점 (10.65km 지점)
-  const WATER_INTERVAL = 2.5;  // 급수대 간격 (2.5km)
+  // 핵심 설정값
+  const TURN_10K_DIST = 5.6;     // 10km 반환점 (5.6km 지점)
+  const TURN_HALF_DIST = 10.65;   // 하프 반환점 (10.65km 지점)
+  const WATER_INTERVAL = 2.5;    // 급수대 간격 (2.5km)
+  const FINISH_BRANCH_DIST = 0.68; // 복귀 시 대회장으로 들어가는 분기점 (출발 기준 0.68km 지점)
 
-  // 1. 다양한 배경 지도 타일 레이어
+  // 1. 배경 지도 레이어 설정
   const lightTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
   const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CARTO' });
   const minimalTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© CARTO' });
@@ -184,6 +226,17 @@
   hoverMarker = L.marker([0, 0], { icon: runnerIcon }).addTo(map);
   hoverMarker.setOpacity(0);
 
+  // 지도 전체 화면 토글 함수
+  function toggleFullscreen() {
+    const mapElem = document.getElementById('map');
+    if (!document.fullscreenElement) {
+      if (mapElem.requestFullscreen) mapElem.requestFullscreen();
+      else if (mapElem.webkitRequestFullscreen) mapElem.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
+  }
+
   // Haversine 거리 계산 함수 (km)
   function getDistanceKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -196,7 +249,7 @@
     return R * c;
   }
 
-  // 2. GPX 자동 로드
+  // 2. GPX 자동 불러오기
   window.addEventListener('DOMContentLoaded', () => {
     fetch('files/과천마라톤.gpx')
       .then(res => {
@@ -249,7 +302,7 @@
     return closest;
   }
 
-  // 4. 종목 필터링 (10K / HALF / ALL)
+  // 4. 종목별 코스 및 복귀(0.68km 진입) 동선 구성
   function filterCourse(type) {
     currentType = type;
     document.querySelectorAll('.btn-course').forEach(btn => btn.classList.remove('active'));
@@ -257,32 +310,48 @@
 
     if (allTrackPoints.length === 0) return;
 
-    if (type === '10K') {
-      const outbound = allTrackPoints.filter(p => p.dist <= TURN_10K_DIST);
-      const turnPt = findPointAtDistance(allTrackPoints, TURN_10K_DIST);
-      const inbound = outbound.slice().reverse().map(p => ({
-        ...p,
-        dist: turnPt.dist + (turnPt.dist - p.dist)
-      }));
-      currentDisplayPoints = [...outbound, ...inbound];
+    let targetTurnDist = TURN_HALF_DIST;
+    if (type === '10K') targetTurnDist = TURN_10K_DIST;
+    else if (type === 'ALL') targetTurnDist = allTrackPoints[allTrackPoints.length - 1].dist / 2;
 
-    } else if (type === 'HALF') {
-      const outbound = allTrackPoints.filter(p => p.dist <= TURN_HALF_DIST);
-      const turnPt = findPointAtDistance(allTrackPoints, TURN_HALF_DIST);
-      const inbound = outbound.slice().reverse().map(p => ({
-        ...p,
-        dist: turnPt.dist + (turnPt.dist - p.dist)
-      }));
-      currentDisplayPoints = [...outbound, ...inbound];
+    // 가는 길 (출발 -> 반환점)
+    const outbound = allTrackPoints.filter(p => p.dist <= targetTurnDist);
+    const turnPt = findPointAtDistance(allTrackPoints, targetTurnDist);
 
-    } else {
-      currentDisplayPoints = [...allTrackPoints];
+    // 오는 길 (반환점 -> 출발기준 0.68km 지점까지만 역순 복귀)
+    const inboundPart = outbound.filter(p => p.dist >= FINISH_BRANCH_DIST).reverse();
+
+    // 0.68km 지점에서 최종 골인(FINISH) 지점으로 직행 연결
+    const finishPt = allTrackPoints[allTrackPoints.length - 1]; // GPX의 골인 지점
+    const branchPt = findPointAtDistance(allTrackPoints, FINISH_BRANCH_DIST);
+
+    // 거리값 재계산 및 누적
+    let currentAccumDist = turnPt.dist;
+    const reconstructedInbound = [];
+
+    for (let i = 0; i < inboundPart.length; i++) {
+      if (i > 0) {
+        const prev = inboundPart[i - 1];
+        currentAccumDist += getDistanceKm(prev.lat, prev.lng, inboundPart[i].lat, inboundPart[i].lng);
+      }
+      reconstructedInbound.push({
+        ...inboundPart[i],
+        dist: currentAccumDist
+      });
     }
 
+    // 0.68km 지점에서 대회장(골인점)으로 직행 포인트 추가
+    currentAccumDist += getDistanceKm(branchPt.lat, branchPt.lng, finishPt.lat, finishPt.lng);
+    reconstructedInbound.push({
+      ...finishPt,
+      dist: currentAccumDist
+    });
+
+    currentDisplayPoints = [...outbound, ...reconstructedInbound];
     drawCourseAndChart();
   }
 
-  // 5. 코스/반환점/급수대 마커 및 툴팁(Hover) 그리기
+  // 5. 마커 및 코스선 그리기
   function drawCourseAndChart() {
     markersGroup.clearLayers();
     if (outboundPolyline) map.removeLayer(outboundPolyline);
@@ -291,11 +360,14 @@
     const totalPts = currentDisplayPoints.length;
     if (totalPts === 0) return;
 
-    const halfIndex = Math.floor(totalPts / 2);
-    const outboundPts = currentDisplayPoints.slice(0, halfIndex + 1).map(p => [p.lat, p.lng]);
-    const inboundPts = currentDisplayPoints.slice(halfIndex).map(p => [p.lat, p.lng]);
+    // 가는 길 / 오는 길 분할 인덱스
+    const halfIndex = currentDisplayPoints.findIndex(p => p.lat === currentDisplayPoints[0].lat && p.lng === currentDisplayPoints[0].lng);
+    const actualHalfIndex = halfIndex > 0 ? halfIndex : Math.floor(totalPts / 2);
 
-    // 가는 길 (파란색)
+    const outboundPts = currentDisplayPoints.slice(0, actualHalfIndex + 1).map(p => [p.lat, p.lng]);
+    const inboundPts = currentDisplayPoints.slice(actualHalfIndex).map(p => [p.lat, p.lng]);
+
+    // 반환 전 코스선 (파란색)
     outboundPolyline = L.polyline(outboundPts, {
       color: '#007bff',
       weight: 6,
@@ -304,7 +376,7 @@
       lineJoin: 'round'
     }).addTo(map);
 
-    // 오는 길 (주황색)
+    // 반환 후 코스선 (주황색)
     inboundPolyline = L.polyline(inboundPts, {
       color: '#ff5500',
       weight: 4,
@@ -314,15 +386,14 @@
       lineJoin: 'round'
     }).addTo(map);
 
-    // 공통 툴팁 옵션 (마우스 호버 시 바로 뜸)
     const tooltipOptions = {
-      permanent: false,      // 마우스 올렸을 때만 표시
-      direction: 'top',      // 마커 위쪽으로 표시
+      permanent: false,
+      direction: 'top',
       className: 'custom-tooltip',
       offset: [0, -5]
     };
 
-    // ① 출발점 / 도착점 마커
+    // ① 출발 / 도착 마커
     const startPt = currentDisplayPoints[0];
     const endPt = currentDisplayPoints[totalPts - 1];
 
@@ -330,10 +401,10 @@
       .bindTooltip('🏁 START (관문체육공원)', tooltipOptions);
 
     L.marker([endPt.lat, endPt.lng]).addTo(markersGroup)
-      .bindTooltip('🎯 FINISH', tooltipOptions);
+      .bindTooltip('🎯 FINISH (대회장 진입)', tooltipOptions);
 
     // ② 반환점 마커
-    const turnPt = currentDisplayPoints[halfIndex];
+    const turnPt = currentDisplayPoints[actualHalfIndex];
     let turnLabel = '반환점';
     if (currentType === '10K') turnLabel = `🔄 10KM 반환점 (${TURN_10K_DIST}km 지점)`;
     else if (currentType === 'HALF') turnLabel = `🔄 하프 반환점 (${TURN_HALF_DIST}km 지점)`;
@@ -342,10 +413,20 @@
     L.marker([turnPt.lat, turnPt.lng]).addTo(markersGroup)
       .bindTooltip(turnLabel, tooltipOptions);
 
-    // ③ 2.5km 간격 급수대 마커 (호버 툴팁)
-    const totalDist = currentDisplayPoints[totalPts - 1].dist;
-    for (let targetD = WATER_INTERVAL; targetD < totalDist; targetD += WATER_INTERVAL) {
-      const waterPt = findPointAtDistance(currentDisplayPoints, targetD);
+    // ③ 0.68km 대회장 진입 분기점 마커
+    const branchPt = findPointAtDistance(allTrackPoints, FINISH_BRANCH_DIST);
+    L.circleMarker([branchPt.lat, branchPt.lng], {
+      color: '#dc3545',
+      fillColor: '#ff283d',
+      fillOpacity: 0.9,
+      radius: 9
+    }).addTo(markersGroup)
+      .bindTooltip(`🚩 <b>대회장 진입 분기점</b><br>출발 0.68km 지점에서 골인장 진입`, tooltipOptions);
+
+    // ④ 2.5km 간격 급수대 마커 (가는 길 기준)
+    const outboundDist = turnPt.dist;
+    for (let targetD = WATER_INTERVAL; targetD < outboundDist; targetD += WATER_INTERVAL) {
+      const waterPt = findPointAtDistance(allTrackPoints, targetD);
       
       const circleMarker = L.circleMarker([waterPt.lat, waterPt.lng], {
         color: '#0056b3',
@@ -354,18 +435,17 @@
         radius: 8
       }).addTo(markersGroup);
 
-      // 마우스 오버 시 급수대 위치 및 정보 즉시 표시
       circleMarker.bindTooltip(
         `💧 급수대 (${waterPt.dist.toFixed(1)}km)<br><span style="font-weight:normal; font-size:11px;">생수 및 이온음료 제공</span>`, 
         tooltipOptions
       );
 
-      // 마우스 올렸을 때 마커 살짝 커지는 애니메이션 효과
       circleMarker.on('mouseover', function () { this.setRadius(11); });
       circleMarker.on('mouseout', function () { this.setRadius(8); });
     }
 
-    // 패널 정보
+    // 통계 정보
+    const totalDist = currentDisplayPoints[totalPts - 1].dist;
     const maxEle = Math.max(...currentDisplayPoints.map(p => p.ele));
     const minEle = Math.min(...currentDisplayPoints.map(p => p.ele));
     document.getElementById('distInfo').innerText = `총 거리: ${totalDist.toFixed(2)} km`;
@@ -375,7 +455,7 @@
     renderChart();
   }
 
-  // 6. Chart.js 고도 그래프
+  // 6. 고도 차트
   function renderChart() {
     const ctx = document.getElementById('elevationChart').getContext('2d');
     const labels = currentDisplayPoints.map(p => p.dist.toFixed(2));
