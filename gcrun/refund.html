@@ -1,0 +1,191 @@
+<!-- 과천마라톤 포스터 스타일 기반 단일 카드 디자인 -->
+<style>
+    /* 1. 전체 단일 카드 컨테이너 */
+    .run-poster-card {
+        width: 100% !important;
+        max-width: 1000px !important;
+        margin: 0 auto 50px auto !important;
+        font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+        background-color: #fffde9 !important; /* 포스터 특유의 따뜻한 연상아색 배경 */
+        border: 2px solid #e6e3c8 !important;
+        border-radius: 16px !important;
+        padding: 0 !important; /* 상하단 무지개 띠를 위해 패딩 분리 */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        text-align: left !important;
+    }
+    .run-poster-card *, 
+    .run-poster-card *::before, 
+    .run-poster-card *::after {
+        box-sizing: border-box !important;
+    }
+
+    /* 2. 상/하단 포스터 시그니처 무지개 라인 */
+    .run-poster-rainbow-bar {
+        width: 100% !important;
+        height: 12px !important;
+        background: linear-gradient(to right, 
+            #e52d27 0%, #e52d27 20%, 
+            #f9d423 20%, #f9d423 40%, 
+            #8bc34a 40%, #8bc34a 60%, 
+            #00bcd4 60%, #00bcd4 80%, 
+            #154b9f 80%, #154b9f 100%
+        ) !important;
+    }
+
+    /* 3. 내부 메인 컨텐츠 영역 */
+    .run-poster-inner {
+        padding: 40px 45px !important;
+    }
+
+    /* 4. 타이틀 영역 (포스터의 메인 핑크 컬러 톤 매칭) */
+    .run-poster-title-sec {
+        text-align: center !important;
+        margin-bottom: 35px !important;
+        border-bottom: 2px dashed #b5b198 !important;
+        padding-bottom: 25px !important;
+    }
+    .run-poster-main-title {
+        font-size: 30px !important;
+        font-weight: 900 !important;
+        color: #ff4a7d !important; /* 포스터 메인 핑크/핫핑크 톤 */
+        letter-spacing: -1px !important;
+        margin: 0 0 8px 0 !important;
+    }
+    .run-poster-sub-title {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #154b9f !important; /* 포스터 서브 블루 톤 */
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+    }
+
+    /* 5. 핵심 일정 영역 (2열 배치) */
+    .run-poster-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 25px !important;
+        margin-bottom: 35px !important;
+    }
+    .run-poster-item {
+        background-color: #ffffff !important;
+        border: 1px solid #ebdcb2 !important;
+        border-radius: 12px !important;
+        padding: 22px 25px !important;
+        box-shadow: 0 4px 10px rgba(235, 220, 178, 0.2) !important;
+    }
+    .run-poster-item .lbl {
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: #154b9f !important; /* 메인 블루 */
+        margin-bottom: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    .run-poster-item .lbl.orange-txt {
+        color: #ff6b3d !important; /* 환불은 오렌지 포인트 */
+    }
+    .run-poster-item .val {
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        color: #222222 !important;
+        line-height: 1.5 !important;
+    }
+    .run-poster-item .val mark {
+        background-color: #ffeb3b !important;
+        color: #222222 !important;
+        font-weight: 900 !important;
+        padding: 0 4px !important;
+    }
+
+    /* 6. 하단 자잘한 유의사항 유닛 */
+    .run-poster-notice-list {
+        background-color: rgba(21, 75, 159, 0.04) !important;
+        border-radius: 10px !important;
+        padding: 22px 25px !important;
+        margin: 0 !important;
+        list-style: none !important;
+        border: 1px dashed #154b9f !important;
+    }
+    .run-poster-notice-list li {
+        font-size: 13.5px !important;
+        line-height: 1.7 !important;
+        color: #4b5563 !important;
+        margin-bottom: 6px !important;
+        padding-left: 15px !important;
+        position: relative !important;
+        word-break: keep-all !important;
+    }
+    .run-poster-notice-list li:last-child {
+        margin-bottom: 0 !important;
+    }
+    .run-poster-notice-list li::before {
+        content: "•" !important;
+        position: absolute !important;
+        left: 0 !important;
+        color: #154b9f !important;
+        font-weight: bold !important;
+    }
+    .run-poster-notice-list li strong {
+        color: #ff4a7d !important;
+        font-weight: bold !important;
+    }
+
+    /* 7. 반응형 미디어쿼리 */
+    @media (max-width: 768px) {
+        .run-poster-inner { padding: 25px 20px !important; }
+        .run-poster-main-title { font-size: 24px !important; }
+        .run-poster-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+        .run-poster-item { padding: 18px 20px !important; }
+        .run-poster-item .val { font-size: 15px !important; }
+        .run-poster-notice-list { padding: 15px 18px !important; }
+        .run-poster-notice-list li { font-size: 12.5px !important; }
+    }
+</style>
+
+<div class="run-poster-card">
+    <!-- 상단 무지개 띠 -->
+    <div class="run-poster-rainbow-bar"></div>
+    
+    <div class="run-poster-inner">
+        <!-- 메인 헤더 타이틀 -->
+        <div class="run-poster-title-sec">
+            <h3 class="run-poster-main-title">접수 및 환불 일정 안내</h3>
+            <span class="run-poster-sub-title">Application & Refund Information</span>
+        </div>
+
+        <!-- 중앙 메인 정보 그리드 (단일 카드 내 컴팩트 2열) -->
+        <div class="run-poster-grid">
+            <!-- 신청 기간 -->
+            <div class="run-poster-item">
+                <div class="lbl">☀️ 신청 기간 안내</div>
+                <div class="val">
+                    2026. 7. 20.(월) 14:00 부터<br>
+                    <mark>선착순 3,000명</mark> 접수 완료 시까지
+                </div>
+            </div>
+
+            <!-- 환불 기간 -->
+            <div class="run-poster-item">
+                <div class="lbl orange-txt">🌙 환불 기간 안내</div>
+                <div class="val">
+                    2026. 08. 17.(일) 자정까지<br>
+                    <span style="font-size: 13px; color: #ff0000; font-weight: bold; display: inline-block; margin-top: 4px;">(해당 시각 이후 취소/변경 절대 불가)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 상세 유의사항 유닛 -->
+        <ul class="run-poster-notice-list">
+            <li>각 종목별 배정 인원이 상이하며, 종목에 따라 <strong>조기에 신청이 마감</strong>될 수 있습니다.</li>
+            <li>대회 참가 신청 및 환불 신청은 오직 <strong>공식 홈페이지를 통해서만 진행</strong>이 가능합니다.</li>
+            <li>지정된 환불 기간이 경과한 후에는 <strong>어떠한 사유로도 변경 및 환불이 불가능</strong>하오니 유의 바랍니다.</li>
+            <li>신청 및 환불 일정을 별도 공지하는 경우, <strong>별도 공지된 일정이 우선</strong>합니다.</li>
+        </ul>
+    </div>
+
+    <!-- 하단 무지개 띠 -->
+    <div class="run-poster-rainbow-bar"></div>
+</div>

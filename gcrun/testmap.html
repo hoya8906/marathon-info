@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>과천 마라톤 인터랙티브 코스도</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+    .btn-course {
+      padding: 8px 16px;
+      border: 1px solid #007bff;
+      background: white;
+      color: #007bff;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-course.active, .btn-course:hover {
+      background: #007bff;
+      color: white;
+    }
+    #map {
+      width: 100%;
+      height: 480px;
+      border-radius: 8px;
+    }
+    .legend {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 4px;
+      border-radius: 2px;
+    }
+    .chart-container {
+      position: relative;
+      margin-top: 20px;
+      height: 200px;
+      width: 100%;
+    }
+    .info-panel {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+    .info-badge {
+      background: #e9ecef;
+      padding: 8px 14px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2 style="margin-top:0;">🏃‍♂️ 과천 마라톤 코스 & 고도 분석</h2>
+
+  <!-- 종목 필터 버튼 -->
+  <div class="filter-group">
+    <span><strong>코스 선택:</strong></span>
+    <button class="btn-course active" onclick="filterCourse('ALL')">전체 코스</button>
+    <button class="btn-course" onclick="filterCourse('10K')">10km 코스</button>
+    <button class="btn-course" onclick="filterCourse('HALF')">하프 코스</button>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- 범례 (왕복 구분) -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background: #007bff;"></div>
+      <span>반환 전 (가는 길)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #ff5500;"></div>
+      <span>반환 후 (오는 길)</span>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="info-badge" id="distInfo">총 거리: - km</div>
+    <div class="info-badge" id="eleInfo">고도 정보: - m</div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="elevationChart"></canvas>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  let map, outboundPolyline, inboundPolyline, hoverMarker, elevationChart;
+  let markersGroup;
+  let allTrackPoints = []; // 전체 GPX 데이터
+  let currentDisplayPoints = []; // 현재 필터링된 데이터
+
+  // 1. 지도 초기화
+  map = L.map('map').setView([37.441466, 126.996461], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  markersGroup = L.layerGroup().addTo(map);
+
+  // 러너 위치 마커
+  const runnerIcon = L.divIcon({
+    html: '<div style="font-size: 24px; transform: translate(-50%, -50%);">🏃</div>',
+    className: 'runner-marker',
+    iconSize: [30, 30]
+  });
+  hoverMarker = L.marker([0, 0], { icon: runnerIcon }).addTo(map);
+  hoverMarker.setOpacity(0);
+
+  // 거리 계산 (km)
+  function getDistanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // 2. GPX 파일 자동 로드
+  window.addEventListener('DOMContentLoaded', () => {
+    fetch('files/과천마라톤.gpx')
+      .then(res => {
+        if(!res.ok) throw new Error('GPX 파일 로드 실패');
+        return res.text();
+      })
+      .then(xmlText => {
+        parseGPX(xmlText);
+        filterCourse('ALL'); // 기본값: 전체
+      })
+      .catch(err => {
+        document.getElementById('distInfo').innerText = err.message;
+      });
+  });
+
+  // 3. GPX 데이터 구조화
+  function parseGPX(xmlText) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    const trkpts = xmlDoc.getElementsByTagName("trkpt");
+
+    allTrackPoints = [];
+    let accumDist = 0;
+
+    for (let i = 0; i < trkpts.length; i++) {
+      const lat = parseFloat(trkpts[i].getAttribute("lat"));
+      const lon = parseFloat(trkpts[i].getAttribute("lon"));
+      const eleNode = trkpts[i].getElementsByTagName("ele")[0];
+      const ele = eleNode ? parseFloat(eleNode.textContent) : 0;
+
+      if (i > 0) {
+        const prev = allTrackPoints[i - 1];
+        accumDist += getDistanceKm(prev.lat, prev.lng, lat, lon);
+      }
+
+      allTrackPoints.push({ lat, lng: lon, ele, dist: accumDist });
+    }
+  }
+
+  // 4. 종목 필터링 및 시각화 (10K / 하프 / 전체)
+  function filterCourse(type) {
+    // 버튼 활성화 스타일
+    document.querySelectorAll('.btn-course').forEach(btn => btn.classList.remove('active'));
+    event?.target?.classList.add('active');
+
+    if (allTrackPoints.length === 0) return;
+
+    // 코스 거리 자르기
+    if (type === '10K') {
+      currentDisplayPoints = allTrackPoints.filter(p => p.dist <= 10.0);
+    } else if (type === 'HALF') {
+      currentDisplayPoints = allTrackPoints.filter(p => p.dist <= 21.0975);
+    } else {
+      currentDisplayPoints = [...allTrackPoints];
+    }
+
+    drawCourseAndChart();
+  }
+
+  // 5. 반환점 기준 색상 구분 및 지도/차트 그리기
+  function drawCourseAndChart() {
+    markersGroup.clearLayers();
+    if (outboundPolyline) map.removeLayer(outboundPolyline);
+    if (inboundPolyline) map.removeLayer(inboundPolyline);
+
+    const totalPts = currentDisplayPoints.length;
+    if (totalPts === 0) return;
+
+    // 중간 지점(반환점) 인덱스 계산
+    const halfIndex = Math.floor(totalPts / 2);
+
+    const outboundPts = currentDisplayPoints.slice(0, halfIndex + 1).map(p => [p.lat, p.lng]);
+    const inboundPts = currentDisplayPoints.slice(halfIndex).map(p => [p.lat, p.lng]);
+
+    // ① 반환 전 코스선 (파란색)
+    outboundPolyline = L.polyline(outboundPts, {
+      color: '#007bff',
+      weight: 6,
+      opacity: 0.8,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+
+    // ② 반환 후 코스선 (주황색/빨간색) - 미세 오프셋 처리로 파란선과 겹쳐도 입체감 표현
+    inboundPolyline = L.polyline(inboundPts, {
+      color: '#ff5500',
+      weight: 4,
+      opacity: 0.9,
+      dashArray: '8, 4', // 되돌아오는 길은 점선/실선 구분 가능
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+
+    // 주요 지점 마커 추가
+    const startPt = currentDisplayPoints[0];
+    const turnPt = currentDisplayPoints[halfIndex];
+    const endPt = currentDisplayPoints[totalPts - 1];
+
+    L.marker([startPt.lat, startPt.lng]).addTo(markersGroup).bindPopup('🏁 <b>출발점 (START)</b>');
+    L.marker([turnPt.lat, turnPt.lng]).addTo(markersGroup).bindPopup(`🔄 <b>반환점 (${(turnPt.dist).toFixed(1)}km 지점)</b>`);
+    L.marker([endPt.lat, endPt.lng]).addTo(markersGroup).bindPopup('🎯 <b>도착점 (FINISH)</b>');
+
+    // 정보 패널
+    const maxDist = currentDisplayPoints[totalPts - 1].dist;
+    const maxEle = Math.max(...currentDisplayPoints.map(p => p.ele));
+    const minEle = Math.min(...currentDisplayPoints.map(p => p.ele));
+
+    document.getElementById('distInfo').innerText = `총 거리: ${maxDist.toFixed(2)} km`;
+    document.getElementById('eleInfo').innerText = `최고: ${maxEle.toFixed(1)} m / 최저: ${minEle.toFixed(1)} m`;
+
+    // 전체 코스 화면 줌 자동 조정
+    map.fitBounds(outboundPolyline.getBounds());
+
+    // 고도 차트 재생성
+    renderChart();
+  }
+
+  // 6. Chart.js 고도 그래프 (반환 전/후 배경 구분 반영)
+  function renderChart() {
+    const ctx = document.getElementById('elevationChart').getContext('2d');
+    const labels = currentDisplayPoints.map(p => p.dist.toFixed(2));
+    const data = currentDisplayPoints.map(p => p.ele.toFixed(1));
+
+    if (elevationChart) elevationChart.destroy();
+
+    elevationChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '고도 (m)',
+          data: data,
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.15)',
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            title: { display: true, text: '이동 거리 (km)' },
+            ticks: { maxTicksLimit: 10 }
+          },
+          y: {
+            title: { display: true, text: '고도 (m)' }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (items) => `거리: ${items[0].label} km`,
+              label: (item) => `고도: ${item.formattedValue} m`
+            }
+          }
+        },
+        onHover: (event, activeElements) => {
+          if (activeElements && activeElements.length > 0) {
+            const index = activeElements[0].index;
+            const pt = currentDisplayPoints[index];
+            if (pt) {
+              hoverMarker.setLatLng([pt.lat, pt.lng]);
+              hoverMarker.setOpacity(1);
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>
