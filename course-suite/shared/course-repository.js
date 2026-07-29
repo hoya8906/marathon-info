@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, limit, query, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { getFirebaseDb, getFirebaseOptions, isFirebaseEnabled } from './firebase.js';
 import { getEventConfig } from './config.js';
 
@@ -76,4 +76,52 @@ export async function loadFirebaseCourseBundle(eventId = 'gcrun') {
     console.warn('Firebase course load failed; falling back to static config.', error);
     return { ...fallback, error };
   }
+}
+
+export async function saveGpxVersionFromXml({
+  eventId = 'gcrun',
+  courseId = 'gcrun-2026',
+  versionId = 'v001',
+  fileName,
+  gpxXml,
+  summary,
+  uploadedBy
+}) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!gpxXml || !gpxXml.includes('<gpx')) throw new Error('GPX XML 원문이 필요합니다.');
+
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const staticConfig = getEventConfig(eventId);
+
+  await setDoc(doc(db, collections.events, eventId), {
+    title: staticConfig.title,
+    subtitle: staticConfig.subtitle,
+    activeCourseId: courseId,
+    defaultMapApi: staticConfig.defaultMapApi || 'kakao',
+    visibility: 'public',
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  await setDoc(doc(db, collections.courseMaps, courseId), {
+    eventId,
+    title: `${staticConfig.title} 코스`,
+    activeGpxVersionId: versionId,
+    defaultMapApi: staticConfig.defaultMapApi || 'kakao',
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  await setDoc(doc(db, collections.courseMaps, courseId, collections.gpxVersions, versionId), {
+    fileName,
+    isActive: true,
+    gpxXml,
+    pointCount: summary.pointCount,
+    distanceKm: Number(summary.distanceKm.toFixed(3)),
+    elevationMin: Number(summary.elevationMin.toFixed(1)),
+    elevationMax: Number(summary.elevationMax.toFixed(1)),
+    uploadedBy,
+    uploadedAt: serverTimestamp()
+  }, { merge: true });
+
+  return { eventId, courseId, versionId, pointCount: summary.pointCount, distanceKm: summary.distanceKm };
 }

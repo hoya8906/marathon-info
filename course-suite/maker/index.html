@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Maker · GPX Upload</title>
+  <link rel="stylesheet" href="./maker.css">
+</head>
+<body>
+  <main class="maker-shell">
+    <header class="maker-header">
+      <div>
+        <p class="eyebrow">course-suite maker</p>
+        <h1>GPX 업로드</h1>
+        <p class="subtitle">운영진이 GPX 원본을 선택하면 브라우저에서 파싱 후 Firestore `gpxXml`로 저장합니다.</p>
+      </div>
+      <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
+    </header>
+
+    <section class="card auth-card">
+      <h2>1. 관리자 로그인</h2>
+      <p>관리자 이메일: <strong id="adminEmail">a66452411@gmail.com</strong></p>
+      <button id="loginButton" type="button">Google 로그인</button>
+      <button id="logoutButton" type="button" hidden>로그아웃</button>
+      <p id="authStatus" class="status">로그인이 필요합니다.</p>
+    </section>
+
+    <section class="card upload-card">
+      <h2>2. GPX 선택 및 저장</h2>
+      <div class="form-grid">
+        <label>Event ID <input id="eventIdInput" value="gcrun"></label>
+        <label>Course ID <input id="courseIdInput" value="gcrun-2026"></label>
+        <label>Version ID <input id="versionIdInput" value="v001"></label>
+      </div>
+      <input id="gpxFileInput" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
+      <button id="uploadButton" type="button" disabled>GPX 파싱 후 Firestore 저장</button>
+      <p id="uploadStatus" class="status">GPX 파일을 선택하세요.</p>
+    </section>
+
+    <section class="card result-card">
+      <h2>결과</h2>
+      <pre id="resultOutput">아직 업로드 전입니다.</pre>
+    </section>
+  </main>
+
+  <script type="module" src="./maker.js"></script>
+</body>
+</html>

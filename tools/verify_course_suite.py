@@ -9,6 +9,9 @@ REQUIRED_FILES = [
     "course-suite/viewer/index.html",
     "course-suite/viewer/viewer.css",
     "course-suite/viewer/viewer.js",
+    "course-suite/maker/index.html",
+    "course-suite/maker/maker.css",
+    "course-suite/maker/maker.js",
     "course-suite/shared/config.js",
     "course-suite/shared/gpx-utils.js",
     "course-suite/shared/course-model.js",
@@ -102,12 +105,27 @@ def test_firebase_setup_docs_and_safe_config_template():
     assert_contains(firebase, "initializeApp", "firebase.js")
     assert_contains(firebase, "getFirestore", "firebase.js")
     assert_contains(repository, "loadFirebaseCourseBundle", "course-repository.js")
+    assert_contains(repository, "saveGpxVersionFromXml", "course-repository.js")
     assert_contains(repository, "gpxXml", "course-repository.js")
     assert_contains(repository, "fallback", "course-repository.js")
     assert_contains(viewer, "loadFirebaseCourseBundle", "viewer.js")
     assert_contains(viewer, "applyCourseBundle", "viewer.js")
     assert "github" + "_pat_" not in config
     assert "gh" + "p_" not in config
+
+
+def test_course_maker_uploads_gpx_to_firestore():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    assert_contains(html, "gpxFileInput", "maker/index.html")
+    assert_contains(html, "loginButton", "maker/index.html")
+    assert_contains(js, "signInWithGoogle", "maker/maker.js")
+    assert_contains(js, "saveGpxVersionFromXml", "maker/maker.js")
+    assert_contains(js, "parseGpx", "maker/maker.js")
+    assert_contains(js, "summarizeTrack", "maker/maker.js")
+    assert_contains(js, "FileReader", "maker/maker.js")
+    assert_contains(css, ".maker-shell", "maker/maker.css")
 
 
 def test_kakao_pois_are_separated_from_course_overlays():
