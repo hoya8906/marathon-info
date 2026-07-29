@@ -11,239 +11,272 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    :root {
+      --bg: #08090a;
+      --panel: rgba(15, 16, 18, .86);
+      --surface: rgba(255, 255, 255, .045);
+      --surface-strong: rgba(255, 255, 255, .075);
+      --border: rgba(255, 255, 255, .09);
+      --border-soft: rgba(255, 255, 255, .055);
+      --text: #f7f8f8;
+      --text-2: #d0d6e0;
+      --muted: #8a8f98;
+      --blue: #5e6ad2;
+      --blue-2: #7170ff;
+      --orange: #ff7a1a;
+      --green: #27a644;
+      --danger: #ff4d5e;
+      --yellow: #f9e000;
+      --shadow: 0 30px 90px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
       margin: 0;
-      padding: 20px;
-      background-color: #f8f9fa;
+      min-height: 100vh;
+      padding: 24px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 4%, rgba(94,106,210,.32), transparent 28%),
+        radial-gradient(circle at 88% 10%, rgba(255,122,26,.15), transparent 24%),
+        linear-gradient(180deg, #101114 0%, var(--bg) 64%);
+      font-feature-settings: "cv01", "ss03";
     }
     .container {
-      max-width: 1000px;
+      width: min(1180px, 100%);
       margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
     }
     .header-bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    .title-block h2 {
+      margin: 0;
+      font-size: clamp(24px, 3.2vw, 38px);
+      line-height: 1.05;
+      letter-spacing: -1px;
+      font-weight: 700;
+    }
+    .title-block p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .map-actions,
+    .filter-group,
+    .kakao-layer-panel,
+    .legend,
+    .info-panel {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .map-actions { justify-content: flex-end; }
+    .control-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      background: rgba(255,255,255,.028);
+    }
+    .control-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 10px;
     }
-    .filter-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
+    .control-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
     }
-    .btn-course {
-      padding: 8px 16px;
-      border: 1px solid #007bff;
-      background: white;
-      color: #007bff;
-      border-radius: 20px;
-      font-weight: bold;
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.035);
+      color: var(--text-2);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
     }
-    .btn-course.active, .btn-course:hover {
-      background: #007bff;
-      color: white;
+    button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
     }
+    .btn-course.active,
+    .btn-map-api.active,
+    .btn-layer.active {
+      border-color: rgba(113,112,255,.55);
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(94,106,210,.28);
+    }
+    .btn-map-api.kakao.active,
+    .btn-map-api.kakao:hover {
+      border-color: rgba(249,224,0,.75);
+      background: var(--yellow);
+      color: #3c1e1e;
+      box-shadow: 0 10px 25px rgba(249,224,0,.18);
+    }
+    .btn-kakao,
     .btn-fullscreen {
-      padding: 8px 16px;
-      border: 1px solid #333;
-      background: #333;
-      color: white;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-fullscreen:hover {
-      background: #555;
-    }
-    .map-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-    .btn-location {
-      padding: 8px 16px;
-      border: 1px solid #198754;
-      background: #198754;
-      color: white;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-location:hover {
-      background: #157347;
-    }
-    .btn-location.tracking {
-      border-color: #dc3545;
-      background: #dc3545;
-    }
-    .btn-location.tracking:hover {
-      background: #bb2d3b;
+      border-radius: 12px;
+      padding: 10px 13px;
     }
     .btn-kakao {
-      padding: 8px 16px;
-      border: 1px solid #f9e000;
-      background: #f9e000;
+      border-color: rgba(249,224,0,.7);
+      background: rgba(249,224,0,.95);
       color: #3c1e1e;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
     }
-    .btn-kakao:hover {
-      background: #f4d900;
+    .btn-fullscreen { background: rgba(255,255,255,.055); }
+    .kakao-layer-panel {
+      display: none;
+      padding: 12px;
+      border: 1px solid rgba(249,224,0,.22);
+      border-radius: 16px;
+      background: rgba(249,224,0,.075);
     }
+    .kakao-layer-panel.visible { display: flex; }
     .map-wrapper {
       position: relative;
       width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: #111318;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 50px rgba(0,0,0,.35);
     }
     #map,
     #kakaoMap {
       width: 100%;
-      height: 500px;
-      border-radius: 8px;
+      height: min(68vh, 660px);
+      min-height: 520px;
+      border-radius: 24px;
     }
-    #kakaoMap {
-      display: none;
-    }
-    .map-api-group {
-      margin-bottom: 12px;
-    }
-    .btn-map-api {
-      padding: 7px 14px;
-      border: 1px solid #6c757d;
-      background: #fff;
-      color: #495057;
-      border-radius: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-map-api.active,
-    .btn-map-api:hover {
-      background: #495057;
-      color: #fff;
-    }
-    .btn-map-api.kakao.active,
-    .btn-map-api.kakao:hover {
-      border-color: #f9e000;
-      background: #f9e000;
-      color: #3c1e1e;
-    }
-    .kakao-layer-panel {
-      display: none;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 0 0 12px;
-      padding: 10px 12px;
-      border: 1px solid #f1df66;
-      border-radius: 8px;
-      background: #fffbe6;
-      font-size: 13px;
-    }
-    .kakao-layer-panel.visible {
-      display: flex;
-    }
-    .btn-layer {
-      padding: 6px 12px;
-      border: 1px solid #d0d5dd;
-      background: #fff;
-      color: #344054;
-      border-radius: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-layer.active,
-    .btn-layer:hover {
-      border-color: #3c1e1e;
-      background: #3c1e1e;
-      color: #fff;
-    }
-    /* 전체 화면 모드일 때 지도 높이 100% 조정 */
+    #kakaoMap { display: none; }
     #map:fullscreen,
-    #kakaoMap:fullscreen {
-      height: 100vh !important;
-      border-radius: 0;
-    }
+    #kakaoMap:fullscreen,
     #map:-webkit-full-screen,
     #kakaoMap:-webkit-full-screen {
       height: 100vh !important;
       border-radius: 0;
     }
-    /* 툴팁 커스텀 스타일 */
+    .gps-locate-btn {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      z-index: 800;
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.55);
+      background: rgba(12, 16, 22, .88);
+      color: #fff;
+      box-shadow: 0 14px 36px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.2);
+      backdrop-filter: blur(12px);
+    }
+    .gps-locate-btn svg { width: 26px; height: 26px; }
+    .gps-locate-btn.active {
+      border-color: rgba(39,166,68,.85);
+      background: rgba(39,166,68,.95);
+      box-shadow: 0 0 0 7px rgba(39,166,68,.18), 0 14px 36px rgba(0,0,0,.36);
+    }
     .custom-tooltip {
-      font-size: 13px;
-      font-weight: bold;
-      border-radius: 6px;
-      padding: 6px 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,.14) !important;
+      border-radius: 10px;
+      padding: 7px 10px;
+      color: #111318;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 12px 28px rgba(0,0,0,.25);
     }
     .legend {
-      display: flex;
-      gap: 15px;
-      margin-top: 10px;
-      font-size: 13px;
-      color: #555;
-      flex-wrap: wrap;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(255,255,255,.028);
+      color: var(--muted);
+      font-size: 12px;
     }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .legend-item { display: flex; align-items: center; gap: 7px; }
+    .legend-color { width: 22px; height: 4px; border-radius: 99px; }
     .location-status {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #e8f5e9;
-      color: #14532d;
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(39,166,68,.22);
+      border-radius: 14px;
+      background: rgba(39,166,68,.09);
+      color: #b9f6c7;
       font-size: 13px;
       font-weight: 700;
-      display: none;
     }
     .location-status.error {
-      background: #fff3cd;
-      color: #7a4d00;
+      border-color: rgba(255,193,7,.32);
+      background: rgba(255,193,7,.10);
+      color: #ffe3a3;
     }
     .current-location-dot {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: #198754;
+      background: var(--green);
       border: 3px solid #fff;
-      box-shadow: 0 0 0 6px rgba(25, 135, 84, .25), 0 2px 8px rgba(0,0,0,.35);
+      box-shadow: 0 0 0 7px rgba(39,166,68,.26), 0 4px 14px rgba(0,0,0,.45);
     }
-    .legend-color {
-      width: 16px;
-      height: 4px;
-      border-radius: 2px;
+    .info-panel { margin-top: 14px; }
+    .info-badge {
+      padding: 12px 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 800;
     }
     .chart-container {
       position: relative;
-      margin-top: 20px;
-      height: 200px;
+      margin-top: 16px;
+      height: 220px;
       width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 20px;
+      background: rgba(255,255,255,.035);
     }
-    .info-panel {
-      display: flex;
-      gap: 15px;
-      margin-top: 15px;
-      font-size: 14px;
-      font-weight: bold;
-      color: #333;
-    }
-    .info-badge {
-      background: #e9ecef;
-      padding: 8px 14px;
-      border-radius: 6px;
+    @media (max-width: 760px) {
+      body { padding: 10px; }
+      .container { padding: 14px; border-radius: 20px; }
+      .header-bar { grid-template-columns: 1fr; }
+      .map-actions { justify-content: flex-start; }
+      #map, #kakaoMap { min-height: 440px; height: 62vh; }
     }
   </style>
 </head>
@@ -251,62 +284,61 @@
 
 <div class="container">
   <div class="header-bar">
-    <h2 style="margin:0;">🏃‍♂️ 과천 마라톤 코스 & 고도 분석</h2>
+    <div class="title-block">
+      <h2>과천 마라톤 코스맵</h2>
+      <p>GPX 기반 코스, 반환점, 급수대, 고도 변화를 한 화면에서 확인합니다.</p>
+    </div>
     <div class="map-actions">
-      <button class="btn-location" onclick="showCurrentLocation()">📍 현재 위치 표시</button>
-      <button id="trackingButton" class="btn-location" onclick="toggleLocationTracking()">🛰️ 실시간 위치 추적</button>
-      <button class="btn-kakao" onclick="openKakaoMap()">💬 카카오맵 열기</button>
-      <button class="btn-fullscreen" onclick="toggleFullscreen()">⛶ 전체 화면 보기</button>
+      <button class="btn-kakao" onclick="openKakaoMap()">카카오맵 열기</button>
+      <button class="btn-fullscreen" onclick="toggleFullscreen()">전체화면</button>
     </div>
   </div>
 
-  <!-- 지도 API 선택 -->
-  <div class="filter-group map-api-group">
-    <span><strong>지도 API:</strong></span>
-    <button id="leafletApiButton" class="btn-map-api active" onclick="switchMapApi('leaflet')">Leaflet</button>
-    <button id="kakaoApiButton" class="btn-map-api kakao" onclick="switchMapApi('kakao')">카카오맵</button>
-  </div>
-
-  <div id="kakaoLayerPanel" class="kakao-layer-panel">
-    <span><strong>카카오 레이어:</strong></span>
-    <button id="kakaoRoadmapButton" class="btn-layer active" onclick="setKakaoBaseLayer('roadmap')">일반</button>
-    <button id="kakaoSkyviewButton" class="btn-layer" onclick="setKakaoBaseLayer('skyview')">스카이뷰</button>
-    <button id="kakaoHybridButton" class="btn-layer" onclick="setKakaoBaseLayer('hybrid')">하이브리드</button>
-    <button id="kakaoTrafficButton" class="btn-layer" onclick="toggleKakaoOverlay('traffic')">교통</button>
-    <button id="kakaoBicycleButton" class="btn-layer" onclick="toggleKakaoOverlay('bicycle')">자전거</button>
-    <button id="kakaoTerrainButton" class="btn-layer" onclick="toggleKakaoOverlay('terrain')">지형</button>
-  </div>
-
-  <!-- 종목 필터 버튼 -->
-  <div class="filter-group" style="margin-bottom: 15px;">
-    <span><strong>코스 선택:</strong></span>
-    <button class="btn-course active" onclick="filterCourse('ALL')">전체 코스</button>
-    <button class="btn-course" onclick="filterCourse('10K')">10km 코스</button>
-    <button class="btn-course" onclick="filterCourse('HALF')">하프 코스</button>
+  <div class="control-panel">
+    <div class="control-row">
+      <span class="control-label">코스</span>
+      <div class="filter-group">
+        <button class="btn-course active" data-course="ALL" onclick="filterCourse('ALL', this)">전체</button>
+        <button class="btn-course" data-course="10K" onclick="filterCourse('10K', this)">10km</button>
+        <button class="btn-course" data-course="HALF" onclick="filterCourse('HALF', this)">하프</button>
+      </div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">지도</span>
+      <div class="filter-group map-api-group">
+        <button id="leafletApiButton" class="btn-map-api active" onclick="switchMapApi('leaflet')">Leaflet</button>
+        <button id="kakaoApiButton" class="btn-map-api kakao" onclick="switchMapApi('kakao')">카카오맵</button>
+      </div>
+    </div>
+    <div id="kakaoLayerPanel" class="kakao-layer-panel">
+      <span class="control-label">레이어</span>
+      <button id="kakaoRoadmapButton" class="btn-layer active" onclick="setKakaoBaseLayer('roadmap')">일반</button>
+      <button id="kakaoSkyviewButton" class="btn-layer" onclick="setKakaoBaseLayer('skyview')">스카이뷰</button>
+      <button id="kakaoHybridButton" class="btn-layer" onclick="setKakaoBaseLayer('hybrid')">하이브리드</button>
+      <button id="kakaoTrafficButton" class="btn-layer" onclick="toggleKakaoOverlay('traffic')">교통</button>
+      <button id="kakaoBicycleButton" class="btn-layer" onclick="toggleKakaoOverlay('bicycle')">자전거</button>
+      <button id="kakaoTerrainButton" class="btn-layer" onclick="toggleKakaoOverlay('terrain')">지형</button>
+    </div>
   </div>
 
   <div class="map-wrapper">
     <div id="map"></div>
     <div id="kakaoMap"></div>
+    <button id="gpsButton" class="gps-locate-btn" onclick="showCurrentLocation()" aria-label="내 위치 표시" title="내 위치 표시">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="6.5" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="12" r="2.4" fill="currentColor"/>
+      </svg>
+    </button>
   </div>
   <div id="locationStatus" class="location-status"></div>
 
-  <!-- 범례 -->
   <div class="legend">
-    <div class="legend-item">
-      <div class="legend-color" style="background: #007bff;"></div>
-      <span>반환 전 (가는 길)</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-color" style="background: #ff5500;"></div>
-      <span>반환 후 (오는 길)</span>
-    </div>
-    <div class="legend-item">
-      <span>💧 2.5km 간격 급수대</span>
-    </div>
-    <div class="legend-item">
-      <span>🚩 0.68km 대회장 진입로</span>
-    </div>
+    <div class="legend-item"><div class="legend-color" style="background: #5e6ad2;"></div><span>가는 길</span></div>
+    <div class="legend-item"><div class="legend-color" style="background: #ff7a1a;"></div><span>오는 길</span></div>
+    <div class="legend-item"><span>💧 2.5km 급수대</span></div>
+    <div class="legend-item"><span>🚩 0.68km 대회장 진입로</span></div>
   </div>
 
   <div class="info-panel">
@@ -340,6 +372,7 @@
   let allTrackPoints = [];
   let currentDisplayPoints = [];
   let currentType = 'ALL';
+  let currentTurnIndex = 0;
 
   // 핵심 설정값
   const TURN_10K_DIST = 5.6;     // 10km 반환점 (5.6km 지점)
@@ -419,8 +452,8 @@
     if (!currentAccuracyCircle) {
       currentAccuracyCircle = L.circle(latlng, {
         radius: accuracy,
-        color: '#198754',
-        fillColor: '#198754',
+        color: '#27a644',
+        fillColor: '#27a644',
         fillOpacity: 0.12,
         weight: 2
       }).addTo(map);
@@ -440,8 +473,8 @@
     }
     syncKakaoCurrentLocation();
 
-    const modeText = isFollowingLocation ? '실시간 추적 중' : '현재 위치 표시 완료';
-    setLocationStatus(`${modeText} · 오차 범위 약 ${Math.round(accuracy)}m`);
+    document.getElementById('gpsButton')?.classList.add('active');
+    setLocationStatus(`내 위치 표시 완료 · 오차 범위 약 ${Math.round(accuracy)}m`);
   }
 
   function showCurrentLocation() {
@@ -465,26 +498,24 @@
 
   function toggleLocationTracking() {
     if (!navigator.geolocation) {
-      setLocationStatus('이 브라우저에서는 실시간 위치 추적을 지원하지 않습니다.', true);
+      setLocationStatus('이 브라우저에서는 내 위치 따라가기를 지원하지 않습니다.', true);
       return;
     }
 
-    const button = document.getElementById('trackingButton');
+    const button = document.getElementById('gpsButton');
 
     if (locationWatchId !== null) {
       navigator.geolocation.clearWatch(locationWatchId);
       locationWatchId = null;
       isFollowingLocation = false;
-      button.classList.remove('tracking');
-      button.textContent = '🛰️ 실시간 위치 추적';
-      setLocationStatus('실시간 위치 추적을 중지했습니다.');
+      button?.classList.remove('active');
+      setLocationStatus('내 위치 따라가기를 중지했습니다.');
       return;
     }
 
     isFollowingLocation = true;
-    button.classList.add('tracking');
-    button.textContent = '■ 추적 중지';
-    setLocationStatus('실시간 위치 추적을 시작합니다. 이동하면 지도가 현재 위치를 따라갑니다. 현재 지도 배율은 유지됩니다.');
+    button?.classList.add('active');
+    setLocationStatus('내 위치를 확인하고 있습니다. 이동하면 지도가 현재 위치를 따라갑니다.');
 
     locationWatchId = navigator.geolocation.watchPosition(
       (position) => updateCurrentLocation(position, isFollowingLocation),
@@ -495,8 +526,7 @@
           locationWatchId = null;
         }
         isFollowingLocation = false;
-        button.classList.remove('tracking');
-        button.textContent = '🛰️ 실시간 위치 추적';
+        button?.classList.remove('active');
       },
       {
         enableHighAccuracy: true,
@@ -580,7 +610,7 @@
         initKakaoMap();
         drawKakaoCourse();
         syncKakaoCurrentLocation();
-        setLocationStatus('카카오맵을 기본 지도로 표시했습니다. 실시간 위치 추적 권한을 요청합니다.');
+        setLocationStatus('카카오맵으로 전환했습니다.');
       })
       .catch((err) => {
         activeMapApi = 'leaflet';
@@ -657,13 +687,12 @@
     clearKakaoOverlays();
 
     const totalPts = currentDisplayPoints.length;
-    const halfIndex = currentDisplayPoints.findIndex(p => p.lat === currentDisplayPoints[0].lat && p.lng === currentDisplayPoints[0].lng);
-    const actualHalfIndex = halfIndex > 0 ? halfIndex : Math.floor(totalPts / 2);
+    const actualHalfIndex = currentTurnIndex > 0 ? currentTurnIndex : Math.floor(totalPts / 2);
     const outboundPath = currentDisplayPoints.slice(0, actualHalfIndex + 1).map(p => new kakao.maps.LatLng(p.lat, p.lng));
     const inboundPath = currentDisplayPoints.slice(actualHalfIndex).map(p => new kakao.maps.LatLng(p.lat, p.lng));
 
-    addKakaoOverlay(new kakao.maps.Polyline({ path: outboundPath, strokeWeight: 6, strokeColor: '#007bff', strokeOpacity: 0.9, strokeStyle: 'solid' }));
-    addKakaoOverlay(new kakao.maps.Polyline({ path: inboundPath, strokeWeight: 4, strokeColor: '#ff5500', strokeOpacity: 0.95, strokeStyle: 'dash' }));
+    addKakaoOverlay(new kakao.maps.Polyline({ path: outboundPath, strokeWeight: 6, strokeColor: '#5e6ad2', strokeOpacity: 0.9, strokeStyle: 'solid' }));
+    addKakaoOverlay(new kakao.maps.Polyline({ path: inboundPath, strokeWeight: 4, strokeColor: '#ff7a1a', strokeOpacity: 0.95, strokeStyle: 'dash' }));
 
     const startPt = currentDisplayPoints[0];
     const endPt = currentDisplayPoints[totalPts - 1];
@@ -690,9 +719,9 @@
         center: latlng,
         radius: currentPosition.accuracy,
         strokeWeight: 2,
-        strokeColor: '#198754',
+        strokeColor: '#27a644',
         strokeOpacity: 0.9,
-        fillColor: '#198754',
+        fillColor: '#27a644',
         fillOpacity: 0.12,
         map: kakaoMap
       });
@@ -706,7 +735,7 @@
 
   // 지도 전체 화면 토글 함수
   function toggleFullscreen() {
-    const mapElem = document.getElementById('map');
+    const mapElem = document.getElementById(activeMapApi === 'kakao' ? 'kakaoMap' : 'map');
     if (!document.fullscreenElement) {
       if (mapElem.requestFullscreen) mapElem.requestFullscreen();
       else if (mapElem.webkitRequestFullscreen) mapElem.webkitRequestFullscreen();
@@ -738,13 +767,10 @@
       .then(xmlText => {
         parseGPX(xmlText);
         filterCourse('ALL');
-        switchMapApi('kakao');
-        toggleLocationTracking();
       })
       .catch(err => {
         document.getElementById('distInfo').innerText = err.message;
-        switchMapApi('kakao');
-        toggleLocationTracking();
+        setLocationStatus('GPX 파일을 불러오지 못했습니다. files/과천마라톤.gpx 경로를 확인해 주세요.', true);
       });
   });
 
@@ -786,10 +812,10 @@
   }
 
   // 4. 종목별 코스 및 복귀(0.68km 진입) 동선 구성
-  function filterCourse(type) {
+  function filterCourse(type, button = null) {
     currentType = type;
-    document.querySelectorAll('.btn-course').forEach(btn => btn.classList.remove('active'));
-    event?.target?.classList.add('active');
+    document.querySelectorAll('.btn-course').forEach(btn => btn.classList.toggle('active', btn.dataset.course === type));
+    if (button) button.classList.add('active');
 
     if (allTrackPoints.length === 0) return;
 
@@ -831,6 +857,7 @@
     });
 
     currentDisplayPoints = [...outbound, ...reconstructedInbound];
+    currentTurnIndex = Math.max(0, outbound.length - 1);
     drawCourseAndChart();
     if (activeMapApi === 'kakao') drawKakaoCourse();
   }
@@ -845,15 +872,14 @@
     if (totalPts === 0) return;
 
     // 가는 길 / 오는 길 분할 인덱스
-    const halfIndex = currentDisplayPoints.findIndex(p => p.lat === currentDisplayPoints[0].lat && p.lng === currentDisplayPoints[0].lng);
-    const actualHalfIndex = halfIndex > 0 ? halfIndex : Math.floor(totalPts / 2);
+    const actualHalfIndex = currentTurnIndex > 0 ? currentTurnIndex : Math.floor(totalPts / 2);
 
     const outboundPts = currentDisplayPoints.slice(0, actualHalfIndex + 1).map(p => [p.lat, p.lng]);
     const inboundPts = currentDisplayPoints.slice(actualHalfIndex).map(p => [p.lat, p.lng]);
 
     // 반환 전 코스선 (파란색)
     outboundPolyline = L.polyline(outboundPts, {
-      color: '#007bff',
+      color: '#5e6ad2',
       weight: 6,
       opacity: 0.85,
       lineCap: 'round',
@@ -862,7 +888,7 @@
 
     // 반환 후 코스선 (주황색)
     inboundPolyline = L.polyline(inboundPts, {
-      color: '#ff5500',
+      color: '#ff7a1a',
       weight: 4,
       opacity: 0.95,
       dashArray: '8, 4',
@@ -913,8 +939,8 @@
       const waterPt = findPointAtDistance(allTrackPoints, targetD);
       
       const circleMarker = L.circleMarker([waterPt.lat, waterPt.lng], {
-        color: '#0056b3',
-        fillColor: '#00aaff',
+        color: '#3b82f6',
+        fillColor: '#38bdf8',
         fillOpacity: 0.9,
         radius: 8
       }).addTo(markersGroup);
@@ -954,8 +980,8 @@
         datasets: [{
           label: '고도 (m)',
           data: data,
-          borderColor: '#007bff',
-          backgroundColor: 'rgba(0, 123, 255, 0.15)',
+          borderColor: '#7170ff',
+          backgroundColor: 'rgba(113, 112, 255, 0.18)',
           fill: true,
           pointRadius: 0,
           pointHoverRadius: 6,
