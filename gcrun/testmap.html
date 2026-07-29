@@ -271,6 +271,27 @@
       border-radius: 20px;
       background: rgba(255,255,255,.035);
     }
+
+    .file-input { display: none; }
+    .btn-upload {
+      border-radius: 12px;
+      padding: 10px 13px;
+      border-color: rgba(113,112,255,.4);
+      background: rgba(113,112,255,.12);
+      color: var(--text);
+    }
+    .btn-upload:hover { background: rgba(113,112,255,.22); }
+    .btn-secondary {
+      border-radius: 12px;
+      padding: 10px 13px;
+      background: rgba(255,255,255,.035);
+    }
+    .upload-status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 180px;
+    }
     @media (max-width: 760px) {
       body { padding: 10px; }
       .container { padding: 14px; border-radius: 20px; }
@@ -306,11 +327,20 @@
     <div class="control-row">
       <span class="control-label">지도</span>
       <div class="filter-group map-api-group">
-        <button id="leafletApiButton" class="btn-map-api active" onclick="switchMapApi('leaflet')">Leaflet</button>
-        <button id="kakaoApiButton" class="btn-map-api kakao" onclick="switchMapApi('kakao')">카카오맵</button>
+        <button id="leafletApiButton" class="btn-map-api" onclick="switchMapApi('leaflet')">Leaflet</button>
+        <button id="kakaoApiButton" class="btn-map-api kakao active" onclick="switchMapApi('kakao')">카카오맵</button>
       </div>
     </div>
-    <div id="kakaoLayerPanel" class="kakao-layer-panel">
+    <div class="control-row">
+      <span class="control-label">GPX</span>
+      <div class="filter-group">
+        <input id="gpxFileInput" class="file-input" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml" onchange="handleGpxUpload(event)">
+        <button class="btn-upload" onclick="document.getElementById('gpxFileInput').click()">GPX 업로드</button>
+        <button id="resetGpxButton" class="btn-secondary" onclick="resetSavedGpx()" style="display:none;">기본 GPX로 복원</button>
+        <span id="gpxUploadStatus" class="upload-status">기본 GPX 사용 중</span>
+      </div>
+    </div>
+    <div id="kakaoLayerPanel" class="kakao-layer-panel visible">
       <span class="control-label">레이어</span>
       <button id="kakaoRoadmapButton" class="btn-layer active" onclick="setKakaoBaseLayer('roadmap')">일반</button>
       <button id="kakaoSkyviewButton" class="btn-layer" onclick="setKakaoBaseLayer('skyview')">스카이뷰</button>
@@ -373,6 +403,9 @@
   let currentDisplayPoints = [];
   let currentType = 'ALL';
   let currentTurnIndex = 0;
+  const DEFAULT_GPX_PATH = 'files/과천마라톤.gpx';
+  const SAVED_GPX_KEY = 'gcrun.testmap.savedGpxXml';
+  const SAVED_GPX_NAME_KEY = 'gcrun.testmap.savedGpxName';
 
   // 핵심 설정값
   const TURN_10K_DIST = 5.6;     // 10km 반환점 (5.6km 지점)
@@ -756,17 +789,85 @@
     return R * c;
   }
 
+  function updateGpxUploadStatus(message, hasSaved = false) {
+    const status = document.getElementById('gpxUploadStatus');
+    const resetButton = document.getElementById('resetGpxButton');
+    if (status) status.textContent = message;
+    if (resetButton) resetButton.style.display = hasSaved ? 'inline-flex' : 'none';
+  }
+
+  function loadGpxXml(xmlText, sourceLabel = 'GPX') {
+    parseGPX(xmlText);
+    filterCourse(currentType || 'ALL');
+    if (activeMapApi === 'kakao') drawKakaoCourse();
+    const total = allTrackPoints.length ? allTrackPoints[allTrackPoints.length - 1].dist.toFixed(2) : '0.00';
+    setLocationStatus(`${sourceLabel} 적용 완료 · ${allTrackPoints.length.toLocaleString()}개 포인트 · 원본 ${total}km`);
+  }
+
+  function handleGpxUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const xmlText = String(reader.result || '');
+        loadGpxXml(xmlText, file.name);
+        try {
+          localStorage.setItem(SAVED_GPX_KEY, xmlText);
+          localStorage.setItem(SAVED_GPX_NAME_KEY, file.name);
+          updateGpxUploadStatus(`저장됨: ${file.name}`, true);
+        } catch (storageError) {
+          updateGpxUploadStatus(`임시 적용: ${file.name}`, false);
+          setLocationStatus('GPX는 적용됐지만 브라우저 저장공간 제한으로 저장하지 못했습니다.', true);
+        }
+      } catch (err) {
+        setLocationStatus(`GPX 파일을 읽지 못했습니다: ${err.message}`, true);
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.onerror = () => setLocationStatus('GPX 파일을 읽는 중 오류가 발생했습니다.', true);
+    reader.readAsText(file);
+  }
+
+  function resetSavedGpx() {
+    localStorage.removeItem(SAVED_GPX_KEY);
+    localStorage.removeItem(SAVED_GPX_NAME_KEY);
+    updateGpxUploadStatus('기본 GPX 사용 중', false);
+    fetch(DEFAULT_GPX_PATH)
+      .then(res => {
+        if(!res.ok) throw new Error('GPX 파일 로드 실패');
+        return res.text();
+      })
+      .then(xmlText => loadGpxXml(xmlText, '기본 GPX'))
+      .catch(err => {
+        document.getElementById('distInfo').innerText = err.message;
+        setLocationStatus('기본 GPX 파일을 불러오지 못했습니다. files/과천마라톤.gpx 경로를 확인해 주세요.', true);
+      });
+  }
+
   // 2. GPX 자동 불러오기
   window.addEventListener('DOMContentLoaded', () => {
     setKakaoLayerButtonState();
-    fetch('files/과천마라톤.gpx')
+    setMapApiButton('kakao');
+    switchMapApi('kakao');
+
+    const savedGpx = localStorage.getItem(SAVED_GPX_KEY);
+    const savedName = localStorage.getItem(SAVED_GPX_NAME_KEY) || '업로드 GPX';
+    if (savedGpx) {
+      updateGpxUploadStatus(`저장됨: ${savedName}`, true);
+      loadGpxXml(savedGpx, savedName);
+      return;
+    }
+
+    fetch(DEFAULT_GPX_PATH)
       .then(res => {
         if(!res.ok) throw new Error('GPX 파일 로드 실패');
         return res.text();
       })
       .then(xmlText => {
-        parseGPX(xmlText);
-        filterCourse('ALL');
+        updateGpxUploadStatus('기본 GPX 사용 중', false);
+        loadGpxXml(xmlText, '기본 GPX');
       })
       .catch(err => {
         document.getElementById('distInfo').innerText = err.message;
@@ -778,7 +879,13 @@
   function parseGPX(xmlText) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+    if (xmlDoc.getElementsByTagName('parsererror').length) {
+      throw new Error('올바른 GPX/XML 형식이 아닙니다.');
+    }
     const trkpts = xmlDoc.getElementsByTagName("trkpt");
+    if (trkpts.length === 0) {
+      throw new Error('GPX 트랙 포인트(trkpt)가 없습니다.');
+    }
 
     allTrackPoints = [];
     let accumDist = 0;
