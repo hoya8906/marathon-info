@@ -13,6 +13,7 @@ REQUIRED_FILES = [
     "course-suite/shared/gpx-utils.js",
     "course-suite/shared/course-model.js",
     "course-suite/shared/poi-icons.js",
+    "course-suite/shared/poi-schema.js",
     "course-suite/shared/map-adapters/kakao-map.js",
     "course-suite/shared/map-adapters/leaflet-map.js",
     "course-suite/docs/operations-guide.md",
@@ -52,6 +53,7 @@ def test_shared_modules_export_expected_api():
         "course-suite/shared/gpx-utils.js": ["export function parseGpx", "export function getDistanceKm", "export function findPointAtDistance"],
         "course-suite/shared/course-model.js": ["export function buildCourseDisplay", "FINISH_BRANCH_DIST", "TURN_HALF_DIST"],
         "course-suite/shared/poi-icons.js": ["export const POI_TYPES", "water", "cone", "sign"],
+        "course-suite/shared/poi-schema.js": ["export const POI_VISIBILITY", "export const POI_STATUS", "export function normalizePoi", "export function groupPoisByType", "export function sortPoisForFieldWork"],
         "course-suite/shared/map-adapters/kakao-map.js": ["export class KakaoMapAdapter", "drawCourse", "setCurrentLocation"],
         "course-suite/shared/map-adapters/leaflet-map.js": ["export class LeafletMapAdapter", "drawCourse", "setCurrentLocation"],
     }
@@ -59,6 +61,19 @@ def test_shared_modules_export_expected_api():
         text = read(rel)
         for token in tokens:
             assert_contains(text, token, rel)
+
+
+def test_viewer_has_maintainable_poi_filters_and_field_cards():
+    html = read("course-suite/viewer/index.html")
+    js = read("course-suite/viewer/viewer.js")
+    css = read("course-suite/viewer/viewer.css")
+    assert_contains(html, "poiFilters", "viewer/index.html")
+    assert_contains(html, "poiList", "viewer/index.html")
+    assert_contains(js, "renderPoiFilters", "viewer/viewer.js")
+    assert_contains(js, "sortPoisForFieldWork", "viewer/viewer.js")
+    assert_contains(js, "renderPoiList", "viewer/viewer.js")
+    assert_contains(css, ".poi-list", "viewer/viewer.css")
+    assert_contains(css, ".poi-card", "viewer/viewer.css")
 
 
 def test_kakao_pois_are_separated_from_course_overlays():

@@ -1,6 +1,7 @@
 import { getEventConfig } from '../shared/config.js';
 import { parseGpx } from '../shared/gpx-utils.js';
 import { buildCourseDisplay, filterPoisForMode } from '../shared/course-model.js';
+import { filterPoisByType, normalizePois, sortPoisForFieldWork } from '../shared/poi-schema.js';
 import { getPoiType } from '../shared/poi-icons.js';
 import { LeafletMapAdapter } from '../shared/map-adapters/leaflet-map.js';
 import { KakaoMapAdapter } from '../shared/map-adapters/kakao-map.js';
@@ -17,6 +18,8 @@ let activeMapApi = 'leaflet';
 let leafletAdapter = null;
 let kakaoAdapter = null;
 let elevationChart = null;
+let selectedPoiTypes = new Set();
+let normalizedPois = normalizePois(eventConfig.pois || []);
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -65,6 +68,38 @@ function renderModeButtons() {
   });
 }
 
+function renderPoiFilters() {
+  const container = $('#poiFilters');
+  const types = [...new Set(normalizedPois.map(poi => poi.type))];
+  container.innerHTML = '';
+
+  const allButton = document.createElement('button');
+  allButton.type = 'button';
+  allButton.className = `pill ${selectedPoiTypes.size === 0 ? 'active' : ''}`;
+  allButton.textContent = '전체';
+  allButton.addEventListener('click', () => {
+    selectedPoiTypes = new Set();
+    renderPoiFilters();
+    renderPois();
+  });
+  container.appendChild(allButton);
+
+  types.forEach(type => {
+    const typeMeta = getPoiType(type);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `pill ${selectedPoiTypes.has(type) ? 'active' : ''}`;
+    button.textContent = `${typeMeta.icon} ${typeMeta.label}`;
+    button.addEventListener('click', () => {
+      if (selectedPoiTypes.has(type)) selectedPoiTypes.delete(type);
+      else selectedPoiTypes.add(type);
+      renderPoiFilters();
+      renderPois();
+    });
+    container.appendChild(button);
+  });
+}
+
 function initMaps() {
   leafletAdapter = new LeafletMapAdapter({ mapElementId: 'leafletMap', center: eventConfig.center, onPoiClick: showPoi });
   kakaoAdapter = new KakaoMapAdapter({ mapElementId: 'kakaoMap', center: eventConfig.center, appKey: KAKAO_MAP_APP_KEY, onPoiClick: showPoi });
@@ -108,11 +143,45 @@ function rebuildCourse() {
   renderElevationChart(currentDisplay.points);
 }
 
+function getVisiblePois() {
+  const modeVisible = filterPoisForMode(normalizedPois, mode);
+  return sortPoisForFieldWork(filterPoisByType(modeVisible, selectedPoiTypes));
+}
+
 function renderPois() {
-  const pois = filterPoisForMode(eventConfig.pois || [], mode);
+  const pois = getVisiblePois();
   $('#poiInfo').textContent = `${pois.length}개`;
   if (leafletAdapter) leafletAdapter.drawPois(pois, getPoiType);
   if (kakaoAdapter?.map) kakaoAdapter.drawPois(pois, getPoiType);
+  renderPoiList(pois);
+}
+
+function renderPoiList(pois = getVisiblePois()) {
+  const list = $('#poiList');
+  if (!pois.length) {
+    list.innerHTML = '<p class="subtitle">현재 모드/필터에 표시할 설치물 또는 안내 지점이 없습니다.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  pois.forEach(poi => {
+    const type = getPoiType(poi.type);
+    const card = document.createElement('article');
+    card.className = 'poi-card';
+    card.innerHTML = `
+      <div class="poi-card-title">
+        <strong>${type.icon} ${poi.name}</strong>
+        <span class="badge">${type.label}</span>
+      </div>
+      <div class="poi-meta">
+        <span class="badge">${poi.distanceKm === null ? '거리 미지정' : `${poi.distanceKm.toFixed(2)}km`}</span>
+        <span class="badge">${poi.visibility}</span>
+        <span class="badge">${poi.status}</span>
+        ${poi.quantity ? `<span class="badge">수량 ${poi.quantity}</span>` : ''}
+      </div>
+    `;
+    card.addEventListener('click', () => showPoi(poi));
+    list.appendChild(card);
+  });
 }
 
 function showPoi(poi) {
@@ -120,9 +189,19 @@ function showPoi(poi) {
   const sheet = $('#poiSheet');
   sheet.hidden = false;
   sheet.innerHTML = `
-    <p class="eyebrow">${type.label}</p>
+    <p class="eyebrow">${type.label} · ${poi.visibility}</p>
     <h3>${type.icon} ${poi.name}</h3>
     <p>${poi.description || ''}</p>
+    <div class="poi-meta">
+      <span class="badge">거리 ${poi.distanceKm === null ? '-' : `${poi.distanceKm.toFixed(2)}km`}</span>
+      <span class="badge">방향 ${poi.side}</span>
+      <span class="badge">상태 ${poi.status}</span>
+      <span class="badge">수량 ${poi.quantity}</span>
+    </div>
+    ${poi.team ? `<p>담당: ${poi.team}${poi.assignee ? ` · ${poi.assignee}` : ''}</p>` : ''}
+    ${poi.installBy ? `<p>설치 기준: ${poi.installBy}</p>` : ''}
+    ${poi.removeBy ? `<p>철수 기준: ${poi.removeBy}</p>` : ''}
+    ${poi.equipment?.length ? `<p>준비물: ${poi.equipment.join(', ')}</p>` : ''}
     <p>좌표: ${poi.lat.toFixed(6)}, ${poi.lng.toFixed(6)}</p>
   `;
 }
@@ -177,6 +256,7 @@ async function boot() {
   renderEventHeader();
   renderCourseButtons();
   renderModeButtons();
+  renderPoiFilters();
   initMaps();
   $('#kakaoButton').addEventListener('click', () => switchMapApi('kakao'));
   $('#leafletButton').addEventListener('click', () => switchMapApi('leaflet'));
