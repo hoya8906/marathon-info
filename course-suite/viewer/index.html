@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>course-suite viewer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./viewer.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <main class="shell" data-app="course-suite">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">course-suite</p>
+        <h1 id="eventTitle">코스뷰어</h1>
+        <p id="eventSubtitle" class="subtitle">event=gcrun 기본 코스를 불러오는 중입니다.</p>
+      </div>
+      <div class="top-actions">
+        <button id="kakaoButton" class="pill active" type="button">카카오맵</button>
+        <button id="leafletButton" class="pill" type="button">Leaflet</button>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div>
+        <span class="label">코스</span>
+        <div id="courseButtons" class="button-row"></div>
+      </div>
+      <div>
+        <span class="label">모드</span>
+        <div class="button-row">
+          <button class="pill active" data-mode="public" type="button">참가자</button>
+          <button class="pill" data-mode="staff" type="button">스탭</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="map-card">
+      <div id="leafletMap" class="map"></div>
+      <div id="kakaoMap" class="map"></div>
+      <button id="gpsButton" class="gps-button" type="button" aria-label="내 위치 표시">⌖</button>
+    </section>
+
+    <section id="status" class="status">초기화 중...</section>
+
+    <section class="info-grid">
+      <div class="stat"><span>거리</span><strong id="distanceInfo">-</strong></div>
+      <div class="stat"><span>고도</span><strong id="elevationInfo">-</strong></div>
+      <div class="stat"><span>POI</span><strong id="poiInfo">-</strong></div>
+    </section>
+
+    <section id="poiSheet" class="poi-sheet" hidden></section>
+
+    <section class="chart-card">
+      <canvas id="elevationChart"></canvas>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>
