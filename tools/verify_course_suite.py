@@ -128,6 +128,21 @@ def test_course_maker_uploads_gpx_to_firestore():
     assert_contains(css, ".maker-shell", "maker/maker.css")
 
 
+def test_course_maker_edits_pois_and_downloads_map_image():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    repository = read("course-suite/shared/course-repository.js")
+    for token in ["makerMap", "poiForm", "poiTypeInput", "downloadMapImageButton", "html2canvas"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["initPoiEditorMap", "handleMapClick", "savePoi", "deletePoi", "downloadMapImage", "html2canvas"]:
+        assert_contains(js, token, "maker/maker.js")
+    for token in ["savePoi", "deletePoi", "loadCoursePois"]:
+        assert_contains(repository, token, "course-repository.js")
+    assert_contains(css, ".maker-map", "maker/maker.css")
+    assert_contains(css, ".poi-editor-grid", "maker/maker.css")
+
+
 def test_kakao_pois_are_separated_from_course_overlays():
     text = read("course-suite/shared/map-adapters/kakao-map.js")
     assert_contains(text, "this.courseOverlays", "kakao-map.js")

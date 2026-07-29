@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Maker · GPX Upload</title>
+  <title>Course Maker · GPX/POI Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="./maker.css">
 </head>
 <body>
@@ -11,8 +12,8 @@
     <header class="maker-header">
       <div>
         <p class="eyebrow">course-suite maker</p>
-        <h1>GPX 업로드</h1>
-        <p class="subtitle">운영진이 GPX 원본을 선택하면 브라우저에서 파싱 후 Firestore `gpxXml`로 저장합니다.</p>
+        <h1>코스 메이커</h1>
+        <p class="subtitle">GPX 원본 저장, 지점/설치물 추가·편집, 현재 지도 이미지 다운로드를 한 화면에서 처리합니다.</p>
       </div>
       <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
     </header>
@@ -37,12 +38,67 @@
       <p id="uploadStatus" class="status">GPX 파일을 선택하세요.</p>
     </section>
 
+    <section class="card map-card">
+      <div class="section-head">
+        <div>
+          <h2>3. 지점/설치물 편집</h2>
+          <p class="status">지도를 클릭하면 좌표가 입력됩니다. 기존 지점 카드를 누르면 편집할 수 있습니다.</p>
+        </div>
+        <button id="downloadMapImageButton" type="button">현재 지도 이미지 다운로드</button>
+      </div>
+
+      <div id="makerMapFrame" class="maker-map-frame">
+        <div id="makerMap" class="maker-map"></div>
+      </div>
+
+      <div class="poi-editor-grid">
+        <form id="poiForm" class="poi-form">
+          <input id="poiIdInput" placeholder="poi id 예: water-5k">
+          <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
+          <select id="poiTypeInput">
+            <option value="water">급수대</option>
+            <option value="sign">입간판</option>
+            <option value="cone">라바콘</option>
+            <option value="medical">의료</option>
+            <option value="toilet">화장실</option>
+            <option value="parking">주차장</option>
+            <option value="shuttle">셔틀</option>
+            <option value="control">통제점</option>
+            <option value="venue">대회장</option>
+          </select>
+          <select id="poiVisibilityInput">
+            <option value="public">public</option>
+            <option value="staff">staff</option>
+            <option value="admin">admin</option>
+          </select>
+          <input id="poiLatInput" placeholder="lat">
+          <input id="poiLngInput" placeholder="lng">
+          <input id="poiDistanceInput" placeholder="거리 km">
+          <input id="poiQuantityInput" placeholder="수량" value="1">
+          <input id="poiTeamInput" placeholder="담당팀">
+          <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
+          <div class="button-row">
+            <button id="savePoiButton" type="submit">지점 저장</button>
+            <button id="resetPoiButton" type="button">새 지점</button>
+            <button id="deletePoiButton" type="button">삭제</button>
+          </div>
+          <p id="poiStatus" class="status">로그인 후 지점을 저장할 수 있습니다.</p>
+        </form>
+        <div>
+          <h3>저장된 지점</h3>
+          <div id="poiList" class="poi-list"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="card result-card">
       <h2>결과</h2>
       <pre id="resultOutput">아직 업로드 전입니다.</pre>
     </section>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script type="module" src="./maker.js"></script>
 </body>
 </html>

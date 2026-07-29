@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+import { collection, deleteDoc, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { getFirebaseDb, getFirebaseOptions, isFirebaseEnabled } from './firebase.js';
 import { getEventConfig } from './config.js';
 
@@ -29,6 +29,15 @@ async function loadFirstActiveGpxVersion(db, collections, courseId) {
   if (snap.empty) return null;
   const docSnap = snap.docs[0];
   return { id: docSnap.id, ...docSnap.data() };
+}
+
+export async function loadCoursePois(courseId = 'gcrun-2026') {
+  if (!isFirebaseEnabled()) return [];
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const poisRef = collection(db, collections.courseMaps, courseId, collections.pois);
+  const snap = await getDocs(poisRef);
+  return snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
 async function loadPois(db, collections, courseId) {
@@ -124,4 +133,31 @@ export async function saveGpxVersionFromXml({
   }, { merge: true });
 
   return { eventId, courseId, versionId, pointCount: summary.pointCount, distanceKm: summary.distanceKm };
+}
+
+export async function savePoi({ courseId = 'gcrun-2026', poi }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!poi?.id) throw new Error('POI id가 필요합니다.');
+  if (!Number.isFinite(Number(poi.lat)) || !Number.isFinite(Number(poi.lng))) throw new Error('POI 좌표가 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const poiRef = doc(db, collections.courseMaps, courseId, collections.pois, poi.id);
+  await setDoc(poiRef, {
+    ...poi,
+    lat: Number(poi.lat),
+    lng: Number(poi.lng),
+    distanceKm: poi.distanceKm === '' || poi.distanceKm == null ? null : Number(poi.distanceKm),
+    quantity: poi.quantity === '' || poi.quantity == null ? 1 : Number(poi.quantity),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  return { courseId, poiId: poi.id };
+}
+
+export async function deletePoi({ courseId = 'gcrun-2026', poiId }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!poiId) throw new Error('POI id가 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  await deleteDoc(doc(db, collections.courseMaps, courseId, collections.pois, poiId));
+  return { courseId, poiId };
 }
