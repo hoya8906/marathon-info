@@ -1,0 +1,8 @@
+# Local Firebase config / credentials
+course-suite/shared/firebase-config.js
+*.service-account.json
+firebase-debug.log
+.firebaserc.local
+
+# OS / editor
+.DS_Store

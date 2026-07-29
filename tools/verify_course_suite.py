@@ -17,6 +17,9 @@ REQUIRED_FILES = [
     "course-suite/shared/map-adapters/kakao-map.js",
     "course-suite/shared/map-adapters/leaflet-map.js",
     "course-suite/docs/operations-guide.md",
+    "course-suite/docs/firebase-setup-guide.md",
+    "course-suite/docs/firebase-rules.md",
+    "course-suite/shared/firebase-config.example.js",
 ]
 
 
@@ -74,6 +77,20 @@ def test_viewer_has_maintainable_poi_filters_and_field_cards():
     assert_contains(js, "renderPoiList", "viewer/viewer.js")
     assert_contains(css, ".poi-list", "viewer/viewer.css")
     assert_contains(css, ".poi-card", "viewer/viewer.css")
+
+
+def test_firebase_setup_docs_and_safe_config_template():
+    guide = read("course-suite/docs/firebase-setup-guide.md")
+    rules = read("course-suite/docs/firebase-rules.md")
+    config = read("course-suite/shared/firebase-config.example.js")
+    for token in ["Firestore", "Cloud Storage", "Authentication", "courseMaps", "gpxVersions"]:
+        assert_contains(guide, token, "firebase-setup-guide.md")
+    for token in ["allow read", "allow write", "isAdmin", "gpx", "pois"]:
+        assert_contains(rules, token, "firebase-rules.md")
+    assert_contains(config, "firebaseConfig", "firebase-config.example.js")
+    assert_contains(config, "TODO_REPLACE", "firebase-config.example.js")
+    assert "github" + "_pat_" not in config
+    assert "gh" + "p_" not in config
 
 
 def test_kakao_pois_are_separated_from_course_overlays():
