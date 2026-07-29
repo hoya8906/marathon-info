@@ -137,6 +137,36 @@
       background: #f9e000;
       color: #3c1e1e;
     }
+    .kakao-layer-panel {
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border: 1px solid #f1df66;
+      border-radius: 8px;
+      background: #fffbe6;
+      font-size: 13px;
+    }
+    .kakao-layer-panel.visible {
+      display: flex;
+    }
+    .btn-layer {
+      padding: 6px 12px;
+      border: 1px solid #d0d5dd;
+      background: #fff;
+      color: #344054;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-layer.active,
+    .btn-layer:hover {
+      border-color: #3c1e1e;
+      background: #3c1e1e;
+      color: #fff;
+    }
     /* 전체 화면 모드일 때 지도 높이 100% 조정 */
     #map:fullscreen,
     #kakaoMap:fullscreen {
@@ -237,6 +267,16 @@
     <button id="kakaoApiButton" class="btn-map-api kakao" onclick="switchMapApi('kakao')">카카오맵</button>
   </div>
 
+  <div id="kakaoLayerPanel" class="kakao-layer-panel">
+    <span><strong>카카오 레이어:</strong></span>
+    <button id="kakaoRoadmapButton" class="btn-layer active" onclick="setKakaoBaseLayer('roadmap')">일반</button>
+    <button id="kakaoSkyviewButton" class="btn-layer" onclick="setKakaoBaseLayer('skyview')">스카이뷰</button>
+    <button id="kakaoHybridButton" class="btn-layer" onclick="setKakaoBaseLayer('hybrid')">하이브리드</button>
+    <button id="kakaoTrafficButton" class="btn-layer" onclick="toggleKakaoOverlay('traffic')">교통</button>
+    <button id="kakaoBicycleButton" class="btn-layer" onclick="toggleKakaoOverlay('bicycle')">자전거</button>
+    <button id="kakaoTerrainButton" class="btn-layer" onclick="toggleKakaoOverlay('terrain')">지형</button>
+  </div>
+
   <!-- 종목 필터 버튼 -->
   <div class="filter-group" style="margin-bottom: 15px;">
     <span><strong>코스 선택:</strong></span>
@@ -292,6 +332,8 @@
   let kakaoOverlays = [];
   let kakaoCurrentLocationMarker = null;
   let kakaoCurrentAccuracyCircle = null;
+  let kakaoBaseLayer = 'roadmap';
+  const kakaoOverlayState = { traffic: false, bicycle: false, terrain: false };
   let currentPosition = null;
   let locationWatchId = null;
   let isFollowingLocation = false;
@@ -486,6 +528,7 @@
   function setMapApiButton(api) {
     document.getElementById('leafletApiButton').classList.toggle('active', api === 'leaflet');
     document.getElementById('kakaoApiButton').classList.toggle('active', api === 'kakao');
+    document.getElementById('kakaoLayerPanel').classList.toggle('visible', api === 'kakao');
   }
 
   function loadKakaoSdk() {
@@ -537,7 +580,7 @@
         initKakaoMap();
         drawKakaoCourse();
         syncKakaoCurrentLocation();
-        setLocationStatus('카카오맵으로 전환했습니다.');
+        setLocationStatus('카카오맵을 기본 지도로 표시했습니다. 실시간 위치 추적 권한을 요청합니다.');
       })
       .catch((err) => {
         activeMapApi = 'leaflet';
@@ -554,6 +597,48 @@
     kakaoMap = new kakao.maps.Map(document.getElementById('kakaoMap'), {
       center: new kakao.maps.LatLng(37.441466, 126.996461),
       level: 5
+    });
+    applyKakaoLayers();
+  }
+
+  function setKakaoBaseLayer(layer) {
+    kakaoBaseLayer = layer;
+    applyKakaoLayers();
+  }
+
+  function toggleKakaoOverlay(type) {
+    kakaoOverlayState[type] = !kakaoOverlayState[type];
+    applyKakaoLayers();
+  }
+
+  function setKakaoLayerButtonState() {
+    document.getElementById('kakaoRoadmapButton').classList.toggle('active', kakaoBaseLayer === 'roadmap');
+    document.getElementById('kakaoSkyviewButton').classList.toggle('active', kakaoBaseLayer === 'skyview');
+    document.getElementById('kakaoHybridButton').classList.toggle('active', kakaoBaseLayer === 'hybrid');
+    document.getElementById('kakaoTrafficButton').classList.toggle('active', kakaoOverlayState.traffic);
+    document.getElementById('kakaoBicycleButton').classList.toggle('active', kakaoOverlayState.bicycle);
+    document.getElementById('kakaoTerrainButton').classList.toggle('active', kakaoOverlayState.terrain);
+  }
+
+  function applyKakaoLayers() {
+    setKakaoLayerButtonState();
+    if (!kakaoMap || !window.kakao?.maps) return;
+
+    const baseMapType = {
+      roadmap: kakao.maps.MapTypeId.ROADMAP,
+      skyview: kakao.maps.MapTypeId.SKYVIEW,
+      hybrid: kakao.maps.MapTypeId.HYBRID
+    }[kakaoBaseLayer] || kakao.maps.MapTypeId.ROADMAP;
+    kakaoMap.setMapTypeId(baseMapType);
+
+    const overlayTypes = {
+      traffic: kakao.maps.MapTypeId.TRAFFIC,
+      bicycle: kakao.maps.MapTypeId.BICYCLE,
+      terrain: kakao.maps.MapTypeId.TERRAIN
+    };
+    Object.entries(overlayTypes).forEach(([key, value]) => {
+      kakaoMap.removeOverlayMapTypeId(value);
+      if (kakaoOverlayState[key]) kakaoMap.addOverlayMapTypeId(value);
     });
   }
 
@@ -644,6 +729,7 @@
 
   // 2. GPX 자동 불러오기
   window.addEventListener('DOMContentLoaded', () => {
+    setKakaoLayerButtonState();
     fetch('files/과천마라톤.gpx')
       .then(res => {
         if(!res.ok) throw new Error('GPX 파일 로드 실패');
@@ -652,9 +738,13 @@
       .then(xmlText => {
         parseGPX(xmlText);
         filterCourse('ALL');
+        switchMapApi('kakao');
+        toggleLocationTracking();
       })
       .catch(err => {
         document.getElementById('distInfo').innerText = err.message;
+        switchMapApi('kakao');
+        toggleLocationTracking();
       });
   });
 
