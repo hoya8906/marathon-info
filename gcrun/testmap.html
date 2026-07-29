@@ -64,21 +64,87 @@
     .btn-fullscreen:hover {
       background: #555;
     }
+    .map-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .btn-location {
+      padding: 8px 16px;
+      border: 1px solid #198754;
+      background: #198754;
+      color: white;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-location:hover {
+      background: #157347;
+    }
+    .btn-location.tracking {
+      border-color: #dc3545;
+      background: #dc3545;
+    }
+    .btn-location.tracking:hover {
+      background: #bb2d3b;
+    }
+    .btn-kakao {
+      padding: 8px 16px;
+      border: 1px solid #f9e000;
+      background: #f9e000;
+      color: #3c1e1e;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-kakao:hover {
+      background: #f4d900;
+    }
     .map-wrapper {
       position: relative;
       width: 100%;
     }
-    #map {
+    #map,
+    #kakaoMap {
       width: 100%;
       height: 500px;
       border-radius: 8px;
     }
+    #kakaoMap {
+      display: none;
+    }
+    .map-api-group {
+      margin-bottom: 12px;
+    }
+    .btn-map-api {
+      padding: 7px 14px;
+      border: 1px solid #6c757d;
+      background: #fff;
+      color: #495057;
+      border-radius: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-map-api.active,
+    .btn-map-api:hover {
+      background: #495057;
+      color: #fff;
+    }
+    .btn-map-api.kakao.active,
+    .btn-map-api.kakao:hover {
+      border-color: #f9e000;
+      background: #f9e000;
+      color: #3c1e1e;
+    }
     /* 전체 화면 모드일 때 지도 높이 100% 조정 */
-    #map:fullscreen {
+    #map:fullscreen,
+    #kakaoMap:fullscreen {
       height: 100vh !important;
       border-radius: 0;
     }
-    #map:-webkit-full-screen {
+    #map:-webkit-full-screen,
+    #kakaoMap:-webkit-full-screen {
       height: 100vh !important;
       border-radius: 0;
     }
@@ -102,6 +168,28 @@
       display: flex;
       align-items: center;
       gap: 6px;
+    }
+    .location-status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #e8f5e9;
+      color: #14532d;
+      font-size: 13px;
+      font-weight: 700;
+      display: none;
+    }
+    .location-status.error {
+      background: #fff3cd;
+      color: #7a4d00;
+    }
+    .current-location-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #198754;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 6px rgba(25, 135, 84, .25), 0 2px 8px rgba(0,0,0,.35);
     }
     .legend-color {
       width: 16px;
@@ -134,7 +222,19 @@
 <div class="container">
   <div class="header-bar">
     <h2 style="margin:0;">🏃‍♂️ 과천 마라톤 코스 & 고도 분석</h2>
-    <button class="btn-fullscreen" onclick="toggleFullscreen()">⛶ 전체 화면 보기</button>
+    <div class="map-actions">
+      <button class="btn-location" onclick="showCurrentLocation()">📍 현재 위치 표시</button>
+      <button id="trackingButton" class="btn-location" onclick="toggleLocationTracking()">🛰️ 실시간 위치 추적</button>
+      <button class="btn-kakao" onclick="openKakaoMap()">💬 카카오맵 열기</button>
+      <button class="btn-fullscreen" onclick="toggleFullscreen()">⛶ 전체 화면 보기</button>
+    </div>
+  </div>
+
+  <!-- 지도 API 선택 -->
+  <div class="filter-group map-api-group">
+    <span><strong>지도 API:</strong></span>
+    <button id="leafletApiButton" class="btn-map-api active" onclick="switchMapApi('leaflet')">Leaflet</button>
+    <button id="kakaoApiButton" class="btn-map-api kakao" onclick="switchMapApi('kakao')">카카오맵</button>
   </div>
 
   <!-- 종목 필터 버튼 -->
@@ -147,7 +247,9 @@
 
   <div class="map-wrapper">
     <div id="map"></div>
+    <div id="kakaoMap"></div>
   </div>
+  <div id="locationStatus" class="location-status"></div>
 
   <!-- 범례 -->
   <div class="legend">
@@ -183,6 +285,16 @@
 <script>
   let map, outboundPolyline, inboundPolyline, hoverMarker, elevationChart;
   let markersGroup;
+  let currentLocationMarker, currentAccuracyCircle;
+  let activeMapApi = 'leaflet';
+  let kakaoMap = null;
+  let kakaoSdkLoading = null;
+  let kakaoOverlays = [];
+  let kakaoCurrentLocationMarker = null;
+  let kakaoCurrentAccuracyCircle = null;
+  let currentPosition = null;
+  let locationWatchId = null;
+  let isFollowingLocation = false;
   let allTrackPoints = [];
   let currentDisplayPoints = [];
   let currentType = 'ALL';
@@ -192,6 +304,8 @@
   const TURN_HALF_DIST = 10.65;   // 하프 반환점 (10.65km 지점)
   const WATER_INTERVAL = 2.5;    // 급수대 간격 (2.5km)
   const FINISH_BRANCH_DIST = 0.68; // 복귀 시 대회장으로 들어가는 분기점 (출발 기준 0.68km 지점)
+  // 카카오맵 SDK를 실제로 쓰려면 카카오 개발자 JavaScript 키를 입력하고 도메인을 등록하세요.
+  const KAKAO_MAP_APP_KEY = 'c45e1e08eea53db5a726efa6edae142b';
 
   // 1. 배경 지도 레이어 설정
   const lightTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
@@ -225,6 +339,276 @@
   });
   hoverMarker = L.marker([0, 0], { icon: runnerIcon }).addTo(map);
   hoverMarker.setOpacity(0);
+
+  const currentLocationIcon = L.divIcon({
+    html: '<div class="current-location-dot"></div>',
+    className: 'current-location-marker',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+
+  function setLocationStatus(message, isError = false) {
+    const status = document.getElementById('locationStatus');
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+    status.style.display = 'block';
+  }
+
+  function handleLocationError(error) {
+    const messages = {
+      1: '위치 권한이 거부되었습니다. 브라우저 주소창의 위치 권한을 허용해 주세요.',
+      2: '현재 위치를 확인할 수 없습니다. GPS/네트워크 상태를 확인해 주세요.',
+      3: '현재 위치 확인 시간이 초과되었습니다. 다시 시도해 주세요.'
+    };
+    setLocationStatus(messages[error.code] || '현재 위치를 확인하지 못했습니다.', true);
+  }
+
+  function updateCurrentLocation(position, followMap = true) {
+    const { latitude, longitude, accuracy } = position.coords;
+    const latlng = [latitude, longitude];
+    currentPosition = { lat: latitude, lng: longitude, accuracy };
+
+    if (!currentLocationMarker) {
+      currentLocationMarker = L.marker(latlng, { icon: currentLocationIcon }).addTo(map);
+    } else {
+      currentLocationMarker.setLatLng(latlng);
+    }
+
+    if (!currentAccuracyCircle) {
+      currentAccuracyCircle = L.circle(latlng, {
+        radius: accuracy,
+        color: '#198754',
+        fillColor: '#198754',
+        fillOpacity: 0.12,
+        weight: 2
+      }).addTo(map);
+    } else {
+      currentAccuracyCircle.setLatLng(latlng);
+      currentAccuracyCircle.setRadius(accuracy);
+    }
+
+    currentLocationMarker.bindTooltip(
+      `📍 현재 위치<br><span style="font-weight:normal; font-size:11px;">오차 범위 약 ${Math.round(accuracy)}m</span>`,
+      { permanent: false, direction: 'top', className: 'custom-tooltip', offset: [0, -8] }
+    );
+
+    if (followMap && activeMapApi === 'leaflet') {
+      map.setView(latlng, Math.max(map.getZoom(), 16));
+      currentLocationMarker.openTooltip();
+    }
+    syncKakaoCurrentLocation();
+
+    const modeText = isFollowingLocation ? '실시간 추적 중' : '현재 위치 표시 완료';
+    setLocationStatus(`${modeText} · 오차 범위 약 ${Math.round(accuracy)}m`);
+  }
+
+  function showCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus('이 브라우저에서는 현재 위치 기능을 지원하지 않습니다.', true);
+      return;
+    }
+
+    setLocationStatus('현재 위치를 확인하는 중입니다. 브라우저 위치 권한을 허용해 주세요.');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => updateCurrentLocation(position, true),
+      handleLocationError,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 10000
+      }
+    );
+  }
+
+  function toggleLocationTracking() {
+    if (!navigator.geolocation) {
+      setLocationStatus('이 브라우저에서는 실시간 위치 추적을 지원하지 않습니다.', true);
+      return;
+    }
+
+    const button = document.getElementById('trackingButton');
+
+    if (locationWatchId !== null) {
+      navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+      isFollowingLocation = false;
+      button.classList.remove('tracking');
+      button.textContent = '🛰️ 실시간 위치 추적';
+      setLocationStatus('실시간 위치 추적을 중지했습니다.');
+      return;
+    }
+
+    isFollowingLocation = true;
+    button.classList.add('tracking');
+    button.textContent = '■ 추적 중지';
+    setLocationStatus('실시간 위치 추적을 시작합니다. 이동하면 지도가 현재 위치를 따라갑니다.');
+
+    locationWatchId = navigator.geolocation.watchPosition(
+      (position) => updateCurrentLocation(position, isFollowingLocation),
+      (error) => {
+        handleLocationError(error);
+        if (locationWatchId !== null) {
+          navigator.geolocation.clearWatch(locationWatchId);
+          locationWatchId = null;
+        }
+        isFollowingLocation = false;
+        button.classList.remove('tracking');
+        button.textContent = '🛰️ 실시간 위치 추적';
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 3000
+      }
+    );
+  }
+
+  function openKakaoMap() {
+    let lat = 37.441466;
+    let lng = 126.996461;
+    let label = '과천마라톤 대회장';
+
+    if (currentPosition) {
+      lat = currentPosition.lat;
+      lng = currentPosition.lng;
+      label = '현재 위치';
+    } else if (currentDisplayPoints.length > 0) {
+      lat = currentDisplayPoints[0].lat;
+      lng = currentDisplayPoints[0].lng;
+      label = '과천마라톤 출발지';
+    }
+
+    const kakaoUrl = `https://map.kakao.com/link/map/${encodeURIComponent(label)},${lat},${lng}`;
+    window.open(kakaoUrl, '_blank', 'noopener');
+  }
+ 
+  function setMapApiButton(api) {
+    document.getElementById('leafletApiButton').classList.toggle('active', api === 'leaflet');
+    document.getElementById('kakaoApiButton').classList.toggle('active', api === 'kakao');
+  }
+
+  function loadKakaoSdk() {
+    if (window.kakao?.maps) return Promise.resolve();
+    if (kakaoSdkLoading) return kakaoSdkLoading;
+    if (!KAKAO_MAP_APP_KEY) {
+      return Promise.reject(new Error('카카오맵 JavaScript 키가 필요합니다. KAKAO_MAP_APP_KEY 값을 입력하고 카카오 개발자센터에 도메인을 등록해 주세요.'));
+    }
+
+    kakaoSdkLoading = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(KAKAO_MAP_APP_KEY)}&autoload=false`;
+      script.onload = () => kakao.maps.load(resolve);
+      script.onerror = () => reject(new Error('카카오맵 SDK를 불러오지 못했습니다.'));
+      document.head.appendChild(script);
+    });
+    return kakaoSdkLoading;
+  }
+
+  function switchMapApi(api) {
+    if (api === activeMapApi) return;
+
+    if (api === 'leaflet') {
+      activeMapApi = 'leaflet';
+      document.getElementById('map').style.display = 'block';
+      document.getElementById('kakaoMap').style.display = 'none';
+      setMapApiButton('leaflet');
+      setTimeout(() => map.invalidateSize(), 0);
+      setLocationStatus('Leaflet 지도로 전환했습니다.');
+      return;
+    }
+
+    setLocationStatus('카카오맵으로 전환하는 중입니다.');
+    loadKakaoSdk()
+      .then(() => {
+        activeMapApi = 'kakao';
+        document.getElementById('map').style.display = 'none';
+        document.getElementById('kakaoMap').style.display = 'block';
+        setMapApiButton('kakao');
+        initKakaoMap();
+        drawKakaoCourse();
+        syncKakaoCurrentLocation();
+        setLocationStatus('카카오맵으로 전환했습니다.');
+      })
+      .catch((err) => {
+        activeMapApi = 'leaflet';
+        setMapApiButton('leaflet');
+        setLocationStatus(err.message, true);
+      });
+  }
+
+  function initKakaoMap() {
+    if (kakaoMap) {
+      kakao.maps.event.trigger(kakaoMap, 'resize');
+      return;
+    }
+    kakaoMap = new kakao.maps.Map(document.getElementById('kakaoMap'), {
+      center: new kakao.maps.LatLng(37.441466, 126.996461),
+      level: 5
+    });
+  }
+
+  function clearKakaoOverlays() {
+    kakaoOverlays.forEach((overlay) => overlay.setMap(null));
+    kakaoOverlays = [];
+  }
+
+  function addKakaoOverlay(overlay) {
+    overlay.setMap(kakaoMap);
+    kakaoOverlays.push(overlay);
+  }
+
+  function drawKakaoCourse() {
+    if (!kakaoMap || !window.kakao?.maps || currentDisplayPoints.length === 0) return;
+    clearKakaoOverlays();
+
+    const totalPts = currentDisplayPoints.length;
+    const halfIndex = currentDisplayPoints.findIndex(p => p.lat === currentDisplayPoints[0].lat && p.lng === currentDisplayPoints[0].lng);
+    const actualHalfIndex = halfIndex > 0 ? halfIndex : Math.floor(totalPts / 2);
+    const outboundPath = currentDisplayPoints.slice(0, actualHalfIndex + 1).map(p => new kakao.maps.LatLng(p.lat, p.lng));
+    const inboundPath = currentDisplayPoints.slice(actualHalfIndex).map(p => new kakao.maps.LatLng(p.lat, p.lng));
+
+    addKakaoOverlay(new kakao.maps.Polyline({ path: outboundPath, strokeWeight: 6, strokeColor: '#007bff', strokeOpacity: 0.9, strokeStyle: 'solid' }));
+    addKakaoOverlay(new kakao.maps.Polyline({ path: inboundPath, strokeWeight: 4, strokeColor: '#ff5500', strokeOpacity: 0.95, strokeStyle: 'dash' }));
+
+    const startPt = currentDisplayPoints[0];
+    const endPt = currentDisplayPoints[totalPts - 1];
+    const turnPt = currentDisplayPoints[actualHalfIndex];
+    const branchPt = findPointAtDistance(allTrackPoints, FINISH_BRANCH_DIST);
+    [startPt, endPt, turnPt, branchPt].forEach((pt) => addKakaoOverlay(new kakao.maps.Marker({ position: new kakao.maps.LatLng(pt.lat, pt.lng) })));
+
+    const bounds = new kakao.maps.LatLngBounds();
+    outboundPath.concat(inboundPath).forEach((latLng) => bounds.extend(latLng));
+    kakaoMap.setBounds(bounds);
+  }
+
+  function syncKakaoCurrentLocation() {
+    if (!kakaoMap || !window.kakao?.maps || !currentPosition) return;
+    const latlng = new kakao.maps.LatLng(currentPosition.lat, currentPosition.lng);
+    if (!kakaoCurrentLocationMarker) {
+      kakaoCurrentLocationMarker = new kakao.maps.Marker({ position: latlng, map: kakaoMap });
+    } else {
+      kakaoCurrentLocationMarker.setPosition(latlng);
+      kakaoCurrentLocationMarker.setMap(kakaoMap);
+    }
+    if (!kakaoCurrentAccuracyCircle) {
+      kakaoCurrentAccuracyCircle = new kakao.maps.Circle({
+        center: latlng,
+        radius: currentPosition.accuracy,
+        strokeWeight: 2,
+        strokeColor: '#198754',
+        strokeOpacity: 0.9,
+        fillColor: '#198754',
+        fillOpacity: 0.12,
+        map: kakaoMap
+      });
+    } else {
+      kakaoCurrentAccuracyCircle.setPosition(latlng);
+      kakaoCurrentAccuracyCircle.setRadius(currentPosition.accuracy);
+      kakaoCurrentAccuracyCircle.setMap(kakaoMap);
+    }
+    if (isFollowingLocation) kakaoMap.setCenter(latlng);
+  }
 
   // 지도 전체 화면 토글 함수
   function toggleFullscreen() {
@@ -349,6 +733,7 @@
 
     currentDisplayPoints = [...outbound, ...reconstructedInbound];
     drawCourseAndChart();
+    if (activeMapApi === 'kakao') drawKakaoCourse();
   }
 
   // 5. 마커 및 코스선 그리기

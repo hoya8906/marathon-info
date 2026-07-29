@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 시흥시전국하프마라톤대회</title>
+    <style>
+        /* 독립형 시흥마라톤 A4 안내문 컴포넌트 */
+        body.shn-notice-page {
+            background-color: #e8f4fb;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .shn-notice,
+        .shn-notice * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+        }
+
+        .shn-notice {
+            position: relative;
+            overflow: hidden;
+            color: #102b57;
+            background:
+                radial-gradient(circle at 78% 8%, rgba(255, 255, 255, .65) 0 90px, transparent 91px),
+                linear-gradient(180deg, #a9d8ee 0%, #a6d4ea 38%, #8fa9d2 68%, #76559c 100%);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .12);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .shn-notice::before,
+        .shn-notice::after {
+            content: '';
+            position: absolute;
+            left: -8%;
+            right: -8%;
+            height: 220px;
+            border-radius: 50% 50% 0 0;
+            pointer-events: none;
+        }
+
+        .shn-notice::before {
+            top: 515px;
+            background: rgba(53, 98, 154, .28);
+            transform: rotate(-4deg);
+        }
+
+        .shn-notice::after {
+            bottom: -92px;
+            background: rgba(73, 34, 118, .35);
+            transform: rotate(5deg);
+        }
+
+        .shn-notice__top-stripe {
+            height: 24px;
+            min-height: 24px;
+            flex: 0 0 24px;
+            display: flex;
+            width: 100%;
+            position: relative;
+            z-index: 5;
+        }
+
+        .shn-notice__stripe-navy {
+            flex: 1;
+            background-color: #082e5f;
+        }
+
+        .shn-notice__stripe-blue {
+            flex: 1;
+            background-color: #02a7df;
+        }
+
+        .shn-notice__stripe-sky {
+            flex: 1;
+            background-color: #81d8f7;
+        }
+
+        .shn-notice__stripe-orange {
+            flex: 1;
+            background-color: #ff7a00;
+        }
+
+        .shn-notice__stripe-purple {
+            flex: 1;
+            background-color: #6d4b9c;
+        }
+
+        .shn-notice__content {
+            position: relative;
+            z-index: 3;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 42px 48px;
+        }
+
+        .shn-notice__header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .shn-notice__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 8px 20px;
+            margin-bottom: 18px;
+            border-radius: 999px;
+            background: rgba(8, 46, 95, .92);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: .04em;
+        }
+
+        .shn-notice__title {
+            color: #082e5f;
+            font-size: 38px;
+            line-height: 1.25;
+            font-weight: 950;
+            letter-spacing: -0.045em;
+            text-shadow:
+                0 2px 0 rgba(255, 255, 255, .35),
+                0 2px 8px rgba(255, 255, 255, .25);
+        }
+
+        /* 마감 메인 카드 강조 */
+        .shn-notice__closed-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3.5px solid #ff3b30;
+            border-radius: 24px;
+            padding: 42px 30px;
+            box-shadow: 0 20px 40px rgba(7, 35, 84, 0.22);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .shn-notice__closed-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 999px;
+            color: #fff;
+            background: #ff3b30;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+        }
+
+        .shn-notice__closed-title {
+            font-size: 44px;
+            line-height: 1.25;
+            font-weight: 950;
+            letter-spacing: -0.04em;
+            color: #102b57;
+            word-break: keep-all;
+        }
+
+        .shn-notice__closed-title strong {
+            color: #ff3b30;
+        }
+
+        .shn-notice__closed-desc {
+            margin-top: 14px;
+            font-size: 19px;
+            font-weight: 800;
+            color: #263e63;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+
+        /* 결제 및 추가 접수 안내 박스 */
+        .shn-notice__info-box {
+            border-radius: 20px;
+            background: rgba(7, 42, 89, .92);
+            color: #fff;
+            padding: 28px 30px;
+            text-align: center;
+            box-shadow: 0 14px 28px rgba(7, 35, 84, .18);
+        }
+
+        .shn-notice__info-item {
+            margin-bottom: 18px;
+        }
+
+        .shn-notice__info-item:last-child {
+            margin-bottom: 0;
+            padding-top: 16px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.25);
+        }
+
+        .shn-notice__info-label {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 999px;
+            background: #ff7a00;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .shn-notice__info-label--blue {
+            background: #02a7df;
+        }
+
+        .shn-notice__info-text {
+            font-size: 20px;
+            font-weight: 850;
+            line-height: 1.45;
+            word-break: keep-all;
+        }
+
+        .shn-notice__info-text strong {
+            color: #ffb34d;
+        }
+
+        .shn-notice__info-subtext {
+            margin-top: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #a6d4ea;
+        }
+
+        .shn-notice__footer-banner {
+            position: relative;
+            z-index: 4;
+            flex: 0 0 58px;
+            min-height: 58px;
+            background: #082e5f;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 7px 22px 9px;
+            font-size: 13px;
+            line-height: 1.35;
+            font-weight: 700;
+        }
+
+        .shn-notice__footer-banner strong {
+            color: #ffb34d;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body.shn-notice-page {
+                background: #fff;
+            }
+
+            .shn-notice {
+                width: 210mm;
+                height: 297mm;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 799px) {
+            body.shn-notice-page {
+                padding: 10px;
+            }
+
+            .shn-notice {
+                width: 100%;
+                height: auto;
+                min-height: calc((100vw - 20px) * 1.414);
+            }
+        }
+    </style>
+</head>
+
+<body class="shn-notice-page">
+
+    <div class="shn-notice">
+        <div class="shn-notice__top-stripe" aria-hidden="true">
+            <div class="shn-notice__stripe-navy"></div>
+            <div class="shn-notice__stripe-blue"></div>
+            <div class="shn-notice__stripe-sky"></div>
+            <div class="shn-notice__stripe-orange"></div>
+            <div class="shn-notice__stripe-purple"></div>
+        </div>
+
+        <div class="shn-notice__content">
+            <div class="shn-notice__header">
+                <div class="shn-notice__eyebrow">2026 제12회 시흥시전국하프마라톤대회</div>
+                <h1 class="shn-notice__title">
+                    입금 마감 기한 및 환불 기간 안내
+                </h1>
+            </div>
+
+            <div class="shn-notice__closed-card">
+                <div class="shn-notice__closed-title">
+                    <strong>전 코스 신청</strong>이 마감되었습니다.
+                </div>
+                <p class="shn-notice__closed-desc">
+                    보내주신 뜨거운 성원에 진심으로 감사드립니다.
+                </p>
+            </div>
+
+            <div class="shn-notice__info-box">
+                <div class="shn-notice__info-item">
+                    <span class="shn-notice__info-label">결제 마감 안내</span>
+                    <p class="shn-notice__info-text">
+                        최종 마감 기한: <strong>8/2(일) 자정까지</strong>
+                    </p>
+                    <p class="shn-notice__info-subtext">
+                        ※ 기한 내 미결제건은 신청 정보가 삭제되어 참가 자격이 상실됩니다.<br>
+                        ※ 환불 기한 이후 신청하신 환불 요청은 처리되지 않습니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="shn-notice__footer-banner">
+            <div>
+                접수 홈페이지_ <strong>www.shmarathon.kr</strong> &nbsp;|&nbsp; 문의_ <strong>1588-4929</strong>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
