@@ -393,7 +393,7 @@
     );
 
     if (followMap && activeMapApi === 'leaflet') {
-      map.setView(latlng, Math.max(map.getZoom(), 16));
+      map.panTo(latlng);
       currentLocationMarker.openTooltip();
     }
     syncKakaoCurrentLocation();
@@ -442,7 +442,7 @@
     isFollowingLocation = true;
     button.classList.add('tracking');
     button.textContent = '■ 추적 중지';
-    setLocationStatus('실시간 위치 추적을 시작합니다. 이동하면 지도가 현재 위치를 따라갑니다.');
+    setLocationStatus('실시간 위치 추적을 시작합니다. 이동하면 지도가 현재 위치를 따라갑니다. 현재 지도 배율은 유지됩니다.');
 
     locationWatchId = navigator.geolocation.watchPosition(
       (position) => updateCurrentLocation(position, isFollowingLocation),
@@ -498,8 +498,17 @@
     kakaoSdkLoading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(KAKAO_MAP_APP_KEY)}&autoload=false`;
-      script.onload = () => kakao.maps.load(resolve);
-      script.onerror = () => reject(new Error('카카오맵 SDK를 불러오지 못했습니다.'));
+      script.onload = () => {
+        if (window.kakao?.maps) {
+          kakao.maps.load(resolve);
+        } else {
+          reject(new Error('카카오맵 SDK 응답은 받았지만 maps 객체가 없습니다. JavaScript 키와 Web 도메인 등록을 확인해 주세요.'));
+        }
+      };
+      script.onerror = () => {
+        kakaoSdkLoading = null;
+        reject(new Error('카카오맵 SDK를 불러오지 못했습니다. 카카오 Developers에서 JavaScript 키인지, 현재 도메인(http://localhost/127.0.0.1 또는 배포 도메인)이 Web 플랫폼에 등록되어 있는지 확인해 주세요.'));
+      };
       document.head.appendChild(script);
     });
     return kakaoSdkLoading;
