@@ -20,6 +20,9 @@ REQUIRED_FILES = [
     "course-suite/docs/firebase-setup-guide.md",
     "course-suite/docs/firebase-rules.md",
     "course-suite/shared/firebase-config.example.js",
+    "course-suite/shared/firebase-config.public.js",
+    "course-suite/shared/firebase.js",
+    "course-suite/shared/course-repository.js",
 ]
 
 
@@ -83,12 +86,26 @@ def test_firebase_setup_docs_and_safe_config_template():
     guide = read("course-suite/docs/firebase-setup-guide.md")
     rules = read("course-suite/docs/firebase-rules.md")
     config = read("course-suite/shared/firebase-config.example.js")
-    for token in ["Firestore", "Cloud Storage", "Authentication", "courseMaps", "gpxVersions"]:
+    public_config = read("course-suite/shared/firebase-config.public.js")
+    firebase = read("course-suite/shared/firebase.js")
+    repository = read("course-suite/shared/course-repository.js")
+    viewer = read("course-suite/viewer/viewer.js")
+    for token in ["Firestore", "Cloud Storage", "Authentication", "courseMaps", "gpxVersions", "Firestore-first"]:
         assert_contains(guide, token, "firebase-setup-guide.md")
-    for token in ["allow read", "allow write", "isAdmin", "gpx", "pois"]:
+    for token in ["allow read", "allow write", "isAdmin", "gpxXml", "pois", "a66452411@gmail.com"]:
         assert_contains(rules, token, "firebase-rules.md")
     assert_contains(config, "firebaseConfig", "firebase-config.example.js")
     assert_contains(config, "TODO_REPLACE", "firebase-config.example.js")
+    assert_contains(public_config, "marathon-info-course-suite", "firebase-config.public.js")
+    assert_contains(public_config, "a66452411@gmail.com", "firebase-config.public.js")
+    assert_contains(public_config, "storageMode: 'firestore'", "firebase-config.public.js")
+    assert_contains(firebase, "initializeApp", "firebase.js")
+    assert_contains(firebase, "getFirestore", "firebase.js")
+    assert_contains(repository, "loadFirebaseCourseBundle", "course-repository.js")
+    assert_contains(repository, "gpxXml", "course-repository.js")
+    assert_contains(repository, "fallback", "course-repository.js")
+    assert_contains(viewer, "loadFirebaseCourseBundle", "viewer.js")
+    assert_contains(viewer, "applyCourseBundle", "viewer.js")
     assert "github" + "_pat_" not in config
     assert "gh" + "p_" not in config
 

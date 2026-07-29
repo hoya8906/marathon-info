@@ -5,6 +5,7 @@ import { filterPoisByType, normalizePois, sortPoisForFieldWork } from '../shared
 import { getPoiType } from '../shared/poi-icons.js';
 import { LeafletMapAdapter } from '../shared/map-adapters/leaflet-map.js';
 import { KakaoMapAdapter } from '../shared/map-adapters/kakao-map.js';
+import { loadFirebaseCourseBundle } from '../shared/course-repository.js';
 
 const KAKAO_MAP_APP_KEY = 'c45e1e08eea53db5a726efa6edae142b';
 const params = new URLSearchParams(window.location.search);
@@ -18,6 +19,7 @@ let activeMapApi = 'leaflet';
 let leafletAdapter = null;
 let kakaoAdapter = null;
 let elevationChart = null;
+let courseBundle = null;
 let selectedPoiTypes = new Set();
 let normalizedPois = normalizePois(eventConfig.pois || []);
 
@@ -32,6 +34,13 @@ function setStatus(message, isError = false) {
 
 function setActiveButton(selector, predicate) {
   document.querySelectorAll(selector).forEach(button => button.classList.toggle('active', predicate(button)));
+}
+
+function applyCourseBundle(bundle) {
+  courseBundle = bundle;
+  eventConfig = bundle.eventConfig || eventConfig;
+  normalizedPois = normalizePois(eventConfig.pois || []);
+  currentCourse = eventConfig.courses.find(course => course.id === currentCourse?.id) || eventConfig.courses[0];
 }
 
 function renderEventHeader() {
@@ -245,14 +254,23 @@ function showCurrentLocation() {
 }
 
 async function loadDefaultGpx() {
+  if (courseBundle?.gpxXml) {
+    allTrackPoints = parseGpx(courseBundle.gpxXml);
+    rebuildCourse();
+    setStatus(`${eventConfig.title} Firebase GPX 적용 완료 · ${allTrackPoints.length.toLocaleString()}개 포인트`);
+    return;
+  }
+
   const response = await fetch(eventConfig.defaultGpxPath);
   if (!response.ok) throw new Error(`GPX 파일 로드 실패: ${eventConfig.defaultGpxPath}`);
   allTrackPoints = parseGpx(await response.text());
   rebuildCourse();
-  setStatus(`${eventConfig.title} GPX 적용 완료 · ${allTrackPoints.length.toLocaleString()}개 포인트`);
+  const sourceText = courseBundle?.source === 'firebase' ? 'Firebase 설정 + 로컬 fallback GPX' : '정적 GPX';
+  setStatus(`${eventConfig.title} ${sourceText} 적용 완료 · ${allTrackPoints.length.toLocaleString()}개 포인트`);
 }
 
 async function boot() {
+  applyCourseBundle(await loadFirebaseCourseBundle(eventId));
   renderEventHeader();
   renderCourseButtons();
   renderModeButtons();
