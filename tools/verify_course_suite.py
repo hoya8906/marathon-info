@@ -330,6 +330,15 @@ def test_course_maker_searches_kakao_places_and_pans_map():
         assert_contains(css, token, "maker/maker.css")
 
 
+def test_course_maker_place_search_toolbar_does_not_overflow_mid_width():
+    css = read("course-suite/maker/maker.css")
+    assert_contains(css, "@media (max-width: 1320px)", "maker/maker.css")
+    assert_contains(css, ".workspace-toolbar { grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);", "maker/maker.css")
+    assert_contains(css, ".toolbar-actions { grid-column: 1 / -1; justify-content: flex-start;", "maker/maker.css")
+    assert_contains(css, ".place-search-box { min-width: 0;", "maker/maker.css")
+    assert_contains(css, ".place-search-results { min-width: min(360px, 100%);", "maker/maker.css")
+
+
 def test_course_maker_projects_and_drawn_gpx_workflow():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
