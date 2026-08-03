@@ -55,6 +55,10 @@ const mapApiHint = $('#mapApiHint');
 const layerToggleButton = $('#layerToggleButton');
 const layerPopover = $('#layerPopover');
 const poiContextMenu = $('#poiContextMenu');
+const mapContextMenu = $('#mapContextMenu');
+const currentAdminEmail = $('#currentAdminEmail');
+const toggleExplorerButton = $('#toggleExplorerButton');
+const appShell = $('.maker-app-shell');
 
 let currentUser = null;
 let selectedFile = null;
@@ -77,6 +81,7 @@ let poiItems = [];
 let gpxVersions = [];
 let selectedGpxVersionId = null;
 let contextPoi = null;
+let mapContextLatLng = null;
 let editingPoiId = null;
 
 function setStatus(element, message, type = '') {
@@ -338,9 +343,10 @@ async function initKakaoEditorMap() {
   await loadKakaoMaps();
   const center = new kakao.maps.LatLng(CENTER.lat, CENTER.lng);
   kakaoMap = new kakao.maps.Map($('#kakaoMakerMap'), { center, level: 5, mapTypeId: kakao.maps.MapTypeId.HYBRID });
-  kakao.maps.event.addListener(kakaoMap, 'click', (mouseEvent) => {
+  kakao.maps.event.addListener(kakaoMap, 'click', () => closeMapContextMenu());
+  kakao.maps.event.addListener(kakaoMap, 'rightclick', (mouseEvent) => {
     const latlng = mouseEvent.latLng;
-    handleMapClick({ lat: latlng.getLat(), lng: latlng.getLng() });
+    openMapContextMenu(mouseEvent.domEvent || window.event || {}, { lat: latlng.getLat(), lng: latlng.getLng() });
   });
   setKakaoBaseMapType('hybrid');
 }
@@ -349,7 +355,8 @@ function initLeafletEditorMap() {
   leafletMap = L.map('leafletMakerMap', { preferCanvas: true }).setView([CENTER.lat, CENTER.lng], 14);
   setLeafletLayer(activeLeafletLayer);
   leafletMarkerLayer = L.layerGroup().addTo(leafletMap);
-  leafletMap.on('click', (event) => handleMapClick({ lat: event.latlng.lat, lng: event.latlng.lng }));
+  leafletMap.on('click', () => closeMapContextMenu());
+  leafletMap.on('contextmenu', (event) => openMapContextMenu(event.originalEvent || event, { lat: event.latlng.lat, lng: event.latlng.lng }));
 }
 
 function setLeafletLayer(layerKey = 'osm') {
@@ -482,7 +489,40 @@ function handleMapClick({ lat, lng }) {
   $('#poiLngInput').value = Number(lng).toFixed(6);
   if (!$('#poiIdInput').value.trim()) $('#poiIdInput').value = `poi-${Date.now()}`;
   renderPendingPoiMarker(lat, lng);
-  setStatus(poiStatus, '저장 전 위치를 지도에 표시했습니다. 유형/이름을 확인 후 저장하세요.', 'ok');
+  setStatus(poiStatus, '새 지점 위치를 준비했습니다. 유형/이름을 확인 후 저장하세요.', 'ok');
+}
+
+function beginPoiRegistrationAt(latLng) {
+  resetPoiForm();
+  handleMapClick(latLng);
+  closeMapContextMenu();
+}
+
+function openMapContextMenu(event, latLng) {
+  event?.preventDefault?.();
+  mapContextLatLng = latLng;
+  mapContextMenu.hidden = false;
+  const source = event?.domEvent || event || {};
+  const x = source.clientX ?? 24;
+  const y = source.clientY ?? 24;
+  mapContextMenu.style.left = `${Math.min(x, window.innerWidth - 210)}px`;
+  mapContextMenu.style.top = `${Math.min(y, window.innerHeight - 120)}px`;
+}
+
+function closeMapContextMenu() {
+  mapContextMenu.hidden = true;
+  mapContextLatLng = null;
+}
+
+async function handleMapContextAction(action) {
+  if (!mapContextLatLng) return;
+  if (action === 'new-poi') beginPoiRegistrationAt(mapContextLatLng);
+  if (action === 'copy-coordinates') {
+    const text = `${Number(mapContextLatLng.lat).toFixed(6)}, ${Number(mapContextLatLng.lng).toFixed(6)}`;
+    await navigator.clipboard?.writeText(text);
+    setStatus(poiStatus, `좌표를 복사했습니다: ${text}`, 'ok');
+    closeMapContextMenu();
+  }
 }
 
 function applyDistanceKmToPoiCoordinates() {
@@ -633,7 +673,7 @@ function resetPoiForm() {
   $('#poiQuantityInput').value = 1;
   setQuickPoiType('water');
   clearPendingPoiMarker();
-  setStatus(poiStatus, '새 지점을 입력할 수 있습니다. 지도를 클릭하면 저장 전 위치가 표시됩니다.');
+  setStatus(poiStatus, '새 지점은 빈 지도에서 우클릭 후 위치를 선택하세요.');
 }
 
 function clearKakaoMarkers() {
@@ -649,14 +689,15 @@ function renderKakaoPoiMarkers() {
     const type = getPoiType(poi.type);
     const content = document.createElement('button');
     content.type = 'button';
-    content.className = 'poi-marker-label';
-    content.textContent = `${type.icon} ${poi.name || poi.id}`;
-    content.addEventListener('click', () => fillPoiForm(poi));
+    content.className = 'poi-marker-pin';
+    content.innerHTML = `<span class="poi-marker-dot"></span><span class="poi-marker-label">${type.icon} ${poi.name || poi.id}</span>`;
+    content.addEventListener('click', event => openPoiContextMenu(event, poi));
     content.addEventListener('contextmenu', event => openPoiContextMenu(event, poi));
     const marker = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(Number(poi.lat), Number(poi.lng)),
       content,
-      yAnchor: 1.1,
+      xAnchor: .5,
+      yAnchor: .5,
       clickable: true
     });
     marker.setMap(kakaoMap);
@@ -672,11 +713,12 @@ function renderLeafletPoiMarkers() {
     const type = getPoiType(poi.type);
     const icon = L.divIcon({
       className: '',
-      html: `<div class="poi-marker-label">${type.icon} ${poi.name || poi.id}</div>`,
-      iconSize: [1, 1]
+      html: `<button type="button" class="poi-marker-pin"><span class="poi-marker-dot"></span><span class="poi-marker-label">${type.icon} ${poi.name || poi.id}</span></button>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
     });
     L.marker([poi.lat, poi.lng], { icon, draggable: true })
-      .on('click', () => fillPoiForm(poi))
+      .on('click', event => openPoiContextMenu(event.originalEvent || event, poi))
       .on('contextmenu', event => openPoiContextMenu(event.originalEvent || event, poi))
       .on('dragend', event => {
         const next = event.target.getLatLng();
@@ -702,7 +744,7 @@ function renderPoiList() {
     return `<button type="button" data-poi-id="${poi.id}"><strong>${type.icon} ${poi.name || poi.id}</strong><small>${poi.type} · ${poi.visibility} · ${poi.lat?.toFixed?.(5) || poi.lat}, ${poi.lng?.toFixed?.(5) || poi.lng}</small></button>`;
   }).join('');
   poiList.querySelectorAll('[data-poi-id]').forEach(button => {
-    button.addEventListener('click', () => fillPoiForm(poiItems.find(poi => poi.id === button.dataset.poiId)));
+    button.addEventListener('click', event => openPoiContextMenu(event, poiItems.find(poi => poi.id === button.dataset.poiId)));
     button.addEventListener('contextmenu', event => openPoiContextMenu(event, poiItems.find(poi => poi.id === button.dataset.poiId)));
   });
   renderPoiMarkers();
@@ -759,18 +801,136 @@ async function handlePoiDelete() {
   }
 }
 
+function projectLatLngToCanvas(point, bounds, width, height, padding = 56) {
+  const latSpan = Math.max(bounds.maxLat - bounds.minLat, 0.00001);
+  const lngSpan = Math.max(bounds.maxLng - bounds.minLng, 0.00001);
+  const usableWidth = width - padding * 2;
+  const usableHeight = height - padding * 2;
+  return {
+    x: padding + ((Number(point.lng) - bounds.minLng) / lngSpan) * usableWidth,
+    y: padding + ((bounds.maxLat - Number(point.lat)) / latSpan) * usableHeight
+  };
+}
+
+function getExportBounds() {
+  const points = [
+    ...selectedTrackPoints,
+    ...poiItems.filter(poi => Number.isFinite(Number(poi.lat)) && Number.isFinite(Number(poi.lng)))
+  ];
+  if (!points.length) points.push(CENTER);
+  const lats = points.map(point => Number(point.lat));
+  const lngs = points.map(point => Number(point.lng));
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  return { minLat, maxLat, minLng, maxLng };
+}
+
+function drawExportCourse(ctx, bounds, width, height) {
+  if (!selectedTrackPoints.length) return;
+  ctx.save();
+  ctx.lineWidth = 7;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#5e6ad2';
+  selectedTrackPoints.forEach((point, index) => {
+    const projected = projectLatLngToCanvas(point, bounds, width, height);
+    if (index === 0) ctx.beginPath(), ctx.moveTo(projected.x, projected.y);
+    else ctx.lineTo(projected.x, projected.y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawExportPois(ctx, bounds, width, height) {
+  poiItems.forEach(poi => {
+    if (!Number.isFinite(Number(poi.lat)) || !Number.isFinite(Number(poi.lng))) return;
+    const type = getPoiType(poi.type);
+    const point = projectLatLngToCanvas(poi, bounds, width, height);
+    ctx.save();
+    ctx.fillStyle = '#22c55e';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.font = '700 13px sans-serif';
+    const label = `${type.icon} ${poi.name || poi.id}`;
+    const labelWidth = ctx.measureText(label).width + 18;
+    ctx.fillStyle = 'rgba(8,9,10,.78)';
+    ctx.beginPath();
+    ctx.roundRect(point.x + 12, point.y - 24, labelWidth, 24, 12);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, point.x + 21, point.y - 7);
+    ctx.restore();
+  });
+}
+
+async function downloadVectorMapImage() {
+  const width = 1600;
+  const height = 1000;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  const bounds = getExportBounds();
+  ctx.fillStyle = '#111827';
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = 'rgba(255,255,255,.08)';
+  for (let x = 0; x < width; x += 80) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+  }
+  for (let y = 0; y < height; y += 80) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+  }
+  drawExportCourse(ctx, bounds, width, height);
+  drawExportPois(ctx, bounds, width, height);
+  ctx.fillStyle = '#f7f8fb';
+  ctx.font = '800 28px sans-serif';
+  ctx.fillText(`Course Maker · ${currentCourseId()}`, 56, 44);
+  const link = document.createElement('a');
+  link.download = `course-map-${currentCourseId()}-vector-${Date.now()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
 async function downloadMapImage() {
   try {
-    setStatus(poiStatus, '현재 지도 화면을 이미지로 생성 중...');
-    const canvas = await html2canvas($('#makerMapFrame'), { useCORS: true, allowTaint: false, backgroundColor: '#111827' });
-    const link = document.createElement('a');
-    link.download = `course-map-${currentCourseId()}-${activeMapApi}-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    setStatus(poiStatus, '지도 이미지 생성 중...');
+    await downloadVectorMapImage();
     setStatus(poiStatus, '지도 이미지 다운로드를 시작했습니다.', 'ok');
   } catch (error) {
-    setStatus(poiStatus, `이미지 생성 실패: 지도 타일 CORS 제한일 수 있습니다. ${error.message}`, 'error');
+    setStatus(poiStatus, `이미지 생성 실패: ${error.message}`, 'error');
   }
+}
+
+function toggleExplorerCollapsed() {
+  appShell.classList.toggle('explorer-collapsed');
+  setTimeout(() => {
+    leafletMap?.invalidateSize();
+    kakaoMap?.relayout?.();
+  }, 80);
+}
+
+function closeTopMenus() {
+  document.querySelectorAll('.menu-item[open]').forEach(item => { item.open = false; });
+}
+
+function handleMenuAction(action) {
+  closeTopMenus();
+  if (action === 'import-gpx') handleExplorerImport();
+  if (action === 'save-gpx') handleUpload();
+  if (action === 'refresh-gpx') refreshGpxVersionBrowser();
+  if (action === 'new-poi') {
+    resetPoiForm();
+    setStatus(poiStatus, '지도에서 우클릭 후 “이 위치에 지점 등록”을 선택하세요.', 'ok');
+  }
+  if (action === 'manage-poi') setStatus(poiStatus, '지점 또는 목록 항목을 클릭/우클릭하면 팝메뉴가 열립니다.', 'ok');
+  if (action === 'download-map') downloadMapImage();
+  if (action === 'toggle-layers') toggleLayerPopover();
 }
 
 loginButton.addEventListener('click', () => signInWithGoogle().catch(error => {
@@ -786,6 +946,11 @@ poiForm.addEventListener('submit', handlePoiSave);
 resetPoiButton.addEventListener('click', resetPoiForm);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
+toggleExplorerButton.addEventListener('click', toggleExplorerCollapsed);
+document.querySelectorAll('[data-menu-action]').forEach(button => button.addEventListener('click', () => handleMenuAction(button.dataset.menuAction)));
+mapContextMenu.querySelectorAll('[data-map-context-action]').forEach(button => {
+  button.addEventListener('click', () => handleMapContextAction(button.dataset.mapContextAction));
+});
 $('#courseIdInput').addEventListener('change', () => {
   updateConnectedGpxPath();
   refreshPois();
@@ -816,12 +981,16 @@ poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
 });
 document.addEventListener('click', event => {
   if (!poiContextMenu.contains(event.target)) closePoiContextMenu();
+  if (!mapContextMenu.contains(event.target)) closeMapContextMenu();
   if (!layerPopover.contains(event.target) && event.target !== layerToggleButton) closeLayerPopover();
+  if (!event.target.closest('.menu-item')) closeTopMenus();
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closePoiContextMenu();
+    closeMapContextMenu();
     closeLayerPopover();
+    closeTopMenus();
   }
 });
 
@@ -836,10 +1005,12 @@ onAuthStateChanged(getFirebaseAuth(), user => {
   const allowed = isAdmin(user);
   loginButton.hidden = Boolean(user);
   logoutButton.hidden = !user;
+  currentAdminEmail.hidden = !user;
+  currentAdminEmail.textContent = user?.email || '';
   if (!user) {
-    setStatus(authStatus, '로그인이 필요합니다.');
+    setStatus(authStatus, '');
   } else if (allowed) {
-    setStatus(authStatus, `${user.email} 관리자 로그인 완료`, 'ok');
+    setStatus(authStatus, '');
     refreshPois();
   } else {
     setStatus(authStatus, `${user.email} 계정은 관리자 allowlist에 없습니다.`, 'error');

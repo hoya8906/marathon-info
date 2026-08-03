@@ -60,8 +60,17 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   backdrop-filter: blur(18px);
 }
 .brand-block { display: flex; align-items: center; gap: 10px; min-width: 240px; }
+.icon-button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border-radius: 11px; background: rgba(255,255,255,.08); }
 .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); font-weight: 950; }
 .brand-block strong, .brand-block small { display: block; }
+.menu-bar { display: flex; align-items: center; gap: 4px; margin-right: auto; }
+.menu-item { position: relative; }
+.menu-item summary { list-style: none; cursor: pointer; padding: 8px 12px; border-radius: 10px; color: var(--text); font-weight: 800; }
+.menu-item summary::-webkit-details-marker { display: none; }
+.menu-item[open] summary, .menu-item summary:hover { background: rgba(255,255,255,.08); }
+.menu-dropdown { position: absolute; top: calc(100% + 6px); left: 0; z-index: 2500; min-width: 158px; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: rgba(13,16,24,.97); box-shadow: 0 16px 44px rgba(0,0,0,.4); }
+.menu-dropdown button { display: block; width: 100%; padding: 9px 10px; border-radius: 10px; text-align: left; background: transparent; }
+.menu-dropdown button:hover { background: rgba(255,255,255,.08); }
 .top-menu-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .admin-pill { padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--muted); font-size: 12px; }
 
@@ -72,6 +81,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   height: calc(100vh - 60px);
   padding: 10px;
 }
+.maker-app-shell.explorer-collapsed { grid-template-columns: 0 minmax(0, 1fr) 322px; }
+.maker-app-shell.explorer-collapsed .file-explorer-panel { opacity: 0; pointer-events: none; padding: 0; border: 0; overflow: hidden; }
 .maker-shell { width: 100%; }
 .maker-workbench { display: contents; }
 .file-explorer-panel, .map-workspace, .right-inspector-panel {
@@ -145,14 +156,19 @@ textarea { min-height: 76px; resize: vertical; }
 .poi-list { display: grid; gap: 8px; max-height: 300px; overflow: auto; }
 .poi-list button { width: 100%; border-radius: 16px; text-align: left; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
 .poi-list strong { display: block; margin-bottom: 4px; }
-.poi-marker-label { transform: translate(-50%, -100%); padding: 7px 10px; border-radius: 999px; background: rgba(8,9,10,.78); color: white; font-size: 12px; font-weight: 900; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(0,0,0,.34); transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
-.poi-marker-label:hover { cursor: pointer; transform: translate(-50%, -100%) scale(1.04); border-color: rgba(134,239,172,.72); box-shadow: 0 10px 34px rgba(0,0,0,.42), 0 0 0 3px rgba(134,239,172,.16); }
+.poi-marker-pin { position: relative; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; transform: translate(-50%, -50%); }
+.poi-marker-dot { width: 14px; height: 14px; border-radius: 999px; border: 3px solid #fff; background: #22c55e; box-shadow: 0 0 0 5px rgba(34,197,94,.22), 0 10px 24px rgba(0,0,0,.36); }
+.poi-marker-label { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); padding: 7px 10px; border-radius: 999px; background: rgba(8,9,10,.78); color: white; font-size: 12px; font-weight: 900; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; pointer-events: none; box-shadow: 0 8px 28px rgba(0,0,0,.34); transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
+.poi-marker-pin:hover { cursor: pointer; }
+.poi-marker-pin:hover .poi-marker-dot { transform: scale(1.12); border-color: rgba(134,239,172,.95); box-shadow: 0 0 0 7px rgba(134,239,172,.16), 0 12px 30px rgba(0,0,0,.42); }
+.poi-marker-pin:hover .poi-marker-label { transform: translateX(-50%) translateY(-2px); border-color: rgba(134,239,172,.72); box-shadow: 0 10px 34px rgba(0,0,0,.42), 0 0 0 3px rgba(134,239,172,.16); }
+.poi-marker-label:hover { cursor: pointer; }
 .poi-marker-label::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 999px; background: #86efac; box-shadow: 0 0 18px #86efac; }
 .pending-poi-dot { transform: translate(-50%, -50%); width: 24px; height: 24px; border-radius: 999px; border: 3px solid white; background: #f97316; box-shadow: 0 0 0 10px rgba(249,115,22,.2), 0 0 38px rgba(249,115,22,.85); pointer-events: none; }
 .pending-poi-dot::after { content: '저장 전'; position: absolute; left: 22px; top: -7px; padding: 4px 7px; border-radius: 999px; background: rgba(8,9,10,.8); color: white; font-size: 11px; white-space: nowrap; }
-.poi-context-menu { position: fixed; z-index: 3000; min-width: 150px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: rgba(13,16,24,.96); box-shadow: 0 18px 50px rgba(0,0,0,.4); }
-.poi-context-menu button { display: block; width: 100%; margin: 2px 0; border-radius: 12px; text-align: left; background: transparent; }
-.poi-context-menu button:hover { background: rgba(255,255,255,.09); }
+.poi-context-menu, .map-context-menu { position: fixed; z-index: 3000; min-width: 150px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: rgba(13,16,24,.96); box-shadow: 0 18px 50px rgba(0,0,0,.4); }
+.poi-context-menu button, .map-context-menu button { display: block; width: 100%; margin: 2px 0; border-radius: 12px; text-align: left; background: transparent; }
+.poi-context-menu button:hover, .map-context-menu button:hover { background: rgba(255,255,255,.09); }
 pre { overflow: auto; white-space: pre-wrap; padding: 12px; border-radius: 16px; background: rgba(0,0,0,.28); border: 1px solid var(--line); color: #d9f99d; max-height: 180px; }
 
 @media (max-width: 1180px) { .maker-app-shell { grid-template-columns: 280px minmax(0, 1fr); height: auto; } .right-inspector-panel { grid-column: 1 / -1; } }

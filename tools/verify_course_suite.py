@@ -133,9 +133,9 @@ def test_course_maker_edits_pois_and_downloads_map_image():
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
     repository = read("course-suite/shared/course-repository.js")
-    for token in ["makerMap", "poiForm", "poiTypeInput", "downloadMapImageButton", "html2canvas"]:
+    for token in ["makerMap", "poiForm", "poiTypeInput", "downloadMapImageButton"]:
         assert_contains(html, token, "maker/index.html")
-    for token in ["initPoiEditorMap", "handleMapClick", "savePoi", "deletePoi", "downloadMapImage", "html2canvas"]:
+    for token in ["initPoiEditorMap", "handleMapClick", "savePoi", "deletePoi", "downloadMapImage", "downloadVectorMapImage"]:
         assert_contains(js, token, "maker/maker.js")
     for token in ["savePoi", "deletePoi", "loadCoursePois"]:
         assert_contains(repository, token, "course-repository.js")
@@ -216,6 +216,32 @@ def test_course_maker_auto_places_poi_from_km_without_panning_marker_clicks():
     assert_contains(js, "if (moveMap && poi.lat && poi.lng)", "maker/maker.js")
     assert_contains(css, ".poi-marker-label:hover", "maker/maker.css")
     assert_contains(css, "cursor: pointer", "maker/maker.css")
+
+
+def test_course_maker_menu_export_context_and_collapsible_explorer():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["menuBar", "menuFile", "menuPoint", "toggleExplorerButton", "currentAdminEmail", "mapContextMenu"]:
+        assert_contains(html, token, "maker/index.html")
+    assert "Figma" not in html
+    assert "관리자 로그인 완료" not in js
+    for token in ["downloadVectorMapImage", "drawExportCourse", "drawExportPois", "projectLatLngToCanvas", "toggleExplorerCollapsed", "openMapContextMenu", "handleMapContextAction"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(js, "mapContextLatLng", "maker/maker.js")
+    assert_contains(css, ".maker-app-shell.explorer-collapsed", "maker/maker.css")
+    assert_contains(css, ".menu-bar", "maker/maker.css")
+    assert_contains(css, ".map-context-menu", "maker/maker.css")
+
+
+def test_course_maker_registers_points_only_from_context_menu():
+    js = read("course-suite/maker/maker.js")
+    for token in ["kakao.maps.event.addListener(kakaoMap, 'rightclick'", "leafletMap.on('contextmenu'", "openMapContextMenu", "beginPoiRegistrationAt", "handleMapContextAction"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert "handleMapClick({ lat: latlng.getLat(), lng: latlng.getLng() })" not in js
+    assert ".on('click', () => fillPoiForm(poi))" not in js
+    assert "content.addEventListener('click', () => fillPoiForm(poi))" not in js
+    assert_contains(js, "if (action === 'edit') fillPoiForm(contextPoi)", "maker/maker.js")
 
 
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():

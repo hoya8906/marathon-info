@@ -10,14 +10,40 @@
 <body>
   <nav id="topMenuBar" class="top-menu-bar">
     <div class="brand-block">
+      <button id="toggleExplorerButton" class="icon-button" type="button" title="익스플로러 접기/펼치기">☰</button>
       <span class="brand-mark">MI</span>
       <div>
         <strong>Course Maker</strong>
-        <small>Figma/Google Earth style route workspace</small>
+        <small>코스/지점 편집</small>
       </div>
+    </div>
+    <div id="menuBar" class="menu-bar" role="menubar">
+      <details id="menuFile" class="menu-item">
+        <summary>파일</summary>
+        <div class="menu-dropdown">
+          <button type="button" data-menu-action="import-gpx">불러오기</button>
+          <button type="button" data-menu-action="save-gpx">저장하기</button>
+          <button type="button" data-menu-action="refresh-gpx">새로고침</button>
+        </div>
+      </details>
+      <details id="menuPoint" class="menu-item">
+        <summary>지점</summary>
+        <div class="menu-dropdown">
+          <button type="button" data-menu-action="new-poi">지점 등록</button>
+          <button type="button" data-menu-action="manage-poi">지점 관리</button>
+        </div>
+      </details>
+      <details id="menuMap" class="menu-item">
+        <summary>지도</summary>
+        <div class="menu-dropdown">
+          <button type="button" data-menu-action="download-map">이미지 다운로드</button>
+          <button type="button" data-menu-action="toggle-layers">레이어</button>
+        </div>
+      </details>
     </div>
     <div class="top-menu-actions">
       <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
+      <span id="currentAdminEmail" class="admin-pill" hidden></span>
       <button id="loginButton" type="button">Google 로그인</button>
       <button id="logoutButton" type="button" hidden>로그아웃</button>
     </div>
@@ -57,7 +83,7 @@
       <header class="workspace-toolbar">
         <div>
           <strong id="toolbarStatus">GPX를 가져오거나 좌측 파일함에서 불러오세요.</strong>
-          <small id="authStatus">로그인이 필요합니다.</small>
+          <small id="authStatus"></small>
           <small id="uploadStatus">GPX 파일을 선택하세요.</small>
         </div>
         <div class="toolbar-actions">
@@ -125,17 +151,17 @@
           <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
           <div class="form-grid-2">
             <select id="poiTypeInput">
-              <option value="water">급수대</option>
-              <option value="turn">반환점</option>
-              <option value="staff">스탭배치위치</option>
-              <option value="sign">입간판</option>
-              <option value="cone">라바콘</option>
-              <option value="medical">의료</option>
-              <option value="toilet">화장실</option>
-              <option value="parking">주차장</option>
-              <option value="shuttle">셔틀</option>
-              <option value="control">통제점</option>
-              <option value="venue">대회장</option>
+              <option value="water">💧 급수대</option>
+              <option value="turn">↩ 반환점</option>
+              <option value="staff">🧑‍💼 스탭배치위치</option>
+              <option value="sign">🪧 입간판</option>
+              <option value="cone">🟧 라바콘</option>
+              <option value="medical">⛑ 의료</option>
+              <option value="toilet">🚻 화장실</option>
+              <option value="parking">🅿 주차장</option>
+              <option value="shuttle">🚌 셔틀</option>
+              <option value="control">🚧 통제점</option>
+              <option value="venue">🏁 대회장</option>
             </select>
             <select id="poiVisibilityInput">
               <option value="public">public</option>
@@ -161,7 +187,7 @@
             <button id="savePoiButton" type="submit">지점 저장</button>
             <button id="deletePoiButton" type="button" class="danger-button">삭제</button>
           </div>
-          <p id="poiStatus" class="status">지도를 클릭하면 저장 전 위치가 먼저 표시됩니다.</p>
+          <p id="poiStatus" class="status">빈 지도는 우클릭해서 새 지점을 등록하세요.</p>
         </form>
       </section>
 
@@ -183,9 +209,13 @@
     <button type="button" data-poi-context-action="delete">삭제</button>
   </div>
 
+  <div id="mapContextMenu" class="map-context-menu" hidden>
+    <button type="button" data-map-context-action="new-poi">이 위치에 지점 등록</button>
+    <button type="button" data-map-context-action="copy-coordinates">좌표 복사</button>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c45e1e08eea53db5a726efa6edae142b&autoload=false"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script type="module" src="./maker.js"></script>
 </body>
 </html>
