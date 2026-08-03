@@ -26,6 +26,9 @@ let currentUser = null;
 let selectedFile = null;
 let selectedGpxXml = null;
 let selectedSummary = null;
+let selectedTrackPoints = [];
+let kakaoCoursePolyline = null;
+let leafletCoursePolyline = null;
 let activeMapApi = 'kakao';
 let kakaoMap = null;
 let kakaoMarkers = [];
@@ -70,6 +73,8 @@ async function handleFileSelected() {
   selectedFile = gpxFileInput.files?.[0] || null;
   selectedGpxXml = null;
   selectedSummary = null;
+  selectedTrackPoints = [];
+  renderGpxCourse();
   updateUploadButton();
 
   if (!selectedFile) {
@@ -87,6 +92,9 @@ async function handleFileSelected() {
     const summary = summarizeTrack(trackPoints);
     selectedGpxXml = text;
     selectedSummary = summary;
+    selectedTrackPoints = trackPoints;
+    renderGpxCourse();
+    fitGpxBounds();
     setStatus(uploadStatus, `${selectedFile.name} 파싱 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
     renderResult({ fileName: selectedFile.name, summary });
   } catch (error) {
@@ -160,6 +168,45 @@ function initLeafletEditorMap() {
   leafletMap.on('click', (event) => handleMapClick({ lat: event.latlng.lat, lng: event.latlng.lng }));
 }
 
+function renderGpxCourse() {
+  if (kakaoCoursePolyline) {
+    kakaoCoursePolyline.setMap(null);
+    kakaoCoursePolyline = null;
+  }
+  if (leafletCoursePolyline) {
+    leafletCoursePolyline.remove();
+    leafletCoursePolyline = null;
+  }
+  if (!selectedTrackPoints.length) return;
+
+  if (kakaoMap) {
+    kakaoCoursePolyline = new kakao.maps.Polyline({
+      path: selectedTrackPoints.map(point => new kakao.maps.LatLng(point.lat, point.lng)),
+      strokeWeight: 6,
+      strokeColor: '#5e6ad2',
+      strokeOpacity: .92
+    });
+    kakaoCoursePolyline.setMap(kakaoMap);
+  }
+  if (leafletMap) {
+    leafletCoursePolyline = L.polyline(selectedTrackPoints.map(point => [point.lat, point.lng]), {
+      color: '#5e6ad2',
+      weight: 5,
+      opacity: .92
+    }).addTo(leafletMap);
+  }
+}
+
+function fitGpxBounds() {
+  if (!selectedTrackPoints.length) return;
+  if (kakaoMap) {
+    const bounds = new kakao.maps.LatLngBounds();
+    selectedTrackPoints.forEach(point => bounds.extend(new kakao.maps.LatLng(point.lat, point.lng)));
+    kakaoMap.setBounds(bounds);
+  }
+  if (leafletMap && leafletCoursePolyline) leafletMap.fitBounds(leafletCoursePolyline.getBounds(), { padding: [24, 24] });
+}
+
 async function initPoiEditorMap() {
   initLeafletEditorMap();
   try {
@@ -179,6 +226,7 @@ function switchMapApi(nextApi) {
   document.querySelectorAll('[data-kakao-only]').forEach(block => block.hidden = activeMapApi !== 'kakao');
   if (activeMapApi === 'leaflet') setTimeout(() => leafletMap?.invalidateSize(), 30);
   if (activeMapApi === 'kakao' && kakaoMap) setTimeout(() => kakaoMap.relayout(), 30);
+  renderGpxCourse();
   renderPoiMarkers();
 }
 
@@ -186,7 +234,6 @@ function setKakaoBaseMapType(type) {
   if (!kakaoMap) return;
   const types = {
     roadmap: kakao.maps.MapTypeId.ROADMAP,
-    skyview: kakao.maps.MapTypeId.SKYVIEW,
     hybrid: kakao.maps.MapTypeId.HYBRID
   };
   kakaoMap.setMapTypeId(types[type] || kakao.maps.MapTypeId.HYBRID);

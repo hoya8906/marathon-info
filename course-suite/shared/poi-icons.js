@@ -1,6 +1,8 @@
 export const POI_TYPES = {
   venue: { label: '대회장', icon: '🏁', color: '#5e6ad2' },
   water: { label: '급수대', icon: '💧', color: '#38bdf8' },
+  turn: { label: '반환점', icon: '🔁', color: '#a855f7' },
+  staff: { label: '스탭배치', icon: '👷', color: '#f97316' },
   sign: { label: '입간판', icon: '🪧', color: '#f59e0b' },
   cone: { label: '라바콘', icon: '🔶', color: '#fb923c' },
   medical: { label: '의료', icon: '🚑', color: '#ef4444' },

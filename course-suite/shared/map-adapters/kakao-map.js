@@ -74,13 +74,27 @@ export class KakaoMapAdapter {
     this.map.setBounds(bounds);
   }
 
-  drawPois(pois) {
+  drawPois(pois, getPoiType = (type) => ({ label: type || 'POI', icon: '📍', color: '#94a3b8' })) {
     if (!this.map) return;
     this.clearPois();
     pois.forEach(poi => {
-      const marker = new kakao.maps.Marker({ position: new kakao.maps.LatLng(poi.lat, poi.lng), title: poi.name });
-      this.addPoiOverlay(marker);
-      if (this.onPoiClick) kakao.maps.event.addListener(marker, 'click', () => this.onPoiClick(poi));
+      const lat = Number(poi.lat);
+      const lng = Number(poi.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      const type = getPoiType(poi.type);
+      const content = document.createElement('button');
+      content.type = 'button';
+      content.className = 'kakao-poi-label';
+      content.style.cssText = `border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 10px;background:${type.color || '#111827'};color:#fff;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;white-space:nowrap;transform:translate(-50%,-100%);`;
+      content.textContent = `${type.icon || '📍'} ${poi.name || poi.id || type.label}`;
+      content.addEventListener('click', () => this.onPoiClick?.(poi));
+      const overlay = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(lat, lng),
+        content,
+        yAnchor: 1.05,
+        clickable: true
+      });
+      this.addPoiOverlay(overlay);
     });
   }
 

@@ -151,8 +151,15 @@ def test_course_maker_uses_kakao_primary_and_leaflet_optional():
         assert_contains(html, token, "maker/index.html")
     for token in ["kakao.maps.Map", "activeMapApi = 'kakao'", "switchMapApi", "setKakaoBaseMapType", "toggleKakaoOverlay", "TRAFFIC", "BICYCLE", "TERRAIN"]:
         assert_contains(js, token, "maker/maker.js")
+    assert "data-kakao-map-type=\"skyview\"" not in html
     assert_contains(css, ".layer-control-panel", "maker/maker.css")
     assert_contains(css, ".maker-map-pane.active", "maker/maker.css")
+
+
+def test_maker_draws_gpx_course_after_file_load():
+    js = read("course-suite/maker/maker.js")
+    for token in ["selectedTrackPoints", "renderGpxCourse", "kakaoCoursePolyline", "leafletCoursePolyline", "fitGpxBounds"]:
+        assert_contains(js, token, "maker/maker.js")
 
 
 def test_kakao_pois_are_separated_from_course_overlays():
@@ -160,6 +167,8 @@ def test_kakao_pois_are_separated_from_course_overlays():
     assert_contains(text, "this.courseOverlays", "kakao-map.js")
     assert_contains(text, "this.poiOverlays", "kakao-map.js")
     assert_contains(text, "clearPois()", "kakao-map.js")
+    assert_contains(text, "kakao.maps.CustomOverlay", "kakao-map.js")
+    assert_contains(text, "getPoiType", "kakao-map.js")
 
 
 def test_no_secret_tokens_in_course_suite():
