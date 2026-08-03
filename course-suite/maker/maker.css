@@ -81,7 +81,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   background: var(--panel);
   box-shadow: 0 18px 70px rgba(0,0,0,.28);
 }
-.file-explorer-panel, .right-inspector-panel { overflow: auto; padding: 14px; }
+.file-explorer-panel, .right-inspector-panel { overflow-y: auto; padding: 14px; }
+.right-inspector-panel { overflow-x: hidden; }
 .map-workspace { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .panel-head h1 { margin: 0 0 12px; font-size: 24px; }
 .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
@@ -131,8 +132,8 @@ textarea { min-height: 76px; resize: vertical; }
 .inspector-title-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 .inspector-title-row h2, .inspector-section h3 { margin: 0 0 10px; }
 .poi-command-panel { position: sticky; top: 0; z-index: 10; padding: 12px; margin: -4px -4px 14px; border: 1px solid rgba(255,255,255,.08); border-radius: 20px; background: rgba(13,16,24,.92); backdrop-filter: blur(12px); }
-.poi-quick-type-bar { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 6px; margin: 8px 0; }
-.poi-quick-type-bar button { white-space: nowrap; padding: 8px 11px; background: rgba(255,255,255,.08); border: 1px solid transparent; }
+.poi-quick-type-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; overflow: visible; padding-bottom: 0; margin: 8px 0; }
+.poi-quick-type-bar button { min-width: 0; white-space: nowrap; padding: 8px 6px; background: rgba(255,255,255,.08); border: 1px solid transparent; font-size: 12px; text-overflow: ellipsis; overflow: hidden; }
 .poi-quick-type-bar button.active { background: rgba(94,106,210,.34); border-color: rgba(94,106,210,.8); }
 .poi-form { display: grid; gap: 8px; align-content: start; }
 .flexible-poi-form input, .flexible-poi-form select, .flexible-poi-form textarea { margin-top: 0; }

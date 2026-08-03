@@ -195,6 +195,18 @@ def test_course_maker_has_map_click_marker_and_layer_popover():
         assert_contains(css, token, "maker/maker.css")
 
 
+def test_course_maker_quick_type_bar_does_not_create_scrollbar():
+    css = read("course-suite/maker/maker.css")
+    assert_contains(css, ".poi-quick-type-bar", "maker/maker.css")
+    assert_contains(css, "grid-template-columns: repeat(3, minmax(0, 1fr))", "maker/maker.css")
+    assert_contains(css, "overflow: visible", "maker/maker.css")
+    quick_type_rule = re.search(r"\.poi-quick-type-bar\s*\{([^}]+)\}", css, re.S)
+    assert quick_type_rule, "maker/maker.css missing .poi-quick-type-bar rule"
+    assert "overflow-x: auto" not in quick_type_rule.group(1), "quick type bar must not show horizontal scrollbar"
+    assert "overflow-x: scroll" not in quick_type_rule.group(1), "quick type bar must not show horizontal scrollbar"
+    assert_contains(css, ".right-inspector-panel { overflow-x: hidden;", "maker/maker.css")
+
+
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
