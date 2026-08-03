@@ -143,6 +143,18 @@ def test_course_maker_edits_pois_and_downloads_map_image():
     assert_contains(css, ".poi-editor-grid", "maker/maker.css")
 
 
+def test_course_maker_uses_kakao_primary_and_leaflet_optional():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["mapApiKakaoButton", "mapApiLeafletButton", "kakaoMakerMap", "leafletMakerMap", "layerControlPanel"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["kakao.maps.Map", "activeMapApi = 'kakao'", "switchMapApi", "setKakaoBaseMapType", "toggleKakaoOverlay", "TRAFFIC", "BICYCLE", "TERRAIN"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(css, ".layer-control-panel", "maker/maker.css")
+    assert_contains(css, ".maker-map-pane.active", "maker/maker.css")
+
+
 def test_kakao_pois_are_separated_from_course_overlays():
     text = read("course-suite/shared/map-adapters/kakao-map.js")
     assert_contains(text, "this.courseOverlays", "kakao-map.js")

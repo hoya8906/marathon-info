@@ -80,7 +80,50 @@ select option { color: #111827; }
 textarea { min-height: 92px; resize: vertical; }
 input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
 
+.layer-control-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+}
+.control-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+}
+.control-block span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.control-block button {
+  padding: 9px 12px;
+  background: rgba(255,255,255,.08);
+}
+.control-block button.active { background: var(--accent); }
+.control-block label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+.control-block input[type="checkbox"] { width: auto; margin: 0; }
+
 .maker-map-frame {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -91,6 +134,8 @@ input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
   height: min(62vh, 560px);
   min-height: 380px;
 }
+.maker-map-pane { display: none; }
+.maker-map-pane.active { display: block; }
 .poi-editor-grid {
   display: grid;
   grid-template-columns: minmax(320px, 430px) 1fr;
@@ -131,6 +176,7 @@ input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
   font-size: 12px;
   font-weight: 900;
   border: 1px solid rgba(255,255,255,.18);
+  white-space: nowrap;
 }
 pre {
   overflow: auto;

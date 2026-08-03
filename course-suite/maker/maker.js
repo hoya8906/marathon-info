@@ -5,6 +5,7 @@ import { parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
 import { getPoiType } from '../shared/poi-icons.js';
 
 const $ = (selector) => document.querySelector(selector);
+const CENTER = { lat: 37.441466, lng: 126.994113 };
 
 const loginButton = $('#loginButton');
 const logoutButton = $('#logoutButton');
@@ -25,8 +26,12 @@ let currentUser = null;
 let selectedFile = null;
 let selectedGpxXml = null;
 let selectedSummary = null;
-let makerMap = null;
-let markerLayer = null;
+let activeMapApi = 'kakao';
+let kakaoMap = null;
+let kakaoMarkers = [];
+let activeKakaoOverlays = new Set();
+let leafletMap = null;
+let leafletMarkerLayer = null;
 let poiItems = [];
 let editingPoiId = null;
 
@@ -126,20 +131,90 @@ async function handleUpload() {
   updateUploadButton();
 }
 
-function initPoiEditorMap() {
-  makerMap = L.map('makerMap', { preferCanvas: true }).setView([37.441466, 126.994113], 14);
+function loadKakaoMaps() {
+  return new Promise((resolve, reject) => {
+    if (!window.kakao?.maps) return reject(new Error('Kakao Maps SDK를 찾을 수 없습니다.'));
+    window.kakao.maps.load(resolve);
+  });
+}
+
+async function initKakaoEditorMap() {
+  await loadKakaoMaps();
+  const center = new kakao.maps.LatLng(CENTER.lat, CENTER.lng);
+  kakaoMap = new kakao.maps.Map($('#kakaoMakerMap'), { center, level: 5, mapTypeId: kakao.maps.MapTypeId.HYBRID });
+  kakao.maps.event.addListener(kakaoMap, 'click', (mouseEvent) => {
+    const latlng = mouseEvent.latLng;
+    handleMapClick({ lat: latlng.getLat(), lng: latlng.getLng() });
+  });
+  setKakaoBaseMapType('hybrid');
+}
+
+function initLeafletEditorMap() {
+  leafletMap = L.map('leafletMakerMap', { preferCanvas: true }).setView([CENTER.lat, CENTER.lng], 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     crossOrigin: true,
     attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(makerMap);
-  markerLayer = L.layerGroup().addTo(makerMap);
-  makerMap.on('click', handleMapClick);
+  }).addTo(leafletMap);
+  leafletMarkerLayer = L.layerGroup().addTo(leafletMap);
+  leafletMap.on('click', (event) => handleMapClick({ lat: event.latlng.lat, lng: event.latlng.lng }));
 }
 
-function handleMapClick(event) {
-  $('#poiLatInput').value = event.latlng.lat.toFixed(6);
-  $('#poiLngInput').value = event.latlng.lng.toFixed(6);
+async function initPoiEditorMap() {
+  initLeafletEditorMap();
+  try {
+    await initKakaoEditorMap();
+    switchMapApi('kakao');
+  } catch (error) {
+    setStatus(poiStatus, `카카오맵 로드 실패, Leaflet 보조 지도로 전환합니다: ${error.message}`, 'error');
+    switchMapApi('leaflet');
+  }
+}
+
+function switchMapApi(nextApi) {
+  activeMapApi = nextApi;
+  $('#kakaoMakerMap').classList.toggle('active', activeMapApi === 'kakao');
+  $('#leafletMakerMap').classList.toggle('active', activeMapApi === 'leaflet');
+  document.querySelectorAll('[data-map-api]').forEach(button => button.classList.toggle('active', button.dataset.mapApi === activeMapApi));
+  document.querySelectorAll('[data-kakao-only]').forEach(block => block.hidden = activeMapApi !== 'kakao');
+  if (activeMapApi === 'leaflet') setTimeout(() => leafletMap?.invalidateSize(), 30);
+  if (activeMapApi === 'kakao' && kakaoMap) setTimeout(() => kakaoMap.relayout(), 30);
+  renderPoiMarkers();
+}
+
+function setKakaoBaseMapType(type) {
+  if (!kakaoMap) return;
+  const types = {
+    roadmap: kakao.maps.MapTypeId.ROADMAP,
+    skyview: kakao.maps.MapTypeId.SKYVIEW,
+    hybrid: kakao.maps.MapTypeId.HYBRID
+  };
+  kakaoMap.setMapTypeId(types[type] || kakao.maps.MapTypeId.HYBRID);
+  document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.classList.toggle('active', button.dataset.kakaoMapType === type));
+}
+
+function toggleKakaoOverlay(overlayName, enabled) {
+  if (!kakaoMap) return;
+  const overlayTypes = {
+    TRAFFIC: kakao.maps.MapTypeId.TRAFFIC,
+    BICYCLE: kakao.maps.MapTypeId.BICYCLE,
+    TERRAIN: kakao.maps.MapTypeId.TERRAIN
+  };
+  const overlay = overlayTypes[overlayName];
+  if (!overlay) return;
+  if (enabled && !activeKakaoOverlays.has(overlayName)) {
+    kakaoMap.addOverlayMapTypeId(overlay);
+    activeKakaoOverlays.add(overlayName);
+  }
+  if (!enabled && activeKakaoOverlays.has(overlayName)) {
+    kakaoMap.removeOverlayMapTypeId(overlay);
+    activeKakaoOverlays.delete(overlayName);
+  }
+}
+
+function handleMapClick({ lat, lng }) {
+  $('#poiLatInput').value = Number(lat).toFixed(6);
+  $('#poiLngInput').value = Number(lng).toFixed(6);
   if (!$('#poiIdInput').value.trim()) $('#poiIdInput').value = `poi-${Date.now()}`;
   setStatus(poiStatus, '지도 클릭 좌표가 입력됐습니다. 이름/유형을 확인 후 저장하세요.', 'ok');
 }
@@ -160,7 +235,16 @@ function formToPoi() {
   };
 }
 
+function setMapCenter(lat, lng, zoom = 16) {
+  if (leafletMap) leafletMap.setView([lat, lng], Math.max(leafletMap.getZoom(), zoom));
+  if (kakaoMap) {
+    kakaoMap.setCenter(new kakao.maps.LatLng(lat, lng));
+    kakaoMap.setLevel(Math.min(kakaoMap.getLevel(), 4));
+  }
+}
+
 function fillPoiForm(poi) {
+  if (!poi) return;
   editingPoiId = poi.id;
   $('#poiIdInput').value = poi.id || '';
   $('#poiNameInput').value = poi.name || '';
@@ -172,7 +256,7 @@ function fillPoiForm(poi) {
   $('#poiQuantityInput').value = poi.quantity ?? 1;
   $('#poiTeamInput').value = poi.team || '';
   $('#poiDescriptionInput').value = poi.description || '';
-  if (makerMap && poi.lat && poi.lng) makerMap.setView([poi.lat, poi.lng], Math.max(makerMap.getZoom(), 16));
+  if (poi.lat && poi.lng) setMapCenter(Number(poi.lat), Number(poi.lng));
 }
 
 function resetPoiForm() {
@@ -184,8 +268,32 @@ function resetPoiForm() {
   setStatus(poiStatus, '새 지점을 입력할 수 있습니다. 지도를 클릭해 좌표를 넣으세요.');
 }
 
-function renderPoiMarkers() {
-  markerLayer.clearLayers();
+function clearKakaoMarkers() {
+  kakaoMarkers.forEach(marker => marker.setMap(null));
+  kakaoMarkers = [];
+}
+
+function renderKakaoPoiMarkers() {
+  if (!kakaoMap) return;
+  clearKakaoMarkers();
+  poiItems.forEach(poi => {
+    if (!Number.isFinite(Number(poi.lat)) || !Number.isFinite(Number(poi.lng))) return;
+    const type = getPoiType(poi.type);
+    const content = `<div class="poi-marker-label">${type.icon} ${poi.name || poi.id}</div>`;
+    const marker = new kakao.maps.CustomOverlay({
+      position: new kakao.maps.LatLng(Number(poi.lat), Number(poi.lng)),
+      content,
+      yAnchor: 1.1,
+      clickable: true
+    });
+    marker.setMap(kakaoMap);
+    kakaoMarkers.push(marker);
+  });
+}
+
+function renderLeafletPoiMarkers() {
+  if (!leafletMarkerLayer) return;
+  leafletMarkerLayer.clearLayers();
   poiItems.forEach(poi => {
     if (!Number.isFinite(Number(poi.lat)) || !Number.isFinite(Number(poi.lng))) return;
     const type = getPoiType(poi.type);
@@ -200,8 +308,13 @@ function renderPoiMarkers() {
         const next = event.target.getLatLng();
         fillPoiForm({ ...poi, lat: Number(next.lat.toFixed(6)), lng: Number(next.lng.toFixed(6)) });
       })
-      .addTo(markerLayer);
+      .addTo(leafletMarkerLayer);
   });
+}
+
+function renderPoiMarkers() {
+  renderKakaoPoiMarkers();
+  renderLeafletPoiMarkers();
 }
 
 function renderPoiList() {
@@ -274,7 +387,7 @@ async function downloadMapImage() {
     setStatus(poiStatus, '현재 지도 화면을 이미지로 생성 중...');
     const canvas = await html2canvas($('#makerMapFrame'), { useCORS: true, allowTaint: false, backgroundColor: '#111827' });
     const link = document.createElement('a');
-    link.download = `course-map-${currentCourseId()}-${Date.now()}.png`;
+    link.download = `course-map-${currentCourseId()}-${activeMapApi}-${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
     setStatus(poiStatus, '지도 이미지 다운로드를 시작했습니다.', 'ok');
@@ -294,10 +407,12 @@ resetPoiButton.addEventListener('click', resetPoiForm);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
 $('#courseIdInput').addEventListener('change', refreshPois);
+document.querySelectorAll('[data-map-api]').forEach(button => button.addEventListener('click', () => switchMapApi(button.dataset.mapApi)));
+document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.addEventListener('click', () => setKakaoBaseMapType(button.dataset.kakaoMapType)));
+document.querySelectorAll('[data-kakao-overlay]').forEach(input => input.addEventListener('change', () => toggleKakaoOverlay(input.dataset.kakaoOverlay, input.checked)));
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
-initPoiEditorMap();
-refreshPois();
+initPoiEditorMap().then(refreshPois);
 onAuthStateChanged(getFirebaseAuth(), user => {
   currentUser = user;
   const allowed = isAdmin(user);

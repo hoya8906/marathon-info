@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">course-suite maker</p>
         <h1>코스 메이커</h1>
-        <p class="subtitle">GPX 원본 저장, 지점/설치물 추가·편집, 현재 지도 이미지 다운로드를 한 화면에서 처리합니다.</p>
+        <p class="subtitle">카카오맵을 기본 편집 지도로 쓰고, 필요한 경우 Leaflet을 보조 Map API로 전환합니다.</p>
       </div>
       <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
     </header>
@@ -42,13 +42,34 @@
       <div class="section-head">
         <div>
           <h2>3. 지점/설치물 편집</h2>
-          <p class="status">지도를 클릭하면 좌표가 입력됩니다. 기존 지점 카드를 누르면 편집할 수 있습니다.</p>
+          <p class="status">카카오맵이 기본입니다. 숨김 지역/보조 확인이 필요할 때만 Leaflet으로 전환하세요.</p>
         </div>
         <button id="downloadMapImageButton" type="button">현재 지도 이미지 다운로드</button>
       </div>
 
+      <div id="layerControlPanel" class="layer-control-panel">
+        <div class="control-block">
+          <span>Map API</span>
+          <button id="mapApiKakaoButton" class="active" type="button" data-map-api="kakao">카카오맵 기본</button>
+          <button id="mapApiLeafletButton" type="button" data-map-api="leaflet">Leaflet 보조</button>
+        </div>
+        <div class="control-block" data-kakao-only>
+          <span>카카오 지도</span>
+          <button class="active" type="button" data-kakao-map-type="hybrid">하이브리드</button>
+          <button type="button" data-kakao-map-type="roadmap">일반</button>
+          <button type="button" data-kakao-map-type="skyview">스카이뷰</button>
+        </div>
+        <div class="control-block" data-kakao-only>
+          <span>레이어</span>
+          <label><input type="checkbox" data-kakao-overlay="TRAFFIC"> 교통</label>
+          <label><input type="checkbox" data-kakao-overlay="BICYCLE"> 자전거</label>
+          <label><input type="checkbox" data-kakao-overlay="TERRAIN"> 지형</label>
+        </div>
+      </div>
+
       <div id="makerMapFrame" class="maker-map-frame">
-        <div id="makerMap" class="maker-map"></div>
+        <div id="kakaoMakerMap" class="maker-map maker-map-pane active"></div>
+        <div id="leafletMakerMap" class="maker-map maker-map-pane"></div>
       </div>
 
       <div class="poi-editor-grid">
@@ -57,6 +78,8 @@
           <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
           <select id="poiTypeInput">
             <option value="water">급수대</option>
+            <option value="turn">반환점</option>
+            <option value="staff">스탭배치위치</option>
             <option value="sign">입간판</option>
             <option value="cone">라바콘</option>
             <option value="medical">의료</option>
@@ -73,7 +96,7 @@
           </select>
           <input id="poiLatInput" placeholder="lat">
           <input id="poiLngInput" placeholder="lng">
-          <input id="poiDistanceInput" placeholder="거리 km">
+          <input id="poiDistanceInput" placeholder="거리 km 예: 1.5">
           <input id="poiQuantityInput" placeholder="수량" value="1">
           <input id="poiTeamInput" placeholder="담당팀">
           <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
@@ -98,6 +121,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c45e1e08eea53db5a726efa6edae142b&autoload=false"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script type="module" src="./maker.js"></script>
 </body>
