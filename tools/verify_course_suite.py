@@ -170,6 +170,17 @@ def test_course_maker_has_top_nav_and_context_menu():
         assert_contains(css, token, "maker/maker.css")
 
 
+def test_course_maker_leaflet_layers_and_connected_gpx_path():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["connectedGpxPath", "data-leaflet-layer=\"osm\"", "data-leaflet-layer=\"topo\"", "data-leaflet-layer=\"light\"", "data-leaflet-layer=\"dark\""]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["LEAFLET_LAYERS", "activeLeafletLayer", "leafletTileLayer", "setLeafletLayer", "updateConnectedGpxPath", "firestore://courseMaps"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(css, ".gpx-path", "maker/maker.css")
+
+
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")

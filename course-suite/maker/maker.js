@@ -6,6 +6,28 @@ import { getPoiType } from '../shared/poi-icons.js';
 
 const $ = (selector) => document.querySelector(selector);
 const CENTER = { lat: 37.441466, lng: 126.994113 };
+const LEAFLET_LAYERS = {
+  osm: {
+    label: 'OSM 일반',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors'
+  },
+  topo: {
+    label: '지형',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenTopoMap contributors'
+  },
+  light: {
+    label: '라이트',
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap &copy; CARTO'
+  },
+  dark: {
+    label: '다크',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap &copy; CARTO'
+  }
+};
 
 const loginButton = $('#loginButton');
 const logoutButton = $('#logoutButton');
@@ -24,6 +46,7 @@ const downloadMapImageButton = $('#downloadMapImageButton');
 const gpxVersionTree = $('#gpxVersionTree');
 const refreshGpxListButton = $('#refreshGpxListButton');
 const activeGpxSummary = $('#activeGpxSummary');
+const connectedGpxPath = $('#connectedGpxPath');
 const importGpxButton = $('#importGpxButton');
 const saveCurrentGpxButton = $('#saveCurrentGpxButton');
 const renameGpxButton = $('#renameGpxButton');
@@ -42,7 +65,9 @@ let activeMapApi = 'kakao';
 let kakaoMap = null;
 let kakaoMarkers = [];
 let activeKakaoOverlays = new Set();
+let activeLeafletLayer = 'osm';
 let leafletMap = null;
+let leafletTileLayer = null;
 let leafletMarkerLayer = null;
 let poiItems = [];
 let gpxVersions = [];
@@ -62,6 +87,17 @@ function isAdmin(user) {
 
 function currentCourseId() {
   return $('#courseIdInput').value.trim() || 'gcrun-2026';
+}
+
+function gpxFirestorePath(courseId = currentCourseId(), versionId = selectedGpxVersionId || $('#versionIdInput').value.trim() || 'v001') {
+  return `firestore://courseMaps/${courseId}/gpxVersions/${versionId}`;
+}
+
+function updateConnectedGpxPath(version = null) {
+  const courseId = currentCourseId();
+  const versionId = version?.id || selectedGpxVersionId || $('#versionIdInput').value.trim() || 'v001';
+  const fileName = version?.fileName || gpxVersions.find(item => item.id === versionId)?.fileName || selectedFile?.name || '미저장 GPX';
+  connectedGpxPath.textContent = `연결 GPX: ${gpxFirestorePath(courseId, versionId)} · ${fileName}`;
 }
 
 function updateUploadButton() {
@@ -111,6 +147,7 @@ async function handleFileSelected() {
     renderGpxCourse();
     fitGpxBounds();
     toolbarStatus.textContent = `${selectedFile.name} 편집 중`;
+    updateConnectedGpxPath({ id: $('#versionIdInput').value.trim() || 'v001', fileName: selectedFile.name });
     setStatus(uploadStatus, `${selectedFile.name} 파싱 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
     renderResult({ fileName: selectedFile.name, summary });
   } catch (error) {
@@ -169,6 +206,7 @@ function applyGpxVersionToMap(version) {
   renderGpxCourse();
   fitGpxBounds();
   toolbarStatus.textContent = `${version.fileName || version.id} 불러옴`;
+  updateConnectedGpxPath(version);
   setStatus(uploadStatus, `${version.fileName || version.id} 불러오기 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
   renderResult({ loadedGpxVersion: { id: version.id, fileName: version.fileName, summary } });
   updateUploadButton();
@@ -179,6 +217,7 @@ function renderGpxVersionTree() {
   activeGpxSummary.textContent = active
     ? `활성 GPX: ${active.id} · ${active.fileName || '파일명 없음'} · ${Number(active.distanceKm || 0).toFixed(2)}km`
     : '활성 GPX가 없습니다. 파일을 업로드하거나 버전을 활성화하세요.';
+  updateConnectedGpxPath(active);
 
   if (!gpxVersions.length) {
     gpxVersionTree.innerHTML = '<p class="status">저장된 GPX 버전이 없습니다.</p>';
@@ -304,13 +343,23 @@ async function initKakaoEditorMap() {
 
 function initLeafletEditorMap() {
   leafletMap = L.map('leafletMakerMap', { preferCanvas: true }).setView([CENTER.lat, CENTER.lng], 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    crossOrigin: true,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(leafletMap);
+  setLeafletLayer(activeLeafletLayer);
   leafletMarkerLayer = L.layerGroup().addTo(leafletMap);
   leafletMap.on('click', (event) => handleMapClick({ lat: event.latlng.lat, lng: event.latlng.lng }));
+}
+
+function setLeafletLayer(layerKey = 'osm') {
+  activeLeafletLayer = LEAFLET_LAYERS[layerKey] ? layerKey : 'osm';
+  if (!leafletMap) return;
+  if (leafletTileLayer) leafletTileLayer.remove();
+  const layer = LEAFLET_LAYERS[activeLeafletLayer];
+  leafletTileLayer = L.tileLayer(layer.url, {
+    maxZoom: activeLeafletLayer === 'topo' ? 17 : 20,
+    crossOrigin: true,
+    attribution: layer.attribution
+  }).addTo(leafletMap);
+  document.querySelectorAll('[data-leaflet-layer]').forEach(button => button.classList.toggle('active', button.dataset.leafletLayer === activeLeafletLayer));
+  if (activeMapApi === 'leaflet') mapApiHint.textContent = `현재 API: Leaflet 보조 · ${layer.label} 레이어 사용 중`;
 }
 
 function renderGpxCourse() {
@@ -381,7 +430,7 @@ function updateApiSpecificUi() {
   });
   mapApiHint.textContent = activeMapApi === 'kakao'
     ? '현재 API: 카카오맵 · 하이브리드/일반 및 교통/자전거/지형 레이어를 사용할 수 있습니다.'
-    : '현재 API: Leaflet 보조 · 카카오맵 공백 지역 확인용이며 카카오 전용 레이어는 숨겨집니다.';
+    : `현재 API: Leaflet 보조 · ${LEAFLET_LAYERS[activeLeafletLayer].label} 레이어 사용 중`;
 }
 
 function setKakaoBaseMapType(type) {
@@ -660,13 +709,16 @@ resetPoiButton.addEventListener('click', resetPoiForm);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
 $('#courseIdInput').addEventListener('change', () => {
+  updateConnectedGpxPath();
   refreshPois();
   refreshGpxVersionBrowser();
 });
+$('#versionIdInput').addEventListener('change', () => updateConnectedGpxPath());
 refreshGpxListButton.addEventListener('click', refreshGpxVersionBrowser);
 document.querySelectorAll('[data-map-api]').forEach(button => button.addEventListener('click', () => switchMapApi(button.dataset.mapApi)));
 document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.addEventListener('click', () => setKakaoBaseMapType(button.dataset.kakaoMapType)));
 document.querySelectorAll('[data-kakao-overlay]').forEach(input => input.addEventListener('change', () => toggleKakaoOverlay(input.dataset.kakaoOverlay, input.checked)));
+document.querySelectorAll('[data-leaflet-layer]').forEach(button => button.addEventListener('click', () => setLeafletLayer(button.dataset.leafletLayer)));
 poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
   button.addEventListener('click', () => handlePoiContextAction(button.dataset.poiContextAction));
 });
@@ -678,6 +730,7 @@ document.addEventListener('keydown', event => {
 });
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
+updateConnectedGpxPath();
 initPoiEditorMap().then(() => {
   refreshPois();
   refreshGpxVersionBrowser();

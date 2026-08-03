@@ -39,6 +39,7 @@
       </div>
       <input id="gpxFileInput" class="hidden-file-input" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
       <p id="activeGpxSummary" class="status">활성 GPX를 불러오는 중입니다.</p>
+      <p id="connectedGpxPath" class="gpx-path">연결 GPX: 확인 중</p>
       <div class="tree-root">
         <details open>
           <summary>gcrun-2026</summary>
@@ -84,6 +85,13 @@
           </div>
         </div>
         <div id="leafletControls" class="api-panel" data-api-panel="leaflet" hidden>
+          <div class="control-block">
+            <span>Leaflet 레이어</span>
+            <button class="active" type="button" data-leaflet-layer="osm">OSM 일반</button>
+            <button type="button" data-leaflet-layer="topo">지형</button>
+            <button type="button" data-leaflet-layer="light">라이트</button>
+            <button type="button" data-leaflet-layer="dark">다크</button>
+          </div>
           <div class="control-block muted-block">
             <span>Leaflet 보조</span>
             <em>카카오맵 공백/군사지역/이북지역 확인용 OSM 기반 지도입니다.</em>
