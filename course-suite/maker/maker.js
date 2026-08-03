@@ -56,6 +56,8 @@ const layerToggleButton = $('#layerToggleButton');
 const layerPopover = $('#layerPopover');
 const poiContextMenu = $('#poiContextMenu');
 const mapContextMenu = $('#mapContextMenu');
+const poiEditorModal = $('#poiEditorModal');
+const closePoiModalButton = $('#closePoiModalButton');
 const currentAdminEmail = $('#currentAdminEmail');
 const toggleExplorerButton = $('#toggleExplorerButton');
 const appShell = $('.maker-app-shell');
@@ -350,7 +352,7 @@ async function initKakaoEditorMap() {
   kakao.maps.event.addListener(kakaoMap, 'click', () => closeMapContextMenu());
   kakao.maps.event.addListener(kakaoMap, 'rightclick', (mouseEvent) => {
     const latlng = mouseEvent.latLng;
-    openMapContextMenu(mouseEvent.domEvent || window.event || {}, { lat: latlng.getLat(), lng: latlng.getLng() });
+    openMapContextMenu(mouseEvent, { lat: latlng.getLat(), lng: latlng.getLng() });
   });
   setKakaoBaseMapType('hybrid');
 }
@@ -501,6 +503,7 @@ function beginPoiRegistrationAt(latLng) {
   resetPoiForm();
   handleMapClick(latLng);
   closeMapContextMenu();
+  openPoiEditorModal();
 }
 
 function stopContextEvent(event) {
@@ -514,6 +517,33 @@ function stopContextEvent(event) {
   event?.originalEvent?.stopPropagation?.();
 }
 
+function getContextMenuPoint(event) {
+  const source = event?.domEvent || event?.originalEvent || event || {};
+  const touch = source.changedTouches?.[0] || source.touches?.[0];
+  const viewport = window.visualViewport;
+  const mapRect = $('#makerMapFrame')?.getBoundingClientRect?.();
+  const pointX = source.point?.x != null && mapRect ? mapRect.left + source.point.x : null;
+  const pointY = source.point?.y != null && mapRect ? mapRect.top + source.point.y : null;
+  const rawX = touch?.clientX ?? source.clientX ?? pointX ?? source.pageX ?? 24;
+  const rawY = touch?.clientY ?? source.clientY ?? pointY ?? source.pageY ?? 24;
+  const viewportWidth = viewport?.width || window.innerWidth;
+  const viewportHeight = viewport?.height || window.innerHeight;
+  return {
+    x: Math.max(8, Math.min(rawX, viewportWidth - 210)),
+    y: Math.max(8, Math.min(rawY, viewportHeight - 120))
+  };
+}
+
+function openPoiEditorModal() {
+  poiEditorModal.classList.add('open');
+  poiEditorModal.setAttribute('aria-hidden', 'false');
+}
+
+function closePoiEditorModal() {
+  poiEditorModal.classList.remove('open');
+  poiEditorModal.setAttribute('aria-hidden', 'true');
+}
+
 function openMapContextMenu(event, latLng) {
   stopContextEvent(event);
   const source = event?.domEvent || event?.originalEvent || event || {};
@@ -521,10 +551,9 @@ function openMapContextMenu(event, latLng) {
   closePoiContextMenu();
   mapContextLatLng = latLng;
   mapContextMenu.hidden = false;
-  const x = source.clientX ?? 24;
-  const y = source.clientY ?? 24;
-  mapContextMenu.style.left = `${Math.min(x, window.innerWidth - 210)}px`;
-  mapContextMenu.style.top = `${Math.min(y, window.innerHeight - 120)}px`;
+  const point = getContextMenuPoint(event);
+  mapContextMenu.style.left = `${point.x}px`;
+  mapContextMenu.style.top = `${point.y}px`;
 }
 
 function closeMapContextMenu() {
@@ -640,6 +669,7 @@ function fillPoiForm(poi, { moveMap = false } = {}) {
   toolbarStatus.textContent = `${poi.name || poi.id} 편집 중`;
   setQuickPoiType(poi.type || 'water');
   if (moveMap && poi.lat && poi.lng) setMapCenter(Number(poi.lat), Number(poi.lng));
+  openPoiEditorModal();
 }
 
 function openPoiContextMenu(event, poi) {
@@ -794,6 +824,7 @@ async function handlePoiSave(event) {
     const result = await savePoi({ courseId: currentCourseId(), poi });
     setStatus(poiStatus, `${poi.name} 저장 완료`, 'ok');
     clearPendingPoiMarker();
+    closePoiEditorModal();
     renderResult({ poiSaved: result });
     await refreshPois();
   } catch (error) {
@@ -814,6 +845,7 @@ async function handlePoiDelete() {
     clearPendingPoiMarker();
     renderResult({ poiDeleted: result });
     resetPoiForm();
+    closePoiEditorModal();
     await refreshPois();
   } catch (error) {
     setStatus(poiStatus, `지점 삭제 실패: ${error.message}`, 'error');
@@ -951,6 +983,7 @@ function handleMenuAction(action) {
   if (action === 'refresh-gpx') refreshGpxVersionBrowser();
   if (action === 'new-poi') {
     resetPoiForm();
+    openPoiEditorModal();
     setStatus(poiStatus, '지도에서 우클릭 후 “이 위치에 지점 등록”을 선택하세요.', 'ok');
   }
   if (action === 'manage-poi') setStatus(poiStatus, '지점 또는 목록 항목을 클릭/우클릭하면 팝메뉴가 열립니다.', 'ok');
@@ -968,7 +1001,11 @@ saveCurrentGpxButton.addEventListener('click', handleUpload);
 if (uploadButton !== saveCurrentGpxButton) uploadButton.addEventListener('click', handleUpload);
 renameGpxButton.addEventListener('click', handleGpxVersionRename);
 poiForm.addEventListener('submit', handlePoiSave);
-resetPoiButton.addEventListener('click', resetPoiForm);
+resetPoiButton.addEventListener('click', () => {
+  resetPoiForm();
+  openPoiEditorModal();
+});
+closePoiModalButton.addEventListener('click', closePoiEditorModal);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
 toggleExplorerButton.addEventListener('click', toggleExplorerCollapsed);
@@ -1012,6 +1049,7 @@ poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
 document.addEventListener('click', event => {
   if (!poiContextMenu.contains(event.target)) closePoiContextMenu();
   if (!mapContextMenu.contains(event.target)) closeMapContextMenu();
+  if (event.target === poiEditorModal) closePoiEditorModal();
   if (!layerPopover.contains(event.target) && event.target !== layerToggleButton) closeLayerPopover();
   if (!event.target.closest('.menu-item')) closeTopMenus();
 });
@@ -1021,6 +1059,7 @@ document.addEventListener('keydown', event => {
     closeMapContextMenu();
     closeLayerPopover();
     closeTopMenus();
+    closePoiEditorModal();
   }
 });
 

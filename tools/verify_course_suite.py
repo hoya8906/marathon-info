@@ -302,7 +302,23 @@ def test_course_maker_api_layer_panels_are_exclusive():
     assert_contains(css, ".api-panel[hidden] { display: none !important; }", "maker/maker.css")
 
 
-def test_maker_draws_gpx_course_after_file_load():
+def test_course_maker_mobile_context_modal_and_collapse_layout():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["poiEditorModal", "closePoiModalButton", "poi-modal-card"]:
+        assert_contains(html + css, token, "maker POI modal")
+    for token in ["getContextMenuPoint", "changedTouches", "visualViewport", "openPoiEditorModal", "closePoiEditorModal"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(js, "beginPoiRegistrationAt", "maker/maker.js")
+    assert_contains(js, "openPoiEditorModal();", "maker/maker.js")
+    assert_contains(css, ".poi-editor-modal.open", "maker/maker.css")
+    assert_contains(css, ".maker-app-shell.explorer-collapsed { grid-template-columns: 0 minmax(0, 1fr) 322px; gap: 0; }", "maker/maker.css")
+    assert_contains(css, "@media (max-width: 1180px)", "maker/maker.css")
+    assert_contains(css, ".maker-app-shell.explorer-collapsed .right-inspector-panel { grid-column: 2; }", "maker/maker.css")
+
+
+def test_maker_draws_gpx_course_after_file_load(): 
     js = read("course-suite/maker/maker.js")
     for token in ["selectedTrackPoints", "renderGpxCourse", "kakaoCoursePolyline", "leafletCoursePolyline", "fitGpxBounds"]:
         assert_contains(js, token, "maker/maker.js")

@@ -81,7 +81,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   height: calc(100vh - 60px);
   padding: 10px;
 }
-.maker-app-shell.explorer-collapsed { grid-template-columns: 0 minmax(0, 1fr) 322px; }
+.maker-app-shell.explorer-collapsed { grid-template-columns: 0 minmax(0, 1fr) 322px; gap: 0; }
+.maker-app-shell.explorer-collapsed .map-workspace { margin-left: 0; }
 .maker-app-shell.explorer-collapsed .file-explorer-panel { opacity: 0; pointer-events: none; padding: 0; border: 0; overflow: hidden; }
 .maker-shell { width: 100%; }
 .maker-workbench { display: contents; }
@@ -183,10 +184,13 @@ textarea { min-height: 76px; resize: vertical; }
 .poi-marker-label::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 999px; background: #86efac; box-shadow: 0 0 18px #86efac; }
 .pending-poi-dot { transform: translate(-50%, -50%); width: 24px; height: 24px; border-radius: 999px; border: 3px solid white; background: #f97316; box-shadow: 0 0 0 10px rgba(249,115,22,.2), 0 0 38px rgba(249,115,22,.85); pointer-events: none; }
 .pending-poi-dot::after { content: '저장 전'; position: absolute; left: 22px; top: -7px; padding: 4px 7px; border-radius: 999px; background: rgba(8,9,10,.8); color: white; font-size: 11px; white-space: nowrap; }
+.poi-editor-modal { position: fixed; inset: 0; z-index: 2800; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(0,0,0,.46); backdrop-filter: blur(8px); }
+.poi-editor-modal.open { display: flex; }
+.poi-modal-card { width: min(520px, calc(100vw - 24px)); max-height: min(760px, calc(100vh - 24px)); overflow: auto; padding: 14px; border: 1px solid var(--line); border-radius: 24px; background: rgba(13,16,24,.97); box-shadow: 0 28px 90px rgba(0,0,0,.55); }
 .poi-context-menu, .map-context-menu { position: fixed; z-index: 3000; min-width: 150px; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: rgba(13,16,24,.96); box-shadow: 0 18px 50px rgba(0,0,0,.4); }
 .poi-context-menu button, .map-context-menu button { display: block; width: 100%; margin: 2px 0; border-radius: 12px; text-align: left; background: transparent; }
 .poi-context-menu button:hover, .map-context-menu button:hover { background: rgba(255,255,255,.09); }
 pre { overflow: auto; white-space: pre-wrap; padding: 12px; border-radius: 16px; background: rgba(0,0,0,.28); border: 1px solid var(--line); color: #d9f99d; max-height: 180px; }
 
-@media (max-width: 1180px) { .maker-app-shell { grid-template-columns: 280px minmax(0, 1fr); height: auto; } .right-inspector-panel { grid-column: 1 / -1; } }
-@media (max-width: 860px) { .top-menu-bar, .workspace-toolbar { align-items: flex-start; flex-direction: column; } .maker-app-shell { grid-template-columns: 1fr; } .maker-map-frame, .maker-map { min-height: 440px; } }
+@media (max-width: 1180px) { .maker-app-shell { grid-template-columns: 280px minmax(0, 1fr); height: auto; } .maker-app-shell.explorer-collapsed { grid-template-columns: 0 minmax(0, 1fr); } .right-inspector-panel { grid-column: 1 / -1; } .maker-app-shell.explorer-collapsed .right-inspector-panel { grid-column: 2; } }
+@media (max-width: 860px) { .top-menu-bar, .workspace-toolbar { align-items: flex-start; flex-direction: column; } .maker-app-shell { grid-template-columns: 1fr; } .maker-app-shell.explorer-collapsed { grid-template-columns: 1fr; } .maker-app-shell.explorer-collapsed .file-explorer-panel { display: none; } .maker-map-frame, .maker-map { min-height: 440px; } .poi-editor-modal { align-items: flex-end; padding: 8px; } .poi-modal-card { width: 100%; max-height: calc(100vh - 16px); border-radius: 22px 22px 14px 14px; } }
