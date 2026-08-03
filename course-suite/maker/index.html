@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">course-suite maker</p>
         <h1>코스 메이커</h1>
-        <p class="subtitle">카카오맵을 기본 편집 지도로 쓰고, 필요한 경우 Leaflet을 보조 Map API로 전환합니다.</p>
+        <p class="subtitle">카카오맵 기본 편집, GPX 파일브라우저, 지점/설치물 관리를 한 화면에서 처리합니다.</p>
       </div>
       <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
     </header>
@@ -26,97 +26,118 @@
       <p id="authStatus" class="status">로그인이 필요합니다.</p>
     </section>
 
-    <section class="card upload-card">
-      <h2>2. GPX 선택 및 저장</h2>
-      <div class="form-grid">
-        <label>Event ID <input id="eventIdInput" value="gcrun"></label>
-        <label>Course ID <input id="courseIdInput" value="gcrun-2026"></label>
-        <label>Version ID <input id="versionIdInput" value="v001"></label>
-      </div>
-      <input id="gpxFileInput" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
-      <button id="uploadButton" type="button" disabled>GPX 파싱 후 Firestore 저장</button>
-      <p id="uploadStatus" class="status">GPX 파일을 선택하세요.</p>
-    </section>
-
-    <section class="card map-card">
-      <div class="section-head">
-        <div>
-          <h2>3. 지점/설치물 편집</h2>
-          <p class="status">카카오맵이 기본입니다. 숨김 지역/보조 확인이 필요할 때만 Leaflet으로 전환하세요.</p>
-        </div>
-        <button id="downloadMapImageButton" type="button">현재 지도 이미지 다운로드</button>
-      </div>
-
-      <div id="layerControlPanel" class="layer-control-panel">
-        <div class="control-block">
-          <span>Map API</span>
-          <button id="mapApiKakaoButton" class="active" type="button" data-map-api="kakao">카카오맵 기본</button>
-          <button id="mapApiLeafletButton" type="button" data-map-api="leaflet">Leaflet 보조</button>
-        </div>
-        <div class="control-block" data-kakao-only>
-          <span>카카오 지도</span>
-          <button class="active" type="button" data-kakao-map-type="hybrid">하이브리드</button>
-          <button type="button" data-kakao-map-type="roadmap">일반</button>
-        </div>
-        <div class="control-block" data-kakao-only>
-          <span>레이어</span>
-          <label><input type="checkbox" data-kakao-overlay="TRAFFIC"> 교통</label>
-          <label><input type="checkbox" data-kakao-overlay="BICYCLE"> 자전거</label>
-          <label><input type="checkbox" data-kakao-overlay="TERRAIN"> 지형</label>
-        </div>
-      </div>
-
-      <div id="makerMapFrame" class="maker-map-frame">
-        <div id="kakaoMakerMap" class="maker-map maker-map-pane active"></div>
-        <div id="leafletMakerMap" class="maker-map maker-map-pane"></div>
-      </div>
-
-      <div class="poi-editor-grid">
-        <form id="poiForm" class="poi-form">
-          <input id="poiIdInput" placeholder="poi id 예: water-5k">
-          <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
-          <select id="poiTypeInput">
-            <option value="water">급수대</option>
-            <option value="turn">반환점</option>
-            <option value="staff">스탭배치위치</option>
-            <option value="sign">입간판</option>
-            <option value="cone">라바콘</option>
-            <option value="medical">의료</option>
-            <option value="toilet">화장실</option>
-            <option value="parking">주차장</option>
-            <option value="shuttle">셔틀</option>
-            <option value="control">통제점</option>
-            <option value="venue">대회장</option>
-          </select>
-          <select id="poiVisibilityInput">
-            <option value="public">public</option>
-            <option value="staff">staff</option>
-            <option value="admin">admin</option>
-          </select>
-          <input id="poiLatInput" placeholder="lat">
-          <input id="poiLngInput" placeholder="lng">
-          <input id="poiDistanceInput" placeholder="거리 km 예: 1.5">
-          <input id="poiQuantityInput" placeholder="수량" value="1">
-          <input id="poiTeamInput" placeholder="담당팀">
-          <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
-          <div class="button-row">
-            <button id="savePoiButton" type="submit">지점 저장</button>
-            <button id="resetPoiButton" type="button">새 지점</button>
-            <button id="deletePoiButton" type="button">삭제</button>
+    <div class="maker-workbench">
+      <aside id="fileExplorerPanel" class="file-explorer-panel card">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">file explorer</p>
+            <h2>GPX 파일함</h2>
           </div>
-          <p id="poiStatus" class="status">로그인 후 지점을 저장할 수 있습니다.</p>
-        </form>
-        <div>
-          <h3>저장된 지점</h3>
-          <div id="poiList" class="poi-list"></div>
+          <button id="refreshGpxListButton" type="button">새로고침</button>
         </div>
-      </div>
-    </section>
+        <p id="activeGpxSummary" class="status">활성 GPX를 불러오는 중입니다.</p>
+        <div class="tree-root">
+          <details open>
+            <summary>gcrun-2026</summary>
+            <div id="gpxVersionTree" class="gpx-version-tree"></div>
+          </details>
+        </div>
+      </aside>
 
-    <section class="card result-card">
-      <h2>결과</h2>
-      <pre id="resultOutput">아직 업로드 전입니다.</pre>
-    </section>
+      <div class="main-editor-column">
+        <section class="card upload-card">
+          <h2>2. GPX 선택 및 저장</h2>
+          <div class="form-grid">
+            <label>Event ID <input id="eventIdInput" value="gcrun"></label>
+            <label>Course ID <input id="courseIdInput" value="gcrun-2026"></label>
+            <label>Version ID <input id="versionIdInput" value="v001"></label>
+          </div>
+          <input id="gpxFileInput" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
+          <button id="uploadButton" type="button" disabled>GPX 파싱 후 Firestore 저장</button>
+          <p id="uploadStatus" class="status">GPX 파일을 선택하세요.</p>
+        </section>
+
+        <section class="card map-card">
+          <div class="section-head">
+            <div>
+              <h2>3. 지점/설치물 편집</h2>
+              <p class="status">카카오맵이 기본입니다. 숨김 지역/보조 확인이 필요할 때만 Leaflet으로 전환하세요.</p>
+            </div>
+            <button id="downloadMapImageButton" type="button">현재 지도 이미지 다운로드</button>
+          </div>
+
+          <div id="layerControlPanel" class="layer-control-panel">
+            <div class="control-block">
+              <span>Map API</span>
+              <button id="mapApiKakaoButton" class="active" type="button" data-map-api="kakao">카카오맵 기본</button>
+              <button id="mapApiLeafletButton" type="button" data-map-api="leaflet">Leaflet 보조</button>
+            </div>
+            <div class="control-block" data-kakao-only>
+              <span>카카오 지도</span>
+              <button class="active" type="button" data-kakao-map-type="hybrid">하이브리드</button>
+              <button type="button" data-kakao-map-type="roadmap">일반</button>
+            </div>
+            <div class="control-block" data-kakao-only>
+              <span>레이어</span>
+              <label><input type="checkbox" data-kakao-overlay="TRAFFIC"> 교통</label>
+              <label><input type="checkbox" data-kakao-overlay="BICYCLE"> 자전거</label>
+              <label><input type="checkbox" data-kakao-overlay="TERRAIN"> 지형</label>
+            </div>
+          </div>
+
+          <div id="makerMapFrame" class="maker-map-frame">
+            <div id="kakaoMakerMap" class="maker-map maker-map-pane active"></div>
+            <div id="leafletMakerMap" class="maker-map maker-map-pane"></div>
+          </div>
+
+          <div class="poi-editor-grid">
+            <form id="poiForm" class="poi-form">
+              <input id="poiIdInput" placeholder="poi id 예: water-5k">
+              <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
+              <select id="poiTypeInput">
+                <option value="water">급수대</option>
+                <option value="turn">반환점</option>
+                <option value="staff">스탭배치위치</option>
+                <option value="sign">입간판</option>
+                <option value="cone">라바콘</option>
+                <option value="medical">의료</option>
+                <option value="toilet">화장실</option>
+                <option value="parking">주차장</option>
+                <option value="shuttle">셔틀</option>
+                <option value="control">통제점</option>
+                <option value="venue">대회장</option>
+              </select>
+              <select id="poiVisibilityInput">
+                <option value="public">public</option>
+                <option value="staff">staff</option>
+                <option value="admin">admin</option>
+              </select>
+              <input id="poiLatInput" placeholder="lat">
+              <input id="poiLngInput" placeholder="lng">
+              <input id="poiDistanceInput" placeholder="거리 km 예: 1.5">
+              <input id="poiQuantityInput" placeholder="수량" value="1">
+              <input id="poiTeamInput" placeholder="담당팀">
+              <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
+              <div class="button-row">
+                <button id="savePoiButton" type="submit">지점 저장</button>
+                <button id="resetPoiButton" type="button">새 지점</button>
+                <button id="deletePoiButton" type="button">삭제</button>
+              </div>
+              <p id="poiStatus" class="status">로그인 후 지점을 저장할 수 있습니다.</p>
+            </form>
+            <div>
+              <h3>저장된 지점</h3>
+              <div id="poiList" class="poi-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card result-card">
+          <h2>결과</h2>
+          <pre id="resultOutput">아직 업로드 전입니다.</pre>
+        </section>
+      </div>
+    </div>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

@@ -46,6 +46,60 @@ async function loadPois(db, collections, courseId) {
   return snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
+export async function loadGpxVersions(courseId = 'gcrun-2026') {
+  if (!isFirebaseEnabled()) return [];
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const versionsRef = collection(db, collections.courseMaps, courseId, collections.gpxVersions);
+  const snap = await getDocs(versionsRef);
+  return snap.docs
+    .map(docSnap => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        fileName: data.fileName,
+        isActive: data.isActive === true,
+        pointCount: data.pointCount,
+        distanceKm: data.distanceKm,
+        uploadedBy: data.uploadedBy,
+        uploadedAt: data.uploadedAt,
+        hasGpxXml: Boolean(data.gpxXml)
+      };
+    })
+    .sort((a, b) => Number(b.isActive) - Number(a.isActive) || String(b.id).localeCompare(String(a.id)));
+}
+
+export async function loadGpxVersion({ courseId = 'gcrun-2026', versionId = 'v001' }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const versionRef = doc(db, collections.courseMaps, courseId, collections.gpxVersions, versionId);
+  const snap = await getDoc(versionRef);
+  if (!snap.exists()) throw new Error(`${versionId} GPX 버전을 찾을 수 없습니다.`);
+  return { id: snap.id, ...snap.data() };
+}
+
+export async function setActiveGpxVersion({ courseId = 'gcrun-2026', versionId }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!versionId) throw new Error('활성화할 GPX versionId가 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const versionsRef = collection(db, collections.courseMaps, courseId, collections.gpxVersions);
+  const snap = await getDocs(versionsRef);
+  await Promise.all(snap.docs.map(docSnap => setDoc(docSnap.ref, { isActive: docSnap.id === versionId }, { merge: true })));
+  await setDoc(doc(db, collections.courseMaps, courseId), { activeGpxVersionId: versionId, updatedAt: serverTimestamp() }, { merge: true });
+  return { courseId, versionId };
+}
+
+export async function deleteGpxVersion({ courseId = 'gcrun-2026', versionId }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!versionId) throw new Error('삭제할 GPX versionId가 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  await deleteDoc(doc(db, collections.courseMaps, courseId, collections.gpxVersions, versionId));
+  return { courseId, versionId };
+}
+
 export async function loadFirebaseCourseBundle(eventId = 'gcrun') {
   const staticConfig = getEventConfig(eventId);
   const fallback = { source: 'static', eventConfig: staticConfig, gpxXml: null, error: null };

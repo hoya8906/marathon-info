@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { getFirebaseAuth, getFirebaseOptions, signInWithGoogle, signOutFirebase } from '../shared/firebase.js';
-import { deletePoi, loadCoursePois, saveGpxVersionFromXml, savePoi } from '../shared/course-repository.js';
+import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, saveGpxVersionFromXml, savePoi, setActiveGpxVersion } from '../shared/course-repository.js';
 import { parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
 import { getPoiType } from '../shared/poi-icons.js';
 
@@ -21,6 +21,9 @@ const poiForm = $('#poiForm');
 const deletePoiButton = $('#deletePoiButton');
 const resetPoiButton = $('#resetPoiButton');
 const downloadMapImageButton = $('#downloadMapImageButton');
+const gpxVersionTree = $('#gpxVersionTree');
+const refreshGpxListButton = $('#refreshGpxListButton');
+const activeGpxSummary = $('#activeGpxSummary');
 
 let currentUser = null;
 let selectedFile = null;
@@ -36,6 +39,7 @@ let activeKakaoOverlays = new Set();
 let leafletMap = null;
 let leafletMarkerLayer = null;
 let poiItems = [];
+let gpxVersions = [];
 let editingPoiId = null;
 
 function setStatus(element, message, type = '') {
@@ -132,11 +136,112 @@ async function handleUpload() {
     });
     setStatus(uploadStatus, 'Firestore 저장 완료. 뷰어에서 새로고침해 확인하세요.', 'ok');
     renderResult({ saved: result, viewerUrl: `../viewer/?event=${encodeURIComponent(eventId)}` });
+    await refreshGpxVersionBrowser();
   } catch (error) {
     setStatus(uploadStatus, `Firestore 저장 실패: ${error.message}`, 'error');
     renderResult({ error: error.message });
   }
   updateUploadButton();
+}
+
+function applyGpxVersionToMap(version) {
+  if (!version?.gpxXml) throw new Error('이 버전에는 GPX XML이 없습니다.');
+  const trackPoints = parseGpx(version.gpxXml);
+  const summary = summarizeTrack(trackPoints);
+  selectedFile = null;
+  selectedGpxXml = version.gpxXml;
+  selectedSummary = summary;
+  selectedTrackPoints = trackPoints;
+  $('#versionIdInput').value = version.id || $('#versionIdInput').value;
+  renderGpxCourse();
+  fitGpxBounds();
+  setStatus(uploadStatus, `${version.fileName || version.id} 불러오기 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
+  renderResult({ loadedGpxVersion: { id: version.id, fileName: version.fileName, summary } });
+  updateUploadButton();
+}
+
+function renderGpxVersionTree() {
+  const active = gpxVersions.find(version => version.isActive);
+  activeGpxSummary.textContent = active
+    ? `활성 GPX: ${active.id} · ${active.fileName || '파일명 없음'} · ${Number(active.distanceKm || 0).toFixed(2)}km`
+    : '활성 GPX가 없습니다. 파일을 업로드하거나 버전을 활성화하세요.';
+
+  if (!gpxVersions.length) {
+    gpxVersionTree.innerHTML = '<p class="status">저장된 GPX 버전이 없습니다.</p>';
+    return;
+  }
+
+  gpxVersionTree.innerHTML = gpxVersions.map(version => `
+    <article class="gpx-version-card ${version.isActive ? 'active' : ''}" data-version-id="${version.id}">
+      <div>
+        <strong>${version.isActive ? '✅ ' : ''}${version.id} · ${version.fileName || 'GPX'}</strong>
+        <small>${Number(version.distanceKm || 0).toFixed(3)}km · ${Number(version.pointCount || 0).toLocaleString()}pt · ${version.uploadedBy || 'unknown'}</small>
+      </div>
+      <div class="gpx-actions">
+        <button type="button" data-gpx-action="load" data-version-id="${version.id}">불러오기</button>
+        <button type="button" class="active-button" data-gpx-action="activate" data-version-id="${version.id}">활성화</button>
+        <button type="button" class="danger-button" data-gpx-action="delete" data-version-id="${version.id}">삭제</button>
+      </div>
+    </article>
+  `).join('');
+
+  gpxVersionTree.querySelectorAll('[data-gpx-action]').forEach(button => {
+    const versionId = button.dataset.versionId;
+    if (button.dataset.gpxAction === 'load') button.addEventListener('click', () => handleGpxVersionLoad(versionId));
+    if (button.dataset.gpxAction === 'activate') button.addEventListener('click', () => handleGpxVersionActivate(versionId));
+    if (button.dataset.gpxAction === 'delete') button.addEventListener('click', () => handleGpxVersionDelete(versionId));
+  });
+}
+
+async function refreshGpxVersionBrowser() {
+  try {
+    gpxVersionTree.innerHTML = '<p class="status">GPX 목록을 불러오는 중...</p>';
+    gpxVersions = await loadGpxVersions(currentCourseId());
+    renderGpxVersionTree();
+  } catch (error) {
+    activeGpxSummary.textContent = `GPX 목록 로드 실패: ${error.message}`;
+    gpxVersionTree.innerHTML = `<p class="status error">${error.message}</p>`;
+  }
+}
+
+async function handleGpxVersionLoad(versionId) {
+  try {
+    const version = await loadGpxVersion({ courseId: currentCourseId(), versionId });
+    applyGpxVersionToMap(version);
+  } catch (error) {
+    setStatus(uploadStatus, `GPX 불러오기 실패: ${error.message}`, 'error');
+  }
+}
+
+async function handleGpxVersionActivate(versionId) {
+  if (!currentUser || !isAdmin(currentUser)) {
+    setStatus(uploadStatus, '관리자 이메일로 로그인해야 활성화할 수 있습니다.', 'error');
+    return;
+  }
+  try {
+    const result = await setActiveGpxVersion({ courseId: currentCourseId(), versionId });
+    setStatus(uploadStatus, `${versionId} 활성화 완료. Viewer 기본 GPX로 사용됩니다.`, 'ok');
+    renderResult({ activeGpxVersion: result });
+    await refreshGpxVersionBrowser();
+  } catch (error) {
+    setStatus(uploadStatus, `GPX 활성화 실패: ${error.message}`, 'error');
+  }
+}
+
+async function handleGpxVersionDelete(versionId) {
+  if (!currentUser || !isAdmin(currentUser)) {
+    setStatus(uploadStatus, '관리자 이메일로 로그인해야 삭제할 수 있습니다.', 'error');
+    return;
+  }
+  if (!window.confirm(`${versionId} GPX 버전을 삭제할까요?`)) return;
+  try {
+    const result = await deleteGpxVersion({ courseId: currentCourseId(), versionId });
+    setStatus(uploadStatus, `${versionId} 삭제 완료`, 'ok');
+    renderResult({ deletedGpxVersion: result });
+    await refreshGpxVersionBrowser();
+  } catch (error) {
+    setStatus(uploadStatus, `GPX 삭제 실패: ${error.message}`, 'error');
+  }
 }
 
 function loadKakaoMaps() {
@@ -453,13 +558,20 @@ poiForm.addEventListener('submit', handlePoiSave);
 resetPoiButton.addEventListener('click', resetPoiForm);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
-$('#courseIdInput').addEventListener('change', refreshPois);
+$('#courseIdInput').addEventListener('change', () => {
+  refreshPois();
+  refreshGpxVersionBrowser();
+});
+refreshGpxListButton.addEventListener('click', refreshGpxVersionBrowser);
 document.querySelectorAll('[data-map-api]').forEach(button => button.addEventListener('click', () => switchMapApi(button.dataset.mapApi)));
 document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.addEventListener('click', () => setKakaoBaseMapType(button.dataset.kakaoMapType)));
 document.querySelectorAll('[data-kakao-overlay]').forEach(input => input.addEventListener('change', () => toggleKakaoOverlay(input.dataset.kakaoOverlay, input.checked)));
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
-initPoiEditorMap().then(refreshPois);
+initPoiEditorMap().then(() => {
+  refreshPois();
+  refreshGpxVersionBrowser();
+});
 onAuthStateChanged(getFirebaseAuth(), user => {
   currentUser = user;
   const allowed = isAdmin(user);

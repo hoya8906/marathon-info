@@ -19,7 +19,7 @@ body {
 }
 
 .maker-shell {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1440px, calc(100% - 32px));
   margin: 0 auto;
   padding: 32px 0 56px;
 }
@@ -31,7 +31,7 @@ body {
   align-items: flex-start;
   margin-bottom: 22px;
 }
-
+.section-head.compact { gap: 12px; margin-bottom: 12px; align-items: center; }
 .eyebrow { color: var(--accent-2); text-transform: uppercase; letter-spacing: .14em; font-size: 12px; margin: 0 0 6px; }
 h1 { margin: 0; font-size: clamp(34px, 5vw, 58px); }
 h2, h3 { margin-top: 0; }
@@ -49,7 +49,8 @@ h2, h3 { margin-top: 0; }
 }
 button:disabled { opacity: .45; cursor: not-allowed; }
 #logoutButton, #resetPoiButton { background: #303744; }
-#deletePoiButton { background: var(--danger); }
+#deletePoiButton, .danger-button { background: var(--danger); }
+.secondary-button { background: #303744; }
 
 .card {
   padding: 22px;
@@ -59,6 +60,54 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   background: var(--panel);
   box-shadow: 0 20px 80px rgba(0,0,0,.32);
 }
+
+.maker-workbench {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.main-editor-column { min-width: 0; }
+.file-explorer-panel {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+.file-explorer-panel h2 { margin-bottom: 0; }
+.tree-root {
+  margin-top: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: rgba(0,0,0,.16);
+  overflow: hidden;
+}
+.tree-root summary {
+  padding: 12px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  background: rgba(255,255,255,.06);
+}
+.gpx-version-tree {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+.gpx-version-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.055);
+}
+.gpx-version-card.active { border-color: rgba(39,166,68,.75); box-shadow: inset 0 0 0 1px rgba(39,166,68,.35); }
+.gpx-version-card strong { display: block; }
+.gpx-version-card small { color: var(--muted); line-height: 1.45; }
+.gpx-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.gpx-actions button { padding: 8px 10px; font-size: 12px; background: rgba(255,255,255,.09); }
+.gpx-actions .active-button { background: var(--accent-2); }
+.gpx-actions .danger-button { background: var(--danger); }
 
 .form-grid {
   display: grid;
@@ -107,10 +156,7 @@ input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
   text-transform: uppercase;
   letter-spacing: .08em;
 }
-.control-block button {
-  padding: 9px 12px;
-  background: rgba(255,255,255,.08);
-}
+.control-block button { padding: 9px 12px; background: rgba(255,255,255,.08); }
 .control-block button.active { background: var(--accent); }
 .control-block label {
   display: inline-flex;
@@ -129,11 +175,7 @@ input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
   border-radius: 22px;
   background: #151922;
 }
-.maker-map {
-  width: 100%;
-  height: min(62vh, 560px);
-  min-height: 380px;
-}
+.maker-map { width: 100%; height: min(62vh, 560px); min-height: 380px; }
 .maker-map-pane { display: none; }
 .maker-map-pane.active { display: block; }
 .poi-editor-grid {
@@ -142,22 +184,9 @@ input[type="file"] { margin: 10px 0 14px; cursor: pointer; }
   gap: 18px;
   margin-top: 18px;
 }
-.poi-form {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-}
-.button-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.poi-list {
-  display: grid;
-  gap: 10px;
-  max-height: 520px;
-  overflow: auto;
-}
+.poi-form { display: grid; gap: 10px; align-content: start; }
+.button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.poi-list { display: grid; gap: 10px; max-height: 520px; overflow: auto; }
 .poi-list button {
   width: 100%;
   border-radius: 16px;
@@ -187,10 +216,13 @@ pre {
   border: 1px solid var(--line);
   color: #d9f99d;
 }
-
 .status.ok { color: #86efac; }
 .status.error { color: #fca5a5; }
 
+@media (max-width: 980px) {
+  .maker-workbench { grid-template-columns: 1fr; }
+  .file-explorer-panel { position: static; max-height: none; }
+}
 @media (max-width: 860px) {
   .maker-header, .section-head { flex-direction: column; }
   .form-grid, .poi-editor-grid { grid-template-columns: 1fr; }

@@ -143,6 +143,21 @@ def test_course_maker_edits_pois_and_downloads_map_image():
     assert_contains(css, ".poi-editor-grid", "maker/maker.css")
 
 
+def test_course_maker_has_file_browser_for_gpx_versions():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    repository = read("course-suite/shared/course-repository.js")
+    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["loadGpxVersions", "loadGpxVersion", "deleteGpxVersion", "setActiveGpxVersion"]:
+        assert_contains(repository, token, "course-repository.js")
+    for token in ["refreshGpxVersionBrowser", "renderGpxVersionTree", "handleGpxVersionLoad", "handleGpxVersionDelete", "handleGpxVersionActivate"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(css, ".maker-workbench", "maker/maker.css")
+    assert_contains(css, ".file-explorer-panel", "maker/maker.css")
+
+
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
