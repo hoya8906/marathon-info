@@ -442,6 +442,7 @@ function switchMapApi(nextApi) {
 function updateApiSpecificUi() {
   document.querySelectorAll('[data-api-panel]').forEach(panel => {
     panel.hidden = panel.dataset.apiPanel !== activeMapApi;
+    panel.style.display = panel.dataset.apiPanel === activeMapApi ? 'block' : 'none';
   });
   mapApiHint.textContent = activeMapApi === 'kakao'
     ? '현재 API: 카카오맵 · 카카오 지도/레이어만 표시 중'

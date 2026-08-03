@@ -294,6 +294,14 @@ def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     assert_contains(css, ".maker-map-pane.active", "maker/maker.css")
 
 
+def test_course_maker_api_layer_panels_are_exclusive():
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["panel.hidden = panel.dataset.apiPanel !== activeMapApi", "panel.style.display = panel.dataset.apiPanel === activeMapApi ? 'block' : 'none'", ".api-panel[hidden]"]:
+        assert_contains(js + css, token, "maker api panel exclusivity")
+    assert_contains(css, ".api-panel[hidden] { display: none !important; }", "maker/maker.css")
+
+
 def test_maker_draws_gpx_course_after_file_load():
     js = read("course-suite/maker/maker.js")
     for token in ["selectedTrackPoints", "renderGpxCourse", "kakaoCoursePolyline", "leafletCoursePolyline", "fitGpxBounds"]:
