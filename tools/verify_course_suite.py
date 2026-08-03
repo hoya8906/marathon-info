@@ -207,6 +207,17 @@ def test_course_maker_quick_type_bar_does_not_create_scrollbar():
     assert_contains(css, ".right-inspector-panel { overflow-x: hidden;", "maker/maker.css")
 
 
+def test_course_maker_auto_places_poi_from_km_without_panning_marker_clicks():
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["findPointAtDistance", "applyDistanceKmToPoiCoordinates", "poiDistanceInput", "renderPendingPoiMarker(point.lat, point.lng)", "거리 km 기준 좌표를 자동 입력했습니다"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(js, "function fillPoiForm(poi, { moveMap = false } = {})", "maker/maker.js")
+    assert_contains(js, "if (moveMap && poi.lat && poi.lng)", "maker/maker.js")
+    assert_contains(css, ".poi-marker-label:hover", "maker/maker.css")
+    assert_contains(css, "cursor: pointer", "maker/maker.css")
+
+
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")

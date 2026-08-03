@@ -145,7 +145,8 @@ textarea { min-height: 76px; resize: vertical; }
 .poi-list { display: grid; gap: 8px; max-height: 300px; overflow: auto; }
 .poi-list button { width: 100%; border-radius: 16px; text-align: left; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
 .poi-list strong { display: block; margin-bottom: 4px; }
-.poi-marker-label { transform: translate(-50%, -100%); padding: 7px 10px; border-radius: 999px; background: rgba(8,9,10,.78); color: white; font-size: 12px; font-weight: 900; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; cursor: context-menu; box-shadow: 0 8px 28px rgba(0,0,0,.34); }
+.poi-marker-label { transform: translate(-50%, -100%); padding: 7px 10px; border-radius: 999px; background: rgba(8,9,10,.78); color: white; font-size: 12px; font-weight: 900; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; cursor: pointer; box-shadow: 0 8px 28px rgba(0,0,0,.34); transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
+.poi-marker-label:hover { cursor: pointer; transform: translate(-50%, -100%) scale(1.04); border-color: rgba(134,239,172,.72); box-shadow: 0 10px 34px rgba(0,0,0,.42), 0 0 0 3px rgba(134,239,172,.16); }
 .poi-marker-label::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 999px; background: #86efac; box-shadow: 0 0 18px #86efac; }
 .pending-poi-dot { transform: translate(-50%, -50%); width: 24px; height: 24px; border-radius: 999px; border: 3px solid white; background: #f97316; box-shadow: 0 0 0 10px rgba(249,115,22,.2), 0 0 38px rgba(249,115,22,.85); pointer-events: none; }
 .pending-poi-dot::after { content: '저장 전'; position: absolute; left: 22px; top: -7px; padding: 4px 7px; border-radius: 999px; background: rgba(8,9,10,.8); color: white; font-size: 11px; white-space: nowrap; }

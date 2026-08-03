@@ -1,7 +1,7 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { getFirebaseAuth, getFirebaseOptions, signInWithGoogle, signOutFirebase } from '../shared/firebase.js';
 import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, renameGpxVersion, saveGpxVersionFromXml, savePoi, setActiveGpxVersion } from '../shared/course-repository.js';
-import { parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
+import { findPointAtDistance, parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
 import { getPoiType } from '../shared/poi-icons.js';
 
 const $ = (selector) => document.querySelector(selector);
@@ -485,6 +485,27 @@ function handleMapClick({ lat, lng }) {
   setStatus(poiStatus, '저장 전 위치를 지도에 표시했습니다. 유형/이름을 확인 후 저장하세요.', 'ok');
 }
 
+function applyDistanceKmToPoiCoordinates() {
+  const value = $('#poiDistanceInput').value.trim();
+  if (!value) return;
+  const distanceKm = Number(value);
+  if (!Number.isFinite(distanceKm) || distanceKm < 0) {
+    setStatus(poiStatus, '거리 km는 0 이상의 숫자로 입력하세요.', 'error');
+    return;
+  }
+  if (!selectedTrackPoints.length) {
+    setStatus(poiStatus, '먼저 GPX를 가져오거나 파일함에서 불러와야 km 기준 좌표를 계산할 수 있습니다.', 'error');
+    return;
+  }
+  const point = findPointAtDistance(selectedTrackPoints, distanceKm);
+  if (!point) return;
+  $('#poiLatInput').value = Number(point.lat).toFixed(6);
+  $('#poiLngInput').value = Number(point.lng).toFixed(6);
+  if (!$('#poiIdInput').value.trim()) $('#poiIdInput').value = `km-${String(value).replace(/[^0-9a-z]+/gi, '-')}-${Date.now()}`;
+  renderPendingPoiMarker(point.lat, point.lng);
+  setStatus(poiStatus, `${distanceKm.toFixed(2)}km 거리 km 기준 좌표를 자동 입력했습니다.`, 'ok');
+}
+
 function formToPoi() {
   return {
     id: $('#poiIdInput').value.trim(),
@@ -545,7 +566,7 @@ function setQuickPoiType(type) {
   document.querySelectorAll('[data-quick-poi-type]').forEach(button => button.classList.toggle('active', button.dataset.quickPoiType === type));
 }
 
-function fillPoiForm(poi) {
+function fillPoiForm(poi, { moveMap = false } = {}) {
   if (!poi) return;
   editingPoiId = poi.id;
   $('#poiIdInput').value = poi.id || '';
@@ -559,7 +580,8 @@ function fillPoiForm(poi) {
   $('#poiTeamInput').value = poi.team || '';
   $('#poiDescriptionInput').value = poi.description || '';
   toolbarStatus.textContent = `${poi.name || poi.id} 편집 중`;
-  if (poi.lat && poi.lng) setMapCenter(Number(poi.lat), Number(poi.lng));
+  setQuickPoiType(poi.type || 'water');
+  if (moveMap && poi.lat && poi.lng) setMapCenter(Number(poi.lat), Number(poi.lng));
 }
 
 function openPoiContextMenu(event, poi) {
@@ -782,6 +804,13 @@ layerToggleButton.addEventListener('click', event => {
 layerPopover.addEventListener('click', event => event.stopPropagation());
 document.querySelectorAll('[data-quick-poi-type]').forEach(button => button.addEventListener('click', () => setQuickPoiType(button.dataset.quickPoiType)));
 $('#poiTypeInput').addEventListener('change', event => setQuickPoiType(event.target.value));
+$('#poiDistanceInput').addEventListener('change', applyDistanceKmToPoiCoordinates);
+$('#poiDistanceInput').addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    applyDistanceKmToPoiCoordinates();
+  }
+});
 poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
   button.addEventListener('click', () => handlePoiContextAction(button.dataset.poiContextAction));
 });
