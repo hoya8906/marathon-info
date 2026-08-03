@@ -318,6 +318,36 @@ def test_course_maker_mobile_context_modal_and_collapse_layout():
     assert_contains(css, ".maker-app-shell.explorer-collapsed .right-inspector-panel { grid-column: 2; }", "maker/maker.css")
 
 
+def test_course_maker_projects_and_drawn_gpx_workflow():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    repository = read("course-suite/shared/course-repository.js")
+    for token in ["projectSelect", "projectNameInput", "createProjectButton", "drawRouteButton", "saveDrawnGpxButton", "downloadDrawnGpxButton"]:
+        assert_contains(html, token, "maker/index.html")
+    assert "result-card" not in html, "right inspector should not show raw result/debug JSON card"
+    for token in ["loadProjects", "saveProject"]:
+        assert_contains(repository, token, "course-repository.js")
+    for token in ["refreshProjectBrowser", "handleProjectCreate", "selectProject", "drawingRoutePoints", "toggleRouteDrawing", "appendDrawingPoint", "buildGpxXmlFromTrackPoints", "applyDrawnRouteAsGpx", "downloadDrawnGpx"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(js, "if (isRouteDrawingMode) appendDrawingPoint", "maker/maker.js")
+    assert_contains(js, "saveGpxVersionFromXml({", "maker/maker.js")
+    assert_contains(css, ".project-strip", "maker/maker.css")
+    assert_contains(css, ".draw-route-controls", "maker/maker.css")
+
+
+def test_course_maker_groups_pois_in_right_inspector():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["poiGroupFilter", "poiGroupSummary", "poiList"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["renderGroupedPoiList", "groupPoisForInspector", "activePoiGroup", "data-poi-group", "지점 그룹"]:
+        assert_contains(js, token, "maker/maker.js")
+    for token in [".poi-group-tabs", ".poi-group-block", ".poi-group-header"]:
+        assert_contains(css, token, "maker/maker.css")
+
+
 def test_maker_draws_gpx_course_after_file_load(): 
     js = read("course-suite/maker/maker.js")
     for token in ["selectedTrackPoints", "renderGpxCourse", "kakaoCoursePolyline", "leafletCoursePolyline", "fitGpxBounds"]:

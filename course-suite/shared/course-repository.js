@@ -31,6 +31,41 @@ async function loadFirstActiveGpxVersion(db, collections, courseId) {
   return { id: docSnap.id, ...docSnap.data() };
 }
 
+export async function loadProjects(eventId = 'gcrun') {
+  if (!isFirebaseEnabled()) return [{ id: 'gcrun-2026', title: '과천마라톤 기본 프로젝트', eventId }];
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const projectsRef = collection(db, collections.courseMaps);
+  const snap = await getDocs(query(projectsRef, where('eventId', '==', eventId)));
+  const projects = snap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+  if (!projects.length) return [{ id: 'gcrun-2026', title: '기본 프로젝트', eventId }];
+  return projects.sort((a, b) => String(a.title || a.id).localeCompare(String(b.title || b.id)));
+}
+
+export async function saveProject({ eventId = 'gcrun', courseId, title, createdBy }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!courseId?.trim()) throw new Error('프로젝트 ID가 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  const staticConfig = getEventConfig(eventId);
+  await setDoc(doc(db, collections.events, eventId), {
+    title: staticConfig.title,
+    subtitle: staticConfig.subtitle,
+    activeCourseId: courseId.trim(),
+    defaultMapApi: staticConfig.defaultMapApi || 'kakao',
+    visibility: 'public',
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  await setDoc(doc(db, collections.courseMaps, courseId.trim()), {
+    eventId,
+    title: title?.trim() || courseId.trim(),
+    defaultMapApi: staticConfig.defaultMapApi || 'kakao',
+    createdBy,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  return { eventId, courseId: courseId.trim(), title: title?.trim() || courseId.trim() };
+}
+
 export async function loadCoursePois(courseId = 'gcrun-2026') {
   if (!isFirebaseEnabled()) return [];
   const db = getFirebaseDb();

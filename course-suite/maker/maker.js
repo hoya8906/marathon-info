@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { getFirebaseAuth, getFirebaseOptions, signInWithGoogle, signOutFirebase } from '../shared/firebase.js';
-import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, renameGpxVersion, saveGpxVersionFromXml, savePoi, setActiveGpxVersion } from '../shared/course-repository.js';
+import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, loadProjects, renameGpxVersion, saveGpxVersionFromXml, savePoi, saveProject, setActiveGpxVersion } from '../shared/course-repository.js';
 import { findPointAtDistance, parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
 import { getPoiType } from '../shared/poi-icons.js';
 
@@ -43,6 +43,14 @@ const poiForm = $('#poiForm');
 const deletePoiButton = $('#deletePoiButton');
 const resetPoiButton = $('#resetPoiButton');
 const downloadMapImageButton = $('#downloadMapImageButton');
+const projectSelect = $('#projectSelect');
+const projectNameInput = $('#projectNameInput');
+const createProjectButton = $('#createProjectButton');
+const drawRouteButton = $('#drawRouteButton');
+const saveDrawnGpxButton = $('#saveDrawnGpxButton');
+const downloadDrawnGpxButton = $('#downloadDrawnGpxButton');
+const poiGroupFilter = $('#poiGroupFilter');
+const poiGroupSummary = $('#poiGroupSummary');
 const explorerFileList = $('#explorerFileList');
 const refreshGpxListButton = $('#refreshGpxListButton');
 const activeGpxSummary = $('#explorerStatusLine');
@@ -80,6 +88,11 @@ let leafletMap = null;
 let leafletTileLayer = null;
 let leafletMarkerLayer = null;
 let poiItems = [];
+let projectItems = [];
+let activePoiGroup = 'all';
+let drawingRoutePoints = [];
+let drawingRouteMarkers = [];
+let isRouteDrawingMode = false;
 let gpxVersions = [];
 let selectedGpxVersionId = null;
 let contextPoi = null;
@@ -119,6 +132,59 @@ function updateUploadButton() {
 
 function renderResult(data) {
   resultOutput.textContent = JSON.stringify(data, null, 2);
+}
+
+function slugifyProjectId(text) {
+  return String(text || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^0-9a-z가-힣]+/gi, '-')
+    .replace(/^-+|-+$/g, '') || `project-${Date.now()}`;
+}
+
+function selectProject(courseId) {
+  const nextCourseId = courseId || projectSelect.value || 'gcrun-2026';
+  $('#courseIdInput').value = nextCourseId;
+  projectSelect.value = nextCourseId;
+  selectedGpxVersionId = null;
+  selectedFile = null;
+  selectedGpxXml = null;
+  selectedSummary = null;
+  selectedTrackPoints = [];
+  drawingRoutePoints = [];
+  renderGpxCourse();
+  updateConnectedGpxPath();
+  refreshPois();
+  refreshGpxVersionBrowser();
+  toolbarStatus.textContent = `${nextCourseId} 프로젝트 편집 중`;
+  setStatus(uploadStatus, 'GPX가 없어도 지점 등록과 지도 그리기를 바로 시작할 수 있습니다.', 'ok');
+  updateUploadButton();
+  updateDrawnGpxButtons();
+}
+
+async function refreshProjectBrowser() {
+  projectItems = await loadProjects($('#eventIdInput').value.trim() || 'gcrun');
+  const current = currentCourseId();
+  projectSelect.innerHTML = projectItems.map(project => `<option value="${project.id}">${project.title || project.id}</option>`).join('');
+  if (!projectItems.some(project => project.id === current)) {
+    projectSelect.insertAdjacentHTML('afterbegin', `<option value="${current}">${current}</option>`);
+  }
+  projectSelect.value = current;
+}
+
+async function handleProjectCreate() {
+  const title = projectNameInput.value.trim() || window.prompt('새 프로젝트명') || '';
+  if (!title.trim()) return;
+  const courseId = slugifyProjectId(title);
+  if (!currentUser || !isAdmin(currentUser)) {
+    setStatus(uploadStatus, '관리자 이메일로 로그인해야 프로젝트를 만들 수 있습니다.', 'error');
+    return;
+  }
+  const result = await saveProject({ eventId: $('#eventIdInput').value.trim() || 'gcrun', courseId, title, createdBy: currentUser.email });
+  renderResult({ projectSaved: result });
+  projectNameInput.value = '';
+  await refreshProjectBrowser();
+  selectProject(courseId);
 }
 
 function readFileAsText(file) {
@@ -173,8 +239,8 @@ async function handleUpload() {
     setStatus(uploadStatus, '관리자 이메일로 로그인해야 업로드할 수 있습니다.', 'error');
     return;
   }
-  if (!selectedFile || !selectedGpxXml || !selectedSummary) {
-    setStatus(uploadStatus, '먼저 GPX 파일을 선택하고 파싱하세요.', 'error');
+  if (!selectedGpxXml || !selectedSummary) {
+    setStatus(uploadStatus, '먼저 GPX 파일을 선택하거나 지도를 그려 GPX를 준비하세요.', 'error');
     return;
   }
 
@@ -189,7 +255,7 @@ async function handleUpload() {
       eventId,
       courseId,
       versionId,
-      fileName: selectedFile.name,
+      fileName: selectedFile?.name || `drawn-${courseId}-${versionId}.gpx`,
       gpxXml: selectedGpxXml,
       summary: selectedSummary,
       uploadedBy: currentUser.email
@@ -349,7 +415,14 @@ async function initKakaoEditorMap() {
   await loadKakaoMaps();
   const center = new kakao.maps.LatLng(CENTER.lat, CENTER.lng);
   kakaoMap = new kakao.maps.Map($('#kakaoMakerMap'), { center, level: 5, mapTypeId: kakao.maps.MapTypeId.HYBRID });
-  kakao.maps.event.addListener(kakaoMap, 'click', () => closeMapContextMenu());
+  kakao.maps.event.addListener(kakaoMap, 'click', (mouseEvent) => {
+    if (isRouteDrawingMode) {
+      const latlng = mouseEvent.latLng;
+      appendDrawingPoint({ lat: latlng.getLat(), lng: latlng.getLng() });
+      return;
+    }
+    closeMapContextMenu();
+  });
   kakao.maps.event.addListener(kakaoMap, 'rightclick', (mouseEvent) => {
     const latlng = mouseEvent.latLng;
     openMapContextMenu(mouseEvent, { lat: latlng.getLat(), lng: latlng.getLng() });
@@ -361,7 +434,10 @@ function initLeafletEditorMap() {
   leafletMap = L.map('leafletMakerMap', { preferCanvas: true }).setView([CENTER.lat, CENTER.lng], 14);
   setLeafletLayer(activeLeafletLayer);
   leafletMarkerLayer = L.layerGroup().addTo(leafletMap);
-  leafletMap.on('click', () => closeMapContextMenu());
+  leafletMap.on('click', (event) => {
+    if (isRouteDrawingMode) appendDrawingPoint({ lat: event.latlng.lat, lng: event.latlng.lng });
+    else closeMapContextMenu();
+  });
   leafletMap.on('contextmenu', (event) => openMapContextMenu(event.originalEvent || event, { lat: event.latlng.lat, lng: event.latlng.lng }));
 }
 
@@ -416,6 +492,71 @@ function fitGpxBounds() {
     kakaoMap.setBounds(bounds);
   }
   if (leafletMap && leafletCoursePolyline) leafletMap.fitBounds(leafletCoursePolyline.getBounds(), { padding: [24, 24] });
+}
+
+function updateDrawnGpxButtons() {
+  const hasDrawableRoute = drawingRoutePoints.length >= 2;
+  saveDrawnGpxButton.disabled = !hasDrawableRoute;
+  downloadDrawnGpxButton.disabled = !hasDrawableRoute;
+  drawRouteButton.classList.toggle('active', isRouteDrawingMode);
+  drawRouteButton.textContent = isRouteDrawingMode ? '지도 그리기 종료' : '지도 그리기 시작';
+}
+
+function toggleRouteDrawing() {
+  isRouteDrawingMode = !isRouteDrawingMode;
+  closeMapContextMenu();
+  setStatus(uploadStatus, isRouteDrawingMode
+    ? '지도 위를 클릭해 경로점을 순서대로 추가하세요. GPX가 없어도 새 코스를 만들 수 있습니다.'
+    : `${drawingRoutePoints.length}개 경로점으로 그리기를 멈췄습니다.`, 'ok');
+  updateDrawnGpxButtons();
+}
+
+function appendDrawingPoint(point) {
+  drawingRoutePoints.push({ lat: Number(point.lat), lng: Number(point.lng), ele: 0 });
+  selectedTrackPoints = [...drawingRoutePoints];
+  selectedSummary = summarizeTrack(selectedTrackPoints);
+  selectedGpxXml = buildGpxXmlFromTrackPoints(selectedTrackPoints, currentCourseId());
+  selectedFile = null;
+  renderGpxCourse();
+  updateUploadButton();
+  updateDrawnGpxButtons();
+  setStatus(uploadStatus, `경로점 ${drawingRoutePoints.length}개 추가 · ${selectedSummary.distanceKm.toFixed(2)}km`, 'ok');
+}
+
+function buildGpxXmlFromTrackPoints(points, name = currentCourseId()) {
+  const trkpts = points.map(point => `      <trkpt lat="${Number(point.lat).toFixed(6)}" lon="${Number(point.lng).toFixed(6)}"><ele>${Number(point.ele || 0).toFixed(1)}</ele></trkpt>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="marathon-info-course-maker" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${name}</name></metadata>\n  <trk><name>${name}</name><trkseg>\n${trkpts}\n  </trkseg></trk>\n</gpx>`;
+}
+
+function applyDrawnRouteAsGpx() {
+  if (drawingRoutePoints.length < 2) {
+    setStatus(uploadStatus, 'GPX로 저장하려면 경로점을 2개 이상 찍어야 합니다.', 'error');
+    return false;
+  }
+  selectedTrackPoints = [...drawingRoutePoints];
+  selectedSummary = summarizeTrack(selectedTrackPoints);
+  selectedGpxXml = buildGpxXmlFromTrackPoints(selectedTrackPoints, currentCourseId());
+  selectedFile = null;
+  $('#versionIdInput').value = `drawn-${Date.now()}`;
+  renderGpxCourse();
+  updateConnectedGpxPath({ id: $('#versionIdInput').value, fileName: `${currentCourseId()}-drawn.gpx` });
+  updateUploadButton();
+  return true;
+}
+
+async function saveDrawnGpx() {
+  if (!applyDrawnRouteAsGpx()) return;
+  await handleUpload();
+}
+
+function downloadDrawnGpx() {
+  if (!applyDrawnRouteAsGpx()) return;
+  const blob = new Blob([selectedGpxXml], { type: 'application/gpx+xml' });
+  const link = document.createElement('a');
+  link.download = `${currentCourseId()}-drawn.gpx`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 async function initPoiEditorMap() {
@@ -782,21 +923,47 @@ function renderPoiMarkers() {
   renderLeafletPoiMarkers();
 }
 
-function renderPoiList() {
-  if (!poiItems.length) {
-    poiList.innerHTML = '<p class="status">저장된 지점이 없습니다.</p>';
+function groupPoisForInspector(items) {
+  const buckets = new Map();
+  items.forEach(poi => {
+    const type = getPoiType(poi.type);
+    const key = poi.type || 'etc';
+    if (!buckets.has(key)) buckets.set(key, { key, label: `${type.icon} ${type.label || key}`, items: [] });
+    buckets.get(key).items.push(poi);
+  });
+  return [...buckets.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function renderGroupedPoiList() {
+  // 지점 그룹: type별로 묶고 상단 탭으로 필요한 그룹만 봅니다.
+  const filteredItems = activePoiGroup === 'all'
+    ? poiItems
+    : poiItems.filter(poi => poi.type === activePoiGroup || (activePoiGroup === 'sign' && ['sign', 'cone', 'control'].includes(poi.type)));
+  poiGroupSummary.textContent = `${filteredItems.length} / ${poiItems.length}개 지점`;
+  poiGroupFilter.querySelectorAll('[data-poi-group]').forEach(button => button.classList.toggle('active', button.dataset.poiGroup === activePoiGroup));
+  if (!filteredItems.length) {
+    poiList.innerHTML = '<p class="status">이 그룹에 저장된 지점이 없습니다.</p>';
     renderPoiMarkers();
     return;
   }
-  poiList.innerHTML = poiItems.map(poi => {
-    const type = getPoiType(poi.type);
-    return `<button type="button" data-poi-id="${poi.id}"><strong>${type.icon} ${poi.name || poi.id}</strong><small>${poi.type} · ${poi.visibility} · ${poi.lat?.toFixed?.(5) || poi.lat}, ${poi.lng?.toFixed?.(5) || poi.lng}</small></button>`;
-  }).join('');
+  poiList.innerHTML = groupPoisForInspector(filteredItems).map(group => `
+    <section class="poi-group-block">
+      <div class="poi-group-header"><strong>${group.label}</strong><small>${group.items.length}개</small></div>
+      ${group.items.map(poi => {
+        const type = getPoiType(poi.type);
+        return `<button type="button" data-poi-id="${poi.id}"><strong>${type.icon} ${poi.name || poi.id}</strong><small>${poi.visibility} · ${poi.lat?.toFixed?.(5) || poi.lat}, ${poi.lng?.toFixed?.(5) || poi.lng}</small></button>`;
+      }).join('')}
+    </section>
+  `).join('');
   poiList.querySelectorAll('[data-poi-id]').forEach(button => {
     button.addEventListener('click', event => openPoiContextMenu(event, poiItems.find(poi => poi.id === button.dataset.poiId)));
     button.addEventListener('contextmenu', event => openPoiContextMenu(event, poiItems.find(poi => poi.id === button.dataset.poiId)));
   });
   renderPoiMarkers();
+}
+
+function renderPoiList() {
+  renderGroupedPoiList();
 }
 
 async function refreshPois() {
@@ -1008,6 +1175,17 @@ resetPoiButton.addEventListener('click', () => {
 closePoiModalButton.addEventListener('click', closePoiEditorModal);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
+projectSelect.addEventListener('change', () => selectProject(projectSelect.value));
+createProjectButton.addEventListener('click', () => handleProjectCreate().catch(error => setStatus(uploadStatus, `프로젝트 생성 실패: ${error.message}`, 'error')));
+drawRouteButton.addEventListener('click', toggleRouteDrawing);
+saveDrawnGpxButton.addEventListener('click', () => saveDrawnGpx().catch(error => setStatus(uploadStatus, `그린 GPX 저장 실패: ${error.message}`, 'error')));
+downloadDrawnGpxButton.addEventListener('click', downloadDrawnGpx);
+poiGroupFilter.querySelectorAll('[data-poi-group]').forEach(button => {
+  button.addEventListener('click', () => {
+    activePoiGroup = button.dataset.poiGroup;
+    renderGroupedPoiList();
+  });
+});
 toggleExplorerButton.addEventListener('click', toggleExplorerCollapsed);
 document.querySelectorAll('[data-menu-action]').forEach(button => button.addEventListener('click', () => handleMenuAction(button.dataset.menuAction)));
 document.querySelectorAll('.menu-item').forEach(menu => {
@@ -1065,6 +1243,7 @@ document.addEventListener('keydown', event => {
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
 updateConnectedGpxPath();
+refreshProjectBrowser().catch(error => setStatus(uploadStatus, `프로젝트 목록 로드 실패: ${error.message}`, 'error'));
 initPoiEditorMap().then(() => {
   refreshPois();
   refreshGpxVersionBrowser();
