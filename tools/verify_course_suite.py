@@ -148,7 +148,7 @@ def test_course_maker_has_file_browser_for_gpx_versions():
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
     repository = read("course-suite/shared/course-repository.js")
-    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary", "importGpxButton", "saveCurrentGpxButton", "renameGpxButton"]:
+    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary", "explorerImportGpxButton", "explorerSaveCurrentGpxButton", "renameGpxButton"]:
         assert_contains(html, token, "maker/index.html")
     for token in ["loadGpxVersions", "loadGpxVersion", "deleteGpxVersion", "setActiveGpxVersion", "renameGpxVersion"]:
         assert_contains(repository, token, "course-repository.js")
@@ -181,16 +181,30 @@ def test_course_maker_leaflet_layers_and_connected_gpx_path():
     assert_contains(css, ".gpx-path", "maker/maker.css")
 
 
+def test_course_maker_has_map_click_marker_and_layer_popover():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["layerToggleButton", "layerPopover", "mapFloatingControls", "poiQuickTypeBar", "explorerImportGpxButton", "explorerSaveCurrentGpxButton"]:
+        assert_contains(html, token, "maker/index.html")
+    assert "id=\"importGpxButton\"" not in html.split("</nav>")[0]
+    assert "id=\"saveCurrentGpxButton\"" not in html.split("</nav>")[0]
+    for token in ["pendingPoiMarker", "pendingPoiCircle", "renderPendingPoiMarker", "toggleLayerPopover", "closeLayerPopover", "setQuickPoiType"]:
+        assert_contains(js, token, "maker/maker.js")
+    for token in [".map-floating-controls", ".layer-popover", ".pending-poi-dot", ".poi-quick-type-bar", ".compact-inspector"]:
+        assert_contains(css, token, "maker/maker.css")
+
+
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
-    for token in ["mapApiKakaoButton", "mapApiLeafletButton", "kakaoMakerMap", "leafletMakerMap", "layerControlPanel"]:
+    for token in ["mapApiKakaoButton", "mapApiLeafletButton", "kakaoMakerMap", "leafletMakerMap", "layerPopover"]:
         assert_contains(html, token, "maker/index.html")
     for token in ["kakao.maps.Map", "activeMapApi = 'kakao'", "switchMapApi", "setKakaoBaseMapType", "toggleKakaoOverlay", "TRAFFIC", "BICYCLE", "TERRAIN"]:
         assert_contains(js, token, "maker/maker.js")
     assert "data-kakao-map-type=\"skyview\"" not in html
-    assert_contains(css, ".layer-control-panel", "maker/maker.css")
+    assert_contains(css, ".layer-popover", "maker/maker.css")
     assert_contains(css, ".maker-map-pane.active", "maker/maker.css")
 
 

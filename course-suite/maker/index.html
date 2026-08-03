@@ -13,13 +13,10 @@
       <span class="brand-mark">MI</span>
       <div>
         <strong>Course Maker</strong>
-        <small>카카오맵 기본 · GPX/지점 편집</small>
+        <small>Figma/Google Earth style route workspace</small>
       </div>
     </div>
     <div class="top-menu-actions">
-      <button id="importGpxButton" type="button">GPX 가져오기</button>
-      <button id="saveCurrentGpxButton" type="button" disabled>현재 GPX 저장</button>
-      <button id="refreshGpxListButton" type="button">파일함 새로고침</button>
       <a class="viewer-link" href="../viewer/?event=gcrun" target="_blank" rel="noopener">뷰어 열기</a>
       <button id="loginButton" type="button">Google 로그인</button>
       <button id="logoutButton" type="button" hidden>로그아웃</button>
@@ -38,6 +35,11 @@
         <label>Version <input id="versionIdInput" value="v001"></label>
       </div>
       <input id="gpxFileInput" class="hidden-file-input" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
+      <div class="explorer-primary-actions">
+        <button id="explorerImportGpxButton" type="button">GPX 가져오기</button>
+        <button id="explorerSaveCurrentGpxButton" type="button" disabled>현재 GPX 저장</button>
+        <button id="refreshGpxListButton" type="button" class="secondary-button">새로고침</button>
+      </div>
       <p id="activeGpxSummary" class="status">활성 GPX를 불러오는 중입니다.</p>
       <p id="connectedGpxPath" class="gpx-path">연결 GPX: 확인 중</p>
       <div class="tree-root">
@@ -48,7 +50,6 @@
       </div>
       <div class="explorer-actions">
         <button id="renameGpxButton" type="button" class="secondary-button">선택 버전 이름수정</button>
-        <button id="deletePoiButton" type="button" class="danger-button">선택 지점 삭제</button>
       </div>
     </aside>
 
@@ -65,82 +66,102 @@
         </div>
       </header>
 
-      <div id="layerControlPanel" class="layer-control-panel">
-        <div class="control-block">
-          <span>Map API</span>
-          <button id="mapApiKakaoButton" class="active" type="button" data-map-api="kakao">카카오맵 기본</button>
-          <button id="mapApiLeafletButton" type="button" data-map-api="leaflet">Leaflet 보조</button>
-        </div>
-        <div id="kakaoControls" class="api-panel" data-api-panel="kakao">
-          <div class="control-block">
-            <span>카카오 지도</span>
-            <button class="active" type="button" data-kakao-map-type="hybrid">하이브리드</button>
-            <button type="button" data-kakao-map-type="roadmap">일반</button>
-          </div>
-          <div class="control-block">
-            <span>레이어</span>
-            <label><input type="checkbox" data-kakao-overlay="TRAFFIC"> 교통</label>
-            <label><input type="checkbox" data-kakao-overlay="BICYCLE"> 자전거</label>
-            <label><input type="checkbox" data-kakao-overlay="TERRAIN"> 지형</label>
-          </div>
-        </div>
-        <div id="leafletControls" class="api-panel" data-api-panel="leaflet" hidden>
-          <div class="control-block">
-            <span>Leaflet 레이어</span>
-            <button class="active" type="button" data-leaflet-layer="osm">OSM 일반</button>
-            <button type="button" data-leaflet-layer="topo">지형</button>
-            <button type="button" data-leaflet-layer="light">라이트</button>
-            <button type="button" data-leaflet-layer="dark">다크</button>
-          </div>
-          <div class="control-block muted-block">
-            <span>Leaflet 보조</span>
-            <em>카카오맵 공백/군사지역/이북지역 확인용 OSM 기반 지도입니다.</em>
-          </div>
-        </div>
-        <p id="mapApiHint" class="map-api-hint">현재 API: 카카오맵 · 하이브리드/교통/자전거/지형 레이어 사용 가능</p>
-      </div>
-
       <div id="makerMapFrame" class="maker-map-frame">
         <div id="kakaoMakerMap" class="maker-map maker-map-pane active"></div>
         <div id="leafletMakerMap" class="maker-map maker-map-pane"></div>
+        <div id="mapFloatingControls" class="map-floating-controls">
+          <button id="layerToggleButton" class="layer-toggle-button" type="button" aria-expanded="false" aria-controls="layerPopover" title="지도 레이어">▣</button>
+          <div id="layerPopover" class="layer-popover" hidden>
+            <div class="control-block map-api-switcher">
+              <span>Map API</span>
+              <button id="mapApiKakaoButton" class="active" type="button" data-map-api="kakao">카카오</button>
+              <button id="mapApiLeafletButton" type="button" data-map-api="leaflet">Leaflet</button>
+            </div>
+            <div id="kakaoControls" class="api-panel" data-api-panel="kakao">
+              <div class="control-block">
+                <span>카카오 지도</span>
+                <button class="active" type="button" data-kakao-map-type="hybrid">하이브리드</button>
+                <button type="button" data-kakao-map-type="roadmap">일반</button>
+              </div>
+              <div class="control-block stacked-controls">
+                <span>카카오 레이어</span>
+                <label><input type="checkbox" data-kakao-overlay="TRAFFIC"> 교통</label>
+                <label><input type="checkbox" data-kakao-overlay="BICYCLE"> 자전거</label>
+                <label><input type="checkbox" data-kakao-overlay="TERRAIN"> 지형</label>
+              </div>
+            </div>
+            <div id="leafletControls" class="api-panel" data-api-panel="leaflet" hidden>
+              <div class="control-block stacked-controls">
+                <span>Leaflet 레이어</span>
+                <button class="active" type="button" data-leaflet-layer="osm">OSM 일반</button>
+                <button type="button" data-leaflet-layer="topo">지형</button>
+                <button type="button" data-leaflet-layer="light">라이트</button>
+                <button type="button" data-leaflet-layer="dark">다크</button>
+              </div>
+            </div>
+            <p id="mapApiHint" class="map-api-hint">현재 API: 카카오맵</p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <aside class="right-inspector-panel">
-      <section class="inspector-section">
-        <h2>지점 / 설치물</h2>
-        <form id="poiForm" class="poi-form">
-          <input id="poiIdInput" placeholder="poi id 예: water-5k">
-          <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
-          <select id="poiTypeInput">
-            <option value="water">급수대</option>
-            <option value="turn">반환점</option>
-            <option value="staff">스탭배치위치</option>
-            <option value="sign">입간판</option>
-            <option value="cone">라바콘</option>
-            <option value="medical">의료</option>
-            <option value="toilet">화장실</option>
-            <option value="parking">주차장</option>
-            <option value="shuttle">셔틀</option>
-            <option value="control">통제점</option>
-            <option value="venue">대회장</option>
-          </select>
-          <select id="poiVisibilityInput">
-            <option value="public">public</option>
-            <option value="staff">staff</option>
-            <option value="admin">admin</option>
-          </select>
-          <input id="poiLatInput" placeholder="lat">
-          <input id="poiLngInput" placeholder="lng">
-          <input id="poiDistanceInput" placeholder="거리 km 예: 1.5">
-          <input id="poiQuantityInput" placeholder="수량" value="1">
-          <input id="poiTeamInput" placeholder="담당팀">
-          <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
-          <div class="button-row">
-            <button id="savePoiButton" type="submit">지점 저장</button>
-            <button id="resetPoiButton" type="button">새 지점</button>
+    <aside class="right-inspector-panel compact-inspector">
+      <section class="inspector-section poi-command-panel">
+        <div class="inspector-title-row">
+          <div>
+            <p class="eyebrow">place</p>
+            <h2>지점 / 설치물</h2>
           </div>
-          <p id="poiStatus" class="status">지도 클릭 또는 마커 우클릭으로 지점을 편집하세요.</p>
+          <button id="resetPoiButton" type="button" class="secondary-button">새 지점</button>
+        </div>
+        <div id="poiQuickTypeBar" class="poi-quick-type-bar" aria-label="빠른 지점 유형">
+          <button type="button" data-quick-poi-type="water">💧 급수</button>
+          <button type="button" data-quick-poi-type="turn">↩ 반환</button>
+          <button type="button" data-quick-poi-type="venue">🏁 대회장</button>
+          <button type="button" data-quick-poi-type="staff">🧑‍💼 스탭</button>
+          <button type="button" data-quick-poi-type="medical">⛑ 의료</button>
+        </div>
+        <form id="poiForm" class="poi-form flexible-poi-form">
+          <input id="poiNameInput" placeholder="이름 예: 5km 급수대">
+          <div class="form-grid-2">
+            <select id="poiTypeInput">
+              <option value="water">급수대</option>
+              <option value="turn">반환점</option>
+              <option value="staff">스탭배치위치</option>
+              <option value="sign">입간판</option>
+              <option value="cone">라바콘</option>
+              <option value="medical">의료</option>
+              <option value="toilet">화장실</option>
+              <option value="parking">주차장</option>
+              <option value="shuttle">셔틀</option>
+              <option value="control">통제점</option>
+              <option value="venue">대회장</option>
+            </select>
+            <select id="poiVisibilityInput">
+              <option value="public">public</option>
+              <option value="staff">staff</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+          <div class="coordinate-chip-row">
+            <input id="poiLatInput" placeholder="lat">
+            <input id="poiLngInput" placeholder="lng">
+          </div>
+          <details class="advanced-poi-fields">
+            <summary>상세 정보</summary>
+            <input id="poiIdInput" placeholder="poi id 예: water-5k">
+            <div class="form-grid-2">
+              <input id="poiDistanceInput" placeholder="거리 km 예: 1.5">
+              <input id="poiQuantityInput" placeholder="수량" value="1">
+            </div>
+            <input id="poiTeamInput" placeholder="담당팀">
+            <textarea id="poiDescriptionInput" placeholder="설명/설치 메모"></textarea>
+          </details>
+          <div class="button-row sticky-save-row">
+            <button id="savePoiButton" type="submit">지점 저장</button>
+            <button id="deletePoiButton" type="button" class="danger-button">삭제</button>
+          </div>
+          <p id="poiStatus" class="status">지도를 클릭하면 저장 전 위치가 먼저 표시됩니다.</p>
         </form>
       </section>
 

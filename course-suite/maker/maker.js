@@ -31,7 +31,7 @@ const LEAFLET_LAYERS = {
 
 const loginButton = $('#loginButton');
 const logoutButton = $('#logoutButton');
-const uploadButton = $('#uploadButton') || $('#saveCurrentGpxButton');
+const uploadButton = $('#uploadButton') || $('#explorerSaveCurrentGpxButton') || $('#saveCurrentGpxButton');
 const gpxFileInput = $('#gpxFileInput');
 const authStatus = $('#authStatus');
 const uploadStatus = $('#uploadStatus');
@@ -47,11 +47,13 @@ const gpxVersionTree = $('#gpxVersionTree');
 const refreshGpxListButton = $('#refreshGpxListButton');
 const activeGpxSummary = $('#activeGpxSummary');
 const connectedGpxPath = $('#connectedGpxPath');
-const importGpxButton = $('#importGpxButton');
-const saveCurrentGpxButton = $('#saveCurrentGpxButton');
+const importGpxButton = $('#explorerImportGpxButton') || $('#importGpxButton');
+const saveCurrentGpxButton = $('#explorerSaveCurrentGpxButton') || $('#saveCurrentGpxButton');
 const renameGpxButton = $('#renameGpxButton');
 const toolbarStatus = $('#toolbarStatus');
 const mapApiHint = $('#mapApiHint');
+const layerToggleButton = $('#layerToggleButton');
+const layerPopover = $('#layerPopover');
 const poiContextMenu = $('#poiContextMenu');
 
 let currentUser = null;
@@ -64,6 +66,8 @@ let leafletCoursePolyline = null;
 let activeMapApi = 'kakao';
 let kakaoMap = null;
 let kakaoMarkers = [];
+let pendingPoiMarker = null;
+let pendingPoiCircle = null;
 let activeKakaoOverlays = new Set();
 let activeLeafletLayer = 'osm';
 let leafletMap = null;
@@ -359,7 +363,7 @@ function setLeafletLayer(layerKey = 'osm') {
     attribution: layer.attribution
   }).addTo(leafletMap);
   document.querySelectorAll('[data-leaflet-layer]').forEach(button => button.classList.toggle('active', button.dataset.leafletLayer === activeLeafletLayer));
-  if (activeMapApi === 'leaflet') mapApiHint.textContent = `현재 API: Leaflet 보조 · ${layer.label} 레이어 사용 중`;
+  if (activeMapApi === 'leaflet') mapApiHint.textContent = `현재 API: Leaflet · ${layer.label} 레이어 표시 중`;
 }
 
 function renderGpxCourse() {
@@ -429,8 +433,19 @@ function updateApiSpecificUi() {
     panel.hidden = panel.dataset.apiPanel !== activeMapApi;
   });
   mapApiHint.textContent = activeMapApi === 'kakao'
-    ? '현재 API: 카카오맵 · 하이브리드/일반 및 교통/자전거/지형 레이어를 사용할 수 있습니다.'
-    : `현재 API: Leaflet 보조 · ${LEAFLET_LAYERS[activeLeafletLayer].label} 레이어 사용 중`;
+    ? '현재 API: 카카오맵 · 카카오 지도/레이어만 표시 중'
+    : `현재 API: Leaflet · ${LEAFLET_LAYERS[activeLeafletLayer].label} 레이어 표시 중`;
+}
+
+function toggleLayerPopover() {
+  const nextHidden = !layerPopover.hidden;
+  layerPopover.hidden = nextHidden;
+  layerToggleButton.setAttribute('aria-expanded', String(!nextHidden));
+}
+
+function closeLayerPopover() {
+  layerPopover.hidden = true;
+  layerToggleButton.setAttribute('aria-expanded', 'false');
 }
 
 function setKakaoBaseMapType(type) {
@@ -466,7 +481,8 @@ function handleMapClick({ lat, lng }) {
   $('#poiLatInput').value = Number(lat).toFixed(6);
   $('#poiLngInput').value = Number(lng).toFixed(6);
   if (!$('#poiIdInput').value.trim()) $('#poiIdInput').value = `poi-${Date.now()}`;
-  setStatus(poiStatus, '지도 클릭 좌표가 입력됐습니다. 이름/유형을 확인 후 저장하세요.', 'ok');
+  renderPendingPoiMarker(lat, lng);
+  setStatus(poiStatus, '저장 전 위치를 지도에 표시했습니다. 유형/이름을 확인 후 저장하세요.', 'ok');
 }
 
 function formToPoi() {
@@ -491,6 +507,42 @@ function setMapCenter(lat, lng, zoom = 16) {
     kakaoMap.setCenter(new kakao.maps.LatLng(lat, lng));
     kakaoMap.setLevel(Math.min(kakaoMap.getLevel(), 4));
   }
+}
+
+function clearPendingPoiMarker() {
+  if (pendingPoiMarker?.setMap) pendingPoiMarker.setMap(null);
+  if (pendingPoiCircle?.remove) pendingPoiCircle.remove();
+  pendingPoiMarker = null;
+  pendingPoiCircle = null;
+}
+
+function renderPendingPoiMarker(lat, lng) {
+  clearPendingPoiMarker();
+  const safeLat = Number(lat);
+  const safeLng = Number(lng);
+  if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
+  if (kakaoMap) {
+    const content = document.createElement('div');
+    content.className = 'pending-poi-dot';
+    pendingPoiMarker = new kakao.maps.CustomOverlay({
+      position: new kakao.maps.LatLng(safeLat, safeLng),
+      content,
+      yAnchor: .5,
+      clickable: false
+    });
+    pendingPoiMarker.setMap(kakaoMap);
+  }
+  if (leafletMap) {
+    pendingPoiCircle = L.marker([safeLat, safeLng], {
+      interactive: false,
+      icon: L.divIcon({ className: '', html: '<div class="pending-poi-dot"></div>', iconSize: [24, 24] })
+    }).addTo(leafletMap);
+  }
+}
+
+function setQuickPoiType(type) {
+  $('#poiTypeInput').value = type;
+  document.querySelectorAll('[data-quick-poi-type]').forEach(button => button.classList.toggle('active', button.dataset.quickPoiType === type));
 }
 
 function fillPoiForm(poi) {
@@ -557,7 +609,9 @@ function resetPoiForm() {
   $('#poiTypeInput').value = 'water';
   $('#poiVisibilityInput').value = 'public';
   $('#poiQuantityInput').value = 1;
-  setStatus(poiStatus, '새 지점을 입력할 수 있습니다. 지도를 클릭해 좌표를 넣으세요.');
+  setQuickPoiType('water');
+  clearPendingPoiMarker();
+  setStatus(poiStatus, '새 지점을 입력할 수 있습니다. 지도를 클릭하면 저장 전 위치가 표시됩니다.');
 }
 
 function clearKakaoMarkers() {
@@ -656,6 +710,7 @@ async function handlePoiSave(event) {
   try {
     const result = await savePoi({ courseId: currentCourseId(), poi });
     setStatus(poiStatus, `${poi.name} 저장 완료`, 'ok');
+    clearPendingPoiMarker();
     renderResult({ poiSaved: result });
     await refreshPois();
   } catch (error) {
@@ -673,6 +728,7 @@ async function handlePoiDelete() {
   try {
     const result = await deletePoi({ courseId: currentCourseId(), poiId });
     setStatus(poiStatus, `${poiId} 삭제 완료`, 'ok');
+    clearPendingPoiMarker();
     renderResult({ poiDeleted: result });
     resetPoiForm();
     await refreshPois();
@@ -719,14 +775,25 @@ document.querySelectorAll('[data-map-api]').forEach(button => button.addEventLis
 document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.addEventListener('click', () => setKakaoBaseMapType(button.dataset.kakaoMapType)));
 document.querySelectorAll('[data-kakao-overlay]').forEach(input => input.addEventListener('change', () => toggleKakaoOverlay(input.dataset.kakaoOverlay, input.checked)));
 document.querySelectorAll('[data-leaflet-layer]').forEach(button => button.addEventListener('click', () => setLeafletLayer(button.dataset.leafletLayer)));
+layerToggleButton.addEventListener('click', event => {
+  event.stopPropagation();
+  toggleLayerPopover();
+});
+layerPopover.addEventListener('click', event => event.stopPropagation());
+document.querySelectorAll('[data-quick-poi-type]').forEach(button => button.addEventListener('click', () => setQuickPoiType(button.dataset.quickPoiType)));
+$('#poiTypeInput').addEventListener('change', event => setQuickPoiType(event.target.value));
 poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
   button.addEventListener('click', () => handlePoiContextAction(button.dataset.poiContextAction));
 });
 document.addEventListener('click', event => {
   if (!poiContextMenu.contains(event.target)) closePoiContextMenu();
+  if (!layerPopover.contains(event.target) && event.target !== layerToggleButton) closeLayerPopover();
 });
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') closePoiContextMenu();
+  if (event.key === 'Escape') {
+    closePoiContextMenu();
+    closeLayerPopover();
+  }
 });
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
