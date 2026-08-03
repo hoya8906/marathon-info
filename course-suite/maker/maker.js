@@ -417,15 +417,25 @@ function loadKakaoMaps() {
   });
 }
 
-function clearPlaceSearchResults() {
+function showPlaceSearchResults() {
+  placeSearchResults.hidden = false;
+  placeSearchResults.removeAttribute('aria-hidden');
+}
+
+function hidePlaceSearchResults() {
   placeSearchResults.hidden = true;
+  placeSearchResults.setAttribute('aria-hidden', 'true');
   placeSearchResults.innerHTML = '';
+}
+
+function clearPlaceSearchResults() {
+  hidePlaceSearchResults();
 }
 
 function renderPlaceSearchResults(places = []) {
   if (!places.length) {
     placeSearchResults.innerHTML = '<p class="status">검색 결과가 없습니다.</p>';
-    placeSearchResults.hidden = false;
+    showPlaceSearchResults();
     return;
   }
   placeSearchResults.innerHTML = places.slice(0, 8).map((place, index) => `
@@ -437,7 +447,7 @@ function renderPlaceSearchResults(places = []) {
   placeSearchResults.querySelectorAll('[data-place-index]').forEach(button => {
     button.addEventListener('click', () => focusPlaceSearchResult(places[Number(button.dataset.placeIndex)]));
   });
-  placeSearchResults.hidden = false;
+  showPlaceSearchResults();
 }
 
 function panToSearchedPlace(lat, lng, label = '검색 위치') {
@@ -471,7 +481,7 @@ function focusPlaceSearchResult(place) {
 function handlePlaceSearch() {
   const keyword = placeSearchInput.value.trim();
   if (!keyword) {
-    clearPlaceSearchResults();
+    hidePlaceSearchResults();
     return;
   }
   if (!placeSearchService) {

@@ -145,6 +145,7 @@ textarea { min-height: 76px; resize: vertical; }
 .place-search-box input { margin: 0; min-width: 0; }
 .place-search-box button { padding: 9px 12px; border-radius: 12px; white-space: nowrap; }
 .place-search-results { min-width: min(360px, 100%); position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 2600; display: grid; gap: 4px; max-height: 280px; overflow: auto; padding: 6px; border: 1px solid var(--line); border-radius: 16px; background: rgba(13,16,24,.97); box-shadow: 0 18px 54px rgba(0,0,0,.45); }
+.place-search-results[hidden] { display: none !important; }
 .place-search-results button { display: grid; gap: 3px; width: 100%; padding: 9px 10px; border-radius: 11px; text-align: left; background: transparent; }
 .place-search-results button:hover { background: rgba(255,255,255,.08); }
 .place-search-results small { color: var(--muted); }

@@ -339,6 +339,20 @@ def test_course_maker_place_search_toolbar_does_not_overflow_mid_width():
     assert_contains(css, ".place-search-results { min-width: min(360px, 100%);", "maker/maker.css")
 
 
+def test_course_maker_place_search_dropdown_only_appears_after_search():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    assert_contains(html, '<div id="placeSearchResults" class="place-search-results" hidden></div>', "maker/index.html")
+    assert_contains(css, ".place-search-results[hidden] { display: none !important; }", "maker/maker.css")
+    assert_contains(js, "function showPlaceSearchResults()", "maker/maker.js")
+    assert_contains(js, "function hidePlaceSearchResults()", "maker/maker.js")
+    assert_contains(js, "placeSearchResults.setAttribute('aria-hidden', 'true');", "maker/maker.js")
+    assert_contains(js, "placeSearchResults.removeAttribute('aria-hidden');", "maker/maker.js")
+    assert_contains(js, "renderPlaceSearchResults(data);", "maker/maker.js")
+    assert_contains(js, "if (!keyword) {\n    hidePlaceSearchResults();", "maker/maker.js")
+
+
 def test_course_maker_projects_and_drawn_gpx_workflow():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
