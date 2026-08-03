@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { getFirebaseAuth, getFirebaseOptions, signInWithGoogle, signOutFirebase } from '../shared/firebase.js';
-import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, saveGpxVersionFromXml, savePoi, setActiveGpxVersion } from '../shared/course-repository.js';
+import { deleteGpxVersion, deletePoi, loadCoursePois, loadGpxVersion, loadGpxVersions, renameGpxVersion, saveGpxVersionFromXml, savePoi, setActiveGpxVersion } from '../shared/course-repository.js';
 import { parseGpx, summarizeTrack } from '../shared/gpx-utils.js';
 import { getPoiType } from '../shared/poi-icons.js';
 
@@ -9,7 +9,7 @@ const CENTER = { lat: 37.441466, lng: 126.994113 };
 
 const loginButton = $('#loginButton');
 const logoutButton = $('#logoutButton');
-const uploadButton = $('#uploadButton');
+const uploadButton = $('#uploadButton') || $('#saveCurrentGpxButton');
 const gpxFileInput = $('#gpxFileInput');
 const authStatus = $('#authStatus');
 const uploadStatus = $('#uploadStatus');
@@ -24,6 +24,12 @@ const downloadMapImageButton = $('#downloadMapImageButton');
 const gpxVersionTree = $('#gpxVersionTree');
 const refreshGpxListButton = $('#refreshGpxListButton');
 const activeGpxSummary = $('#activeGpxSummary');
+const importGpxButton = $('#importGpxButton');
+const saveCurrentGpxButton = $('#saveCurrentGpxButton');
+const renameGpxButton = $('#renameGpxButton');
+const toolbarStatus = $('#toolbarStatus');
+const mapApiHint = $('#mapApiHint');
+const poiContextMenu = $('#poiContextMenu');
 
 let currentUser = null;
 let selectedFile = null;
@@ -40,6 +46,8 @@ let leafletMap = null;
 let leafletMarkerLayer = null;
 let poiItems = [];
 let gpxVersions = [];
+let selectedGpxVersionId = null;
+let contextPoi = null;
 let editingPoiId = null;
 
 function setStatus(element, message, type = '') {
@@ -57,7 +65,9 @@ function currentCourseId() {
 }
 
 function updateUploadButton() {
-  uploadButton.disabled = !(currentUser && isAdmin(currentUser) && selectedGpxXml && selectedSummary);
+  const canSave = Boolean(currentUser && isAdmin(currentUser) && selectedGpxXml && selectedSummary);
+  uploadButton.disabled = !canSave;
+  saveCurrentGpxButton.disabled = !canSave;
 }
 
 function renderResult(data) {
@@ -97,8 +107,10 @@ async function handleFileSelected() {
     selectedGpxXml = text;
     selectedSummary = summary;
     selectedTrackPoints = trackPoints;
+    selectedGpxVersionId = null;
     renderGpxCourse();
     fitGpxBounds();
+    toolbarStatus.textContent = `${selectedFile.name} 편집 중`;
     setStatus(uploadStatus, `${selectedFile.name} 파싱 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
     renderResult({ fileName: selectedFile.name, summary });
   } catch (error) {
@@ -152,9 +164,11 @@ function applyGpxVersionToMap(version) {
   selectedGpxXml = version.gpxXml;
   selectedSummary = summary;
   selectedTrackPoints = trackPoints;
+  selectedGpxVersionId = version.id || null;
   $('#versionIdInput').value = version.id || $('#versionIdInput').value;
   renderGpxCourse();
   fitGpxBounds();
+  toolbarStatus.textContent = `${version.fileName || version.id} 불러옴`;
   setStatus(uploadStatus, `${version.fileName || version.id} 불러오기 완료 · ${summary.pointCount.toLocaleString()}개 포인트 · ${summary.distanceKm.toFixed(2)}km`, 'ok');
   renderResult({ loadedGpxVersion: { id: version.id, fileName: version.fileName, summary } });
   updateUploadButton();
@@ -244,6 +258,32 @@ async function handleGpxVersionDelete(versionId) {
   }
 }
 
+function handleExplorerImport() {
+  gpxFileInput.click();
+}
+
+async function handleGpxVersionRename() {
+  const versionId = selectedGpxVersionId || $('#versionIdInput').value.trim();
+  if (!versionId) {
+    setStatus(uploadStatus, '수정할 GPX 버전을 먼저 불러오세요.', 'error');
+    return;
+  }
+  if (!currentUser || !isAdmin(currentUser)) {
+    setStatus(uploadStatus, '관리자 이메일로 로그인해야 수정할 수 있습니다.', 'error');
+    return;
+  }
+  const nextName = window.prompt('새 GPX 표시 이름', gpxVersions.find(v => v.id === versionId)?.fileName || versionId);
+  if (!nextName) return;
+  try {
+    const result = await renameGpxVersion({ courseId: currentCourseId(), versionId, fileName: nextName });
+    setStatus(uploadStatus, `${versionId} 이름 수정 완료`, 'ok');
+    renderResult({ renamedGpxVersion: result });
+    await refreshGpxVersionBrowser();
+  } catch (error) {
+    setStatus(uploadStatus, `GPX 이름 수정 실패: ${error.message}`, 'error');
+  }
+}
+
 function loadKakaoMaps() {
   return new Promise((resolve, reject) => {
     if (!window.kakao?.maps) return reject(new Error('Kakao Maps SDK를 찾을 수 없습니다.'));
@@ -328,11 +368,20 @@ function switchMapApi(nextApi) {
   $('#kakaoMakerMap').classList.toggle('active', activeMapApi === 'kakao');
   $('#leafletMakerMap').classList.toggle('active', activeMapApi === 'leaflet');
   document.querySelectorAll('[data-map-api]').forEach(button => button.classList.toggle('active', button.dataset.mapApi === activeMapApi));
-  document.querySelectorAll('[data-kakao-only]').forEach(block => block.hidden = activeMapApi !== 'kakao');
+  updateApiSpecificUi();
   if (activeMapApi === 'leaflet') setTimeout(() => leafletMap?.invalidateSize(), 30);
   if (activeMapApi === 'kakao' && kakaoMap) setTimeout(() => kakaoMap.relayout(), 30);
   renderGpxCourse();
   renderPoiMarkers();
+}
+
+function updateApiSpecificUi() {
+  document.querySelectorAll('[data-api-panel]').forEach(panel => {
+    panel.hidden = panel.dataset.apiPanel !== activeMapApi;
+  });
+  mapApiHint.textContent = activeMapApi === 'kakao'
+    ? '현재 API: 카카오맵 · 하이브리드/일반 및 교통/자전거/지형 레이어를 사용할 수 있습니다.'
+    : '현재 API: Leaflet 보조 · 카카오맵 공백 지역 확인용이며 카카오 전용 레이어는 숨겨집니다.';
 }
 
 function setKakaoBaseMapType(type) {
@@ -408,7 +457,49 @@ function fillPoiForm(poi) {
   $('#poiQuantityInput').value = poi.quantity ?? 1;
   $('#poiTeamInput').value = poi.team || '';
   $('#poiDescriptionInput').value = poi.description || '';
+  toolbarStatus.textContent = `${poi.name || poi.id} 편집 중`;
   if (poi.lat && poi.lng) setMapCenter(Number(poi.lat), Number(poi.lng));
+}
+
+function openPoiContextMenu(event, poi) {
+  event.preventDefault?.();
+  contextPoi = poi;
+  poiContextMenu.hidden = false;
+  const x = event.clientX ?? 24;
+  const y = event.clientY ?? 24;
+  poiContextMenu.style.left = `${Math.min(x, window.innerWidth - 180)}px`;
+  poiContextMenu.style.top = `${Math.min(y, window.innerHeight - 190)}px`;
+}
+
+function closePoiContextMenu() {
+  poiContextMenu.hidden = true;
+  contextPoi = null;
+}
+
+async function copyPoiCoordinates(poi = contextPoi) {
+  if (!poi) return;
+  const text = `${poi.lat}, ${poi.lng}`;
+  await navigator.clipboard?.writeText(text);
+  setStatus(poiStatus, `${poi.name || poi.id} 좌표를 복사했습니다: ${text}`, 'ok');
+}
+
+function duplicatePoi(poi = contextPoi) {
+  if (!poi) return;
+  const next = { ...poi, id: `${poi.id || 'poi'}-copy-${Date.now()}`, name: `${poi.name || poi.id} 복제` };
+  fillPoiForm(next);
+  setStatus(poiStatus, '복제된 지점을 확인 후 저장하세요.', 'ok');
+}
+
+async function handlePoiContextAction(action) {
+  if (!contextPoi) return;
+  if (action === 'edit') fillPoiForm(contextPoi);
+  if (action === 'duplicate') duplicatePoi(contextPoi);
+  if (action === 'copy-coordinates') await copyPoiCoordinates(contextPoi);
+  if (action === 'delete') {
+    fillPoiForm(contextPoi);
+    await handlePoiDelete();
+  }
+  closePoiContextMenu();
 }
 
 function resetPoiForm() {
@@ -431,7 +522,12 @@ function renderKakaoPoiMarkers() {
   poiItems.forEach(poi => {
     if (!Number.isFinite(Number(poi.lat)) || !Number.isFinite(Number(poi.lng))) return;
     const type = getPoiType(poi.type);
-    const content = `<div class="poi-marker-label">${type.icon} ${poi.name || poi.id}</div>`;
+    const content = document.createElement('button');
+    content.type = 'button';
+    content.className = 'poi-marker-label';
+    content.textContent = `${type.icon} ${poi.name || poi.id}`;
+    content.addEventListener('click', () => fillPoiForm(poi));
+    content.addEventListener('contextmenu', event => openPoiContextMenu(event, poi));
     const marker = new kakao.maps.CustomOverlay({
       position: new kakao.maps.LatLng(Number(poi.lat), Number(poi.lng)),
       content,
@@ -456,6 +552,7 @@ function renderLeafletPoiMarkers() {
     });
     L.marker([poi.lat, poi.lng], { icon, draggable: true })
       .on('click', () => fillPoiForm(poi))
+      .on('contextmenu', event => openPoiContextMenu(event.originalEvent || event, poi))
       .on('dragend', event => {
         const next = event.target.getLatLng();
         fillPoiForm({ ...poi, lat: Number(next.lat.toFixed(6)), lng: Number(next.lng.toFixed(6)) });
@@ -481,6 +578,7 @@ function renderPoiList() {
   }).join('');
   poiList.querySelectorAll('[data-poi-id]').forEach(button => {
     button.addEventListener('click', () => fillPoiForm(poiItems.find(poi => poi.id === button.dataset.poiId)));
+    button.addEventListener('contextmenu', event => openPoiContextMenu(event, poiItems.find(poi => poi.id === button.dataset.poiId)));
   });
   renderPoiMarkers();
 }
@@ -552,8 +650,11 @@ loginButton.addEventListener('click', () => signInWithGoogle().catch(error => {
   setStatus(authStatus, `로그인 실패: ${error.message}`, 'error');
 }));
 logoutButton.addEventListener('click', () => signOutFirebase());
+importGpxButton.addEventListener('click', handleExplorerImport);
 gpxFileInput.addEventListener('change', handleFileSelected);
-uploadButton.addEventListener('click', handleUpload);
+saveCurrentGpxButton.addEventListener('click', handleUpload);
+if (uploadButton !== saveCurrentGpxButton) uploadButton.addEventListener('click', handleUpload);
+renameGpxButton.addEventListener('click', handleGpxVersionRename);
 poiForm.addEventListener('submit', handlePoiSave);
 resetPoiButton.addEventListener('click', resetPoiForm);
 deletePoiButton.addEventListener('click', handlePoiDelete);
@@ -566,6 +667,15 @@ refreshGpxListButton.addEventListener('click', refreshGpxVersionBrowser);
 document.querySelectorAll('[data-map-api]').forEach(button => button.addEventListener('click', () => switchMapApi(button.dataset.mapApi)));
 document.querySelectorAll('[data-kakao-map-type]').forEach(button => button.addEventListener('click', () => setKakaoBaseMapType(button.dataset.kakaoMapType)));
 document.querySelectorAll('[data-kakao-overlay]').forEach(input => input.addEventListener('change', () => toggleKakaoOverlay(input.dataset.kakaoOverlay, input.checked)));
+poiContextMenu.querySelectorAll('[data-poi-context-action]').forEach(button => {
+  button.addEventListener('click', () => handlePoiContextAction(button.dataset.poiContextAction));
+});
+document.addEventListener('click', event => {
+  if (!poiContextMenu.contains(event.target)) closePoiContextMenu();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closePoiContextMenu();
+});
 
 adminEmail.textContent = (getFirebaseOptions().adminEmails || []).join(', ');
 initPoiEditorMap().then(() => {

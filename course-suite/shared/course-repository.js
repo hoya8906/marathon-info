@@ -100,6 +100,19 @@ export async function deleteGpxVersion({ courseId = 'gcrun-2026', versionId }) {
   return { courseId, versionId };
 }
 
+export async function renameGpxVersion({ courseId = 'gcrun-2026', versionId, fileName }) {
+  if (!isFirebaseEnabled()) throw new Error('Firebase가 활성화되어 있지 않습니다.');
+  if (!versionId) throw new Error('수정할 GPX versionId가 필요합니다.');
+  if (!fileName?.trim()) throw new Error('새 파일명이 필요합니다.');
+  const db = getFirebaseDb();
+  const { collections } = getFirebaseOptions();
+  await setDoc(doc(db, collections.courseMaps, courseId, collections.gpxVersions, versionId), {
+    fileName: fileName.trim(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+  return { courseId, versionId, fileName: fileName.trim() };
+}
+
 export async function loadFirebaseCourseBundle(eventId = 'gcrun') {
   const staticConfig = getEventConfig(eventId);
   const fallback = { source: 'static', eventConfig: staticConfig, gpxXml: null, error: null };

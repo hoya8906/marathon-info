@@ -148,14 +148,26 @@ def test_course_maker_has_file_browser_for_gpx_versions():
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
     repository = read("course-suite/shared/course-repository.js")
-    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary"]:
+    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary", "importGpxButton", "saveCurrentGpxButton", "renameGpxButton"]:
         assert_contains(html, token, "maker/index.html")
-    for token in ["loadGpxVersions", "loadGpxVersion", "deleteGpxVersion", "setActiveGpxVersion"]:
+    for token in ["loadGpxVersions", "loadGpxVersion", "deleteGpxVersion", "setActiveGpxVersion", "renameGpxVersion"]:
         assert_contains(repository, token, "course-repository.js")
-    for token in ["refreshGpxVersionBrowser", "renderGpxVersionTree", "handleGpxVersionLoad", "handleGpxVersionDelete", "handleGpxVersionActivate"]:
+    for token in ["refreshGpxVersionBrowser", "renderGpxVersionTree", "handleGpxVersionLoad", "handleGpxVersionDelete", "handleGpxVersionActivate", "handleExplorerImport", "handleGpxVersionRename"]:
         assert_contains(js, token, "maker/maker.js")
     assert_contains(css, ".maker-workbench", "maker/maker.css")
     assert_contains(css, ".file-explorer-panel", "maker/maker.css")
+
+
+def test_course_maker_has_top_nav_and_context_menu():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["topMenuBar", "toolbarStatus", "poiContextMenu", "mapApiHint", "kakaoControls", "leafletControls"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["openPoiContextMenu", "closePoiContextMenu", "handlePoiContextAction", "copyPoiCoordinates", "duplicatePoi", "updateApiSpecificUi"]:
+        assert_contains(js, token, "maker/maker.js")
+    for token in [".top-menu-bar", ".poi-context-menu", ".api-panel"]:
+        assert_contains(css, token, "maker/maker.css")
 
 
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():
