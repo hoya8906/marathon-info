@@ -43,10 +43,10 @@ const poiForm = $('#poiForm');
 const deletePoiButton = $('#deletePoiButton');
 const resetPoiButton = $('#resetPoiButton');
 const downloadMapImageButton = $('#downloadMapImageButton');
-const gpxVersionTree = $('#gpxVersionTree');
+const explorerFileList = $('#explorerFileList');
 const refreshGpxListButton = $('#refreshGpxListButton');
-const activeGpxSummary = $('#activeGpxSummary');
-const connectedGpxPath = $('#connectedGpxPath');
+const activeGpxSummary = $('#explorerStatusLine');
+const connectedGpxPath = $('#explorerPathLine');
 const importGpxButton = $('#explorerImportGpxButton') || $('#importGpxButton');
 const saveCurrentGpxButton = $('#explorerSaveCurrentGpxButton') || $('#saveCurrentGpxButton');
 const renameGpxButton = $('#renameGpxButton');
@@ -221,33 +221,33 @@ function applyGpxVersionToMap(version) {
   updateUploadButton();
 }
 
-function renderGpxVersionTree() {
+function renderExplorerFileList() {
   const active = gpxVersions.find(version => version.isActive);
   activeGpxSummary.textContent = active
-    ? `활성 GPX: ${active.id} · ${active.fileName || '파일명 없음'} · ${Number(active.distanceKm || 0).toFixed(2)}km`
-    : '활성 GPX가 없습니다. 파일을 업로드하거나 버전을 활성화하세요.';
+    ? `${active.id} · ${active.fileName || '파일명 없음'} · ${Number(active.distanceKm || 0).toFixed(2)}km`
+    : '저장된 활성 GPX 없음';
   updateConnectedGpxPath(active);
 
   if (!gpxVersions.length) {
-    gpxVersionTree.innerHTML = '<p class="status">저장된 GPX 버전이 없습니다.</p>';
+    explorerFileList.innerHTML = '<button type="button" class="explorer-file-row muted-row">저장된 GPX 파일 없음</button>';
     return;
   }
 
-  gpxVersionTree.innerHTML = gpxVersions.map(version => `
-    <article class="gpx-version-card ${version.isActive ? 'active' : ''}" data-version-id="${version.id}">
-      <div>
-        <strong>${version.isActive ? '✅ ' : ''}${version.id} · ${version.fileName || 'GPX'}</strong>
-        <small>${Number(version.distanceKm || 0).toFixed(3)}km · ${Number(version.pointCount || 0).toLocaleString()}pt · ${version.uploadedBy || 'unknown'}</small>
+  explorerFileList.innerHTML = gpxVersions.map(version => `
+    <div class="explorer-file-row ${version.isActive ? 'active' : ''}" data-version-id="${version.id}">
+      <button type="button" class="explorer-file-main" data-gpx-action="load" data-version-id="${version.id}" title="불러오기">
+        <span class="file-icon">${version.isActive ? '✅' : '📄'}</span>
+        <span class="file-name">${version.id} · ${version.fileName || 'GPX'}</span>
+        <small>${Number(version.distanceKm || 0).toFixed(3)}km · ${Number(version.pointCount || 0).toLocaleString()}pt</small>
+      </button>
+      <div class="explorer-file-actions">
+        <button type="button" data-gpx-action="activate" data-version-id="${version.id}" title="활성화">●</button>
+        <button type="button" data-gpx-action="delete" data-version-id="${version.id}" title="삭제">×</button>
       </div>
-      <div class="gpx-actions">
-        <button type="button" data-gpx-action="load" data-version-id="${version.id}">불러오기</button>
-        <button type="button" class="active-button" data-gpx-action="activate" data-version-id="${version.id}">활성화</button>
-        <button type="button" class="danger-button" data-gpx-action="delete" data-version-id="${version.id}">삭제</button>
-      </div>
-    </article>
+    </div>
   `).join('');
 
-  gpxVersionTree.querySelectorAll('[data-gpx-action]').forEach(button => {
+  explorerFileList.querySelectorAll('[data-gpx-action]').forEach(button => {
     const versionId = button.dataset.versionId;
     if (button.dataset.gpxAction === 'load') button.addEventListener('click', () => handleGpxVersionLoad(versionId));
     if (button.dataset.gpxAction === 'activate') button.addEventListener('click', () => handleGpxVersionActivate(versionId));
@@ -255,14 +255,18 @@ function renderGpxVersionTree() {
   });
 }
 
+function renderGpxVersionTree() {
+  renderExplorerFileList();
+}
+
 async function refreshGpxVersionBrowser() {
   try {
-    gpxVersionTree.innerHTML = '<p class="status">GPX 목록을 불러오는 중...</p>';
+    explorerFileList.innerHTML = '<p class="status">GPX 목록을 불러오는 중...</p>';
     gpxVersions = await loadGpxVersions(currentCourseId());
     renderGpxVersionTree();
   } catch (error) {
     activeGpxSummary.textContent = `GPX 목록 로드 실패: ${error.message}`;
-    gpxVersionTree.innerHTML = `<p class="status error">${error.message}</p>`;
+    explorerFileList.innerHTML = `<p class="status error">${error.message}</p>`;
   }
 }
 
@@ -498,11 +502,24 @@ function beginPoiRegistrationAt(latLng) {
   closeMapContextMenu();
 }
 
+function stopContextEvent(event) {
+  if (event) {
+    event.preventDefault?.();
+    event.stopPropagation?.();
+  }
+  event?.domEvent?.preventDefault?.();
+  event?.domEvent?.stopPropagation?.();
+  event?.originalEvent?.preventDefault?.();
+  event?.originalEvent?.stopPropagation?.();
+}
+
 function openMapContextMenu(event, latLng) {
-  event?.preventDefault?.();
+  stopContextEvent(event);
+  const source = event?.domEvent || event?.originalEvent || event || {};
+  if (source.target?.closest?.('.poi-marker-pin')) return;
+  closePoiContextMenu();
   mapContextLatLng = latLng;
   mapContextMenu.hidden = false;
-  const source = event?.domEvent || event || {};
   const x = source.clientX ?? 24;
   const y = source.clientY ?? 24;
   mapContextMenu.style.left = `${Math.min(x, window.innerWidth - 210)}px`;
@@ -625,7 +642,8 @@ function fillPoiForm(poi, { moveMap = false } = {}) {
 }
 
 function openPoiContextMenu(event, poi) {
-  event.preventDefault?.();
+  stopContextEvent(event);
+  closeMapContextMenu();
   contextPoi = poi;
   poiContextMenu.hidden = false;
   const x = event.clientX ?? 24;
@@ -919,6 +937,12 @@ function closeTopMenus() {
   document.querySelectorAll('.menu-item[open]').forEach(item => { item.open = false; });
 }
 
+function closeOtherTopMenus(activeMenu) {
+  document.querySelectorAll('.menu-item').forEach(menu => {
+    if (menu !== activeMenu) menu.open = false;
+  });
+}
+
 function handleMenuAction(action) {
   closeTopMenus();
   if (action === 'import-gpx') handleExplorerImport();
@@ -948,6 +972,11 @@ deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
 toggleExplorerButton.addEventListener('click', toggleExplorerCollapsed);
 document.querySelectorAll('[data-menu-action]').forEach(button => button.addEventListener('click', () => handleMenuAction(button.dataset.menuAction)));
+document.querySelectorAll('.menu-item').forEach(menu => {
+  menu.addEventListener('toggle', () => {
+    if (menu.open) closeOtherTopMenus(menu);
+  });
+});
 mapContextMenu.querySelectorAll('[data-map-context-action]').forEach(button => {
   button.addEventListener('click', () => handleMapContextAction(button.dataset.mapContextAction));
 });

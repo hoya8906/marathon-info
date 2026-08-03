@@ -93,6 +93,22 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   box-shadow: 0 18px 70px rgba(0,0,0,.28);
 }
 .file-explorer-panel, .right-inspector-panel { overflow-y: auto; padding: 14px; }
+.vscode-explorer { display: flex; flex-direction: column; gap: 8px; padding: 0; overflow: hidden; background: rgba(12,15,22,.96); }
+.explorer-header-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 10px 8px; border-bottom: 1px solid rgba(255,255,255,.08); color: var(--muted); font-size: 11px; letter-spacing: .12em; }
+.explorer-mini-actions { display: flex; gap: 4px; }
+.explorer-mini-actions button, .explorer-footer-bar button { padding: 5px 7px; border-radius: 8px; font-size: 11px; background: rgba(255,255,255,.08); }
+.explorer-file-list { flex: 1; overflow-y: auto; padding: 6px; display: grid; align-content: start; gap: 2px; }
+.explorer-file-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--text); }
+.explorer-file-row.active { background: rgba(94,106,210,.16); border-color: rgba(94,106,210,.36); }
+.explorer-file-row.muted-row { display: block; padding: 10px; color: var(--muted); text-align: left; background: transparent; }
+.explorer-file-main { min-width: 0; display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 6px; row-gap: 2px; align-items: center; padding: 7px 8px; border-radius: 8px; text-align: left; background: transparent; }
+.explorer-file-main:hover, .explorer-file-actions button:hover { background: rgba(255,255,255,.08); }
+.explorer-file-main small { grid-column: 2; font-size: 11px; color: var(--muted); }
+.file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.explorer-file-actions { display: flex; gap: 2px; padding-right: 4px; }
+.explorer-file-actions button { padding: 5px 7px; border-radius: 7px; background: transparent; color: var(--muted); }
+.explorer-footer-bar { display: grid; gap: 4px; padding: 8px; border-top: 1px solid rgba(255,255,255,.08); color: var(--muted); font-size: 11px; }
+.explorer-footer-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .right-inspector-panel { overflow-x: hidden; }
 .map-workspace { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .panel-head h1 { margin: 0 0 12px; font-size: 24px; }
@@ -156,7 +172,7 @@ textarea { min-height: 76px; resize: vertical; }
 .poi-list { display: grid; gap: 8px; max-height: 300px; overflow: auto; }
 .poi-list button { width: 100%; border-radius: 16px; text-align: left; background: rgba(255,255,255,.06); border: 1px solid var(--line); }
 .poi-list strong { display: block; margin-bottom: 4px; }
-.poi-marker-pin { position: relative; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; transform: translate(-50%, -50%); }
+.poi-marker-pin { position: relative; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
 .poi-marker-dot { width: 14px; height: 14px; border-radius: 999px; border: 3px solid #fff; background: #22c55e; box-shadow: 0 0 0 5px rgba(34,197,94,.22), 0 10px 24px rgba(0,0,0,.36); }
 .poi-marker-label { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); padding: 7px 10px; border-radius: 999px; background: rgba(8,9,10,.78); color: white; font-size: 12px; font-weight: 900; border: 1px solid rgba(255,255,255,.2); white-space: nowrap; pointer-events: none; box-shadow: 0 8px 28px rgba(0,0,0,.34); transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
 .poi-marker-pin:hover { cursor: pointer; }

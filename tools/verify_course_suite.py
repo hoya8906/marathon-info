@@ -148,7 +148,7 @@ def test_course_maker_has_file_browser_for_gpx_versions():
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
     repository = read("course-suite/shared/course-repository.js")
-    for token in ["fileExplorerPanel", "gpxVersionTree", "refreshGpxListButton", "activeGpxSummary", "explorerImportGpxButton", "explorerSaveCurrentGpxButton", "renameGpxButton"]:
+    for token in ["fileExplorerPanel", "explorerFileList", "refreshGpxListButton", "explorerStatusLine", "explorerImportGpxButton", "explorerSaveCurrentGpxButton", "renameGpxButton"]:
         assert_contains(html, token, "maker/index.html")
     for token in ["loadGpxVersions", "loadGpxVersion", "deleteGpxVersion", "setActiveGpxVersion", "renameGpxVersion"]:
         assert_contains(repository, token, "course-repository.js")
@@ -174,7 +174,7 @@ def test_course_maker_leaflet_layers_and_connected_gpx_path():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
     css = read("course-suite/maker/maker.css")
-    for token in ["connectedGpxPath", "data-leaflet-layer=\"osm\"", "data-leaflet-layer=\"topo\"", "data-leaflet-layer=\"light\"", "data-leaflet-layer=\"dark\""]:
+    for token in ["explorerPathLine", "data-leaflet-layer=\"osm\"", "data-leaflet-layer=\"topo\"", "data-leaflet-layer=\"light\"", "data-leaflet-layer=\"dark\""]:
         assert_contains(html, token, "maker/index.html")
     for token in ["LEAFLET_LAYERS", "activeLeafletLayer", "leafletTileLayer", "setLeafletLayer", "updateConnectedGpxPath", "firestore://courseMaps"]:
         assert_contains(js, token, "maker/maker.js")
@@ -242,6 +242,43 @@ def test_course_maker_registers_points_only_from_context_menu():
     assert ".on('click', () => fillPoiForm(poi))" not in js
     assert "content.addEventListener('click', () => fillPoiForm(poi))" not in js
     assert_contains(js, "if (action === 'edit') fillPoiForm(contextPoi)", "maker/maker.js")
+
+
+def test_course_maker_top_menus_are_mutually_exclusive():
+    js = read("course-suite/maker/maker.js")
+    for token in ["closeOtherTopMenus", "document.querySelectorAll('.menu-item').forEach", "menu.addEventListener('toggle'", "if (menu.open) closeOtherTopMenus(menu)"]:
+        assert_contains(js, token, "maker/maker.js")
+
+
+def test_course_maker_context_menus_do_not_overlap_and_markers_anchor_on_dot():
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["stopContextEvent", "closeMapContextMenu();", "closePoiContextMenu();", "event.stopPropagation?.()"]:
+        assert_contains(js, token, "maker/maker.js")
+    assert_contains(css, ".poi-marker-pin { position: relative;", "maker/maker.css")
+    marker_rule = re.search(r"\.poi-marker-pin\s*\{([^}]+)\}", css, re.S)
+    assert marker_rule, "maker/maker.css missing .poi-marker-pin rule"
+    assert "transform: translate" not in marker_rule.group(1), "marker pin must not be double-translated after map anchor is applied"
+    assert_contains(js, "xAnchor: .5", "maker/maker.js")
+    assert_contains(js, "yAnchor: .5", "maker/maker.js")
+    assert_contains(js, "iconAnchor: [14, 14]", "maker/maker.js")
+
+
+def test_course_maker_explorer_is_file_list_not_form_panel():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["explorerHeaderBar", "explorerFileList", "explorerFooterBar", "courseIdInput", "versionIdInput"]:
+        assert_contains(html, token, "maker/index.html")
+    assert "<p class=\"eyebrow\">explorer</p>" not in html
+    assert "<h1>파일 / 코스</h1>" not in html
+    assert "inline-fields" not in html
+    assert "activeGpxSummary" not in html
+    assert "connectedGpxPath" not in html
+    assert_contains(js, "renderExplorerFileList", "maker/maker.js")
+    assert_contains(js, "explorer-file-row", "maker/maker.js")
+    assert_contains(css, ".explorer-file-list", "maker/maker.css")
+    assert_contains(css, ".explorer-file-row", "maker/maker.css")
 
 
 def test_course_maker_uses_kakao_primary_and_leaflet_optional():

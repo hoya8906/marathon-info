@@ -50,32 +50,24 @@
   </nav>
 
   <main class="maker-app-shell">
-    <aside id="fileExplorerPanel" class="file-explorer-panel">
-      <div class="panel-head">
-        <p class="eyebrow">explorer</p>
-        <h1>파일 / 코스</h1>
-      </div>
-      <div class="inline-fields">
-        <label>Event <input id="eventIdInput" value="gcrun"></label>
-        <label>Course <input id="courseIdInput" value="gcrun-2026"></label>
-        <label>Version <input id="versionIdInput" value="v001"></label>
+    <aside id="fileExplorerPanel" class="file-explorer-panel vscode-explorer">
+      <div id="explorerHeaderBar" class="explorer-header-bar">
+        <strong>EXPLORER</strong>
+        <div class="explorer-mini-actions">
+          <button id="explorerImportGpxButton" type="button" title="GPX 불러오기">＋</button>
+          <button id="refreshGpxListButton" type="button" title="새로고침">↻</button>
+          <button id="explorerSaveCurrentGpxButton" type="button" title="현재 GPX 저장" disabled>저장</button>
+        </div>
       </div>
       <input id="gpxFileInput" class="hidden-file-input" type="file" accept=".gpx,application/gpx+xml,text/xml,application/xml">
-      <div class="explorer-primary-actions">
-        <button id="explorerImportGpxButton" type="button">GPX 가져오기</button>
-        <button id="explorerSaveCurrentGpxButton" type="button" disabled>현재 GPX 저장</button>
-        <button id="refreshGpxListButton" type="button" class="secondary-button">새로고침</button>
-      </div>
-      <p id="activeGpxSummary" class="status">활성 GPX를 불러오는 중입니다.</p>
-      <p id="connectedGpxPath" class="gpx-path">연결 GPX: 확인 중</p>
-      <div class="tree-root">
-        <details open>
-          <summary>gcrun-2026</summary>
-          <div id="gpxVersionTree" class="gpx-version-tree"></div>
-        </details>
-      </div>
-      <div class="explorer-actions">
-        <button id="renameGpxButton" type="button" class="secondary-button">선택 버전 이름수정</button>
+      <input id="eventIdInput" type="hidden" value="gcrun">
+      <input id="courseIdInput" type="hidden" value="gcrun-2026">
+      <input id="versionIdInput" type="hidden" value="v001">
+      <div id="explorerFileList" class="explorer-file-list"></div>
+      <div id="explorerFooterBar" class="explorer-footer-bar">
+        <span id="explorerStatusLine">GPX 목록을 불러오는 중입니다.</span>
+        <span id="explorerPathLine">Firestore 연결 확인 중</span>
+        <button id="renameGpxButton" type="button">이름수정</button>
       </div>
     </aside>
 
