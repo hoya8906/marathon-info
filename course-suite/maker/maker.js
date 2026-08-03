@@ -43,6 +43,9 @@ const poiForm = $('#poiForm');
 const deletePoiButton = $('#deletePoiButton');
 const resetPoiButton = $('#resetPoiButton');
 const downloadMapImageButton = $('#downloadMapImageButton');
+const placeSearchInput = $('#placeSearchInput');
+const placeSearchButton = $('#placeSearchButton');
+const placeSearchResults = $('#placeSearchResults');
 const projectSelect = $('#projectSelect');
 const projectNameInput = $('#projectNameInput');
 const createProjectButton = $('#createProjectButton');
@@ -79,6 +82,9 @@ let kakaoCoursePolyline = null;
 let leafletCoursePolyline = null;
 let activeMapApi = 'kakao';
 let kakaoMap = null;
+let placeSearchService = null;
+let placeSearchMarker = null;
+let leafletPlaceSearchMarker = null;
 let kakaoMarkers = [];
 let pendingPoiMarker = null;
 let pendingPoiCircle = null;
@@ -411,10 +417,85 @@ function loadKakaoMaps() {
   });
 }
 
+function clearPlaceSearchResults() {
+  placeSearchResults.hidden = true;
+  placeSearchResults.innerHTML = '';
+}
+
+function renderPlaceSearchResults(places = []) {
+  if (!places.length) {
+    placeSearchResults.innerHTML = '<p class="status">검색 결과가 없습니다.</p>';
+    placeSearchResults.hidden = false;
+    return;
+  }
+  placeSearchResults.innerHTML = places.slice(0, 8).map((place, index) => `
+    <button type="button" data-place-index="${index}">
+      <strong>${place.place_name}</strong>
+      <small>${place.road_address_name || place.address_name || ''}</small>
+    </button>
+  `).join('');
+  placeSearchResults.querySelectorAll('[data-place-index]').forEach(button => {
+    button.addEventListener('click', () => focusPlaceSearchResult(places[Number(button.dataset.placeIndex)]));
+  });
+  placeSearchResults.hidden = false;
+}
+
+function panToSearchedPlace(lat, lng, label = '검색 위치') {
+  const safeLat = Number(lat);
+  const safeLng = Number(lng);
+  if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
+  if (kakaoMap) {
+    const position = new kakao.maps.LatLng(safeLat, safeLng);
+    kakaoMap.setCenter(position);
+    kakaoMap.setLevel(Math.min(kakaoMap.getLevel(), 4));
+    if (placeSearchMarker?.setMap) placeSearchMarker.setMap(null);
+    placeSearchMarker = new kakao.maps.Marker({ position, title: label });
+    placeSearchMarker.setMap(kakaoMap);
+  }
+  if (leafletMap) {
+    leafletMap.setView([safeLat, safeLng], Math.max(leafletMap.getZoom(), 16));
+    if (leafletPlaceSearchMarker?.remove) leafletPlaceSearchMarker.remove();
+    leafletPlaceSearchMarker = L.marker([safeLat, safeLng], { title: label }).addTo(leafletMap);
+  }
+  if (activeMapApi !== 'kakao' && kakaoMap) switchMapApi('kakao');
+}
+
+function focusPlaceSearchResult(place) {
+  if (!place) return;
+  panToSearchedPlace(place.y, place.x, place.place_name);
+  placeSearchInput.value = place.place_name;
+  clearPlaceSearchResults();
+  setStatus(uploadStatus, `${place.place_name} 위치로 지도를 이동했습니다.`, 'ok');
+}
+
+function handlePlaceSearch() {
+  const keyword = placeSearchInput.value.trim();
+  if (!keyword) {
+    clearPlaceSearchResults();
+    return;
+  }
+  if (!placeSearchService) {
+    setStatus(uploadStatus, '카카오 장소 검색 서비스가 아직 준비되지 않았습니다.', 'error');
+    return;
+  }
+  setStatus(uploadStatus, `카카오에서 “${keyword}” 위치 검색 중...`);
+  placeSearchService.keywordSearch(keyword, (data, status) => {
+    if (status !== kakao.maps.services.Status.OK) {
+      renderPlaceSearchResults([]);
+      setStatus(uploadStatus, `“${keyword}” 검색 결과가 없습니다.`, 'error');
+      return;
+    }
+    renderPlaceSearchResults(data);
+    if (data.length === 1) focusPlaceSearchResult(data[0]);
+    else setStatus(uploadStatus, `${data.length}개 후보를 찾았습니다. 목록에서 선택하세요.`, 'ok');
+  });
+}
+
 async function initKakaoEditorMap() {
   await loadKakaoMaps();
   const center = new kakao.maps.LatLng(CENTER.lat, CENTER.lng);
   kakaoMap = new kakao.maps.Map($('#kakaoMakerMap'), { center, level: 5, mapTypeId: kakao.maps.MapTypeId.HYBRID });
+  placeSearchService = new kakao.maps.services.Places();
   kakao.maps.event.addListener(kakaoMap, 'click', (mouseEvent) => {
     if (isRouteDrawingMode) {
       const latlng = mouseEvent.latLng;
@@ -1175,6 +1256,14 @@ resetPoiButton.addEventListener('click', () => {
 closePoiModalButton.addEventListener('click', closePoiEditorModal);
 deletePoiButton.addEventListener('click', handlePoiDelete);
 downloadMapImageButton.addEventListener('click', downloadMapImage);
+placeSearchButton.addEventListener('click', handlePlaceSearch);
+placeSearchInput.addEventListener('keydown', event => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    handlePlaceSearch();
+  }
+  if (event.key === 'Escape') clearPlaceSearchResults();
+});
 projectSelect.addEventListener('change', () => selectProject(projectSelect.value));
 createProjectButton.addEventListener('click', () => handleProjectCreate().catch(error => setStatus(uploadStatus, `프로젝트 생성 실패: ${error.message}`, 'error')));
 drawRouteButton.addEventListener('click', toggleRouteDrawing);
@@ -1229,6 +1318,7 @@ document.addEventListener('click', event => {
   if (!mapContextMenu.contains(event.target)) closeMapContextMenu();
   if (event.target === poiEditorModal) closePoiEditorModal();
   if (!layerPopover.contains(event.target) && event.target !== layerToggleButton) closeLayerPopover();
+  if (!event.target.closest('.place-search-box')) clearPlaceSearchResults();
   if (!event.target.closest('.menu-item')) closeTopMenus();
 });
 document.addEventListener('keydown', event => {

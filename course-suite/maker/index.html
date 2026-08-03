@@ -90,6 +90,11 @@
           <small id="authStatus"></small>
           <small id="uploadStatus">GPX 파일을 선택하세요.</small>
         </div>
+        <div class="place-search-box">
+          <input id="placeSearchInput" type="search" placeholder="위치 검색 예: 과천 관문체육공원" autocomplete="off">
+          <button id="placeSearchButton" type="button">검색</button>
+          <div id="placeSearchResults" class="place-search-results" hidden></div>
+        </div>
         <div class="toolbar-actions">
           <span id="adminEmail" class="admin-pill">a66452411@gmail.com</span>
           <button id="downloadMapImageButton" type="button">지도 이미지 다운로드</button>
@@ -231,7 +236,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c45e1e08eea53db5a726efa6edae142b&autoload=false"></script>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c45e1e08eea53db5a726efa6edae142b&autoload=false&libraries=services"></script>
   <script type="module" src="./maker.js"></script>
 </body>
 </html>

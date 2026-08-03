@@ -318,6 +318,18 @@ def test_course_maker_mobile_context_modal_and_collapse_layout():
     assert_contains(css, ".maker-app-shell.explorer-collapsed .right-inspector-panel { grid-column: 2; }", "maker/maker.css")
 
 
+def test_course_maker_searches_kakao_places_and_pans_map():
+    html = read("course-suite/maker/index.html")
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["placeSearchInput", "placeSearchButton", "placeSearchResults", "libraries=services"]:
+        assert_contains(html, token, "maker/index.html")
+    for token in ["kakao.maps.services.Places", "placeSearchService", "handlePlaceSearch", "renderPlaceSearchResults", "focusPlaceSearchResult", "placeSearchMarker", "panToSearchedPlace"]:
+        assert_contains(js, token, "maker/maker.js")
+    for token in [".place-search-box", ".place-search-results", ".place-search-results button"]:
+        assert_contains(css, token, "maker/maker.css")
+
+
 def test_course_maker_projects_and_drawn_gpx_workflow():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
