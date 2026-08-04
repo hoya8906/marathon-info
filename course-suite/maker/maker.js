@@ -1136,6 +1136,65 @@ function getExportBounds() {
   return { minLat, maxLat, minLng, maxLng };
 }
 
+function drawExportMapBackground(ctx, width, height) {
+  // 지도 배경: Kakao/Leaflet 타일은 CORS 때문에 canvas export에서 빠질 수 있어
+  // 벡터 내보내기용으로 밝은 지도풍 배경을 직접 칠한다.
+  const skyGradient = ctx.createLinearGradient(0, 0, width, height);
+  skyGradient.addColorStop(0, '#dbeafe');
+  skyGradient.addColorStop(.45, '#f8fafc');
+  skyGradient.addColorStop(1, '#dcfce7');
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(59,130,246,.10)';
+  ctx.beginPath();
+  ctx.ellipse(width * .18, height * .26, width * .24, height * .13, -.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(34,197,94,.10)';
+  ctx.beginPath();
+  ctx.ellipse(width * .72, height * .72, width * .36, height * .18, .18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  drawExportRoadGrid(ctx, width, height);
+}
+
+function drawExportRoadGrid(ctx, width, height) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(100,116,139,.22)';
+  ctx.lineWidth = 2;
+  for (let x = 60; x < width; x += 120) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 120, height); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.72)';
+  ctx.lineWidth = 5;
+  for (let y = 110; y < height; y += 150) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y - 55); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(148,163,184,.32)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < width; x += 80) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+  }
+  for (let y = 0; y < height; y += 80) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function clampExportLabelRect(point, labelWidth, labelHeight, width, height) {
+  const labelX = Math.min(Math.max(point.x + 14, 16), width - labelWidth - 16);
+  const labelY = Math.min(Math.max(point.y - labelHeight - 12, 58), height - labelHeight - 16);
+  return { labelX, labelY };
+}
+
+function ellipsisText(ctx, text, maxWidth) {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let next = String(text);
+  while (next.length > 1 && ctx.measureText(`${next}…`).width > maxWidth) next = next.slice(0, -1);
+  return `${next}…`;
+}
+
 function drawExportCourse(ctx, bounds, width, height) {
   if (!selectedTrackPoints.length) return;
   ctx.save();
@@ -1166,14 +1225,18 @@ function drawExportPois(ctx, bounds, width, height) {
     ctx.fill();
     ctx.stroke();
     ctx.font = '700 13px sans-serif';
-    const label = `${type.icon} ${poi.name || poi.id}`;
-    const labelWidth = ctx.measureText(label).width + 18;
-    ctx.fillStyle = 'rgba(8,9,10,.78)';
+    const rawLabel = `${type.icon} ${poi.name || poi.id}`;
+    const maxLabelWidth = Math.min(300, width - 56);
+    const label = ellipsisText(ctx, rawLabel, maxLabelWidth - 18);
+    const labelWidth = Math.min(ctx.measureText(label).width + 18, maxLabelWidth);
+    const labelHeight = 26;
+    const { labelX, labelY } = clampExportLabelRect(point, labelWidth, labelHeight, width, height);
+    ctx.fillStyle = 'rgba(8,9,10,.82)';
     ctx.beginPath();
-    ctx.roundRect(point.x + 12, point.y - 24, labelWidth, 24, 12);
+    ctx.roundRect(labelX, labelY, labelWidth, labelHeight, 13);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(label, point.x + 21, point.y - 7);
+    ctx.fillText(label, labelX + 9, labelY + 18);
     ctx.restore();
   });
 }
@@ -1186,18 +1249,10 @@ async function downloadVectorMapImage() {
   canvas.height = height;
   const ctx = canvas.getContext('2d');
   const bounds = getExportBounds();
-  ctx.fillStyle = '#111827';
-  ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = 'rgba(255,255,255,.08)';
-  for (let x = 0; x < width; x += 80) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-  }
-  for (let y = 0; y < height; y += 80) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
-  }
+  drawExportMapBackground(ctx, width, height);
   drawExportCourse(ctx, bounds, width, height);
   drawExportPois(ctx, bounds, width, height);
-  ctx.fillStyle = '#f7f8fb';
+  ctx.fillStyle = '#0f172a';
   ctx.font = '800 28px sans-serif';
   ctx.fillText(`Course Maker · ${currentCourseId()}`, 56, 44);
   const link = document.createElement('a');

@@ -143,6 +143,17 @@ def test_course_maker_edits_pois_and_downloads_map_image():
     assert_contains(css, ".poi-editor-grid", "maker/maker.css")
 
 
+def test_course_maker_map_export_keeps_background_and_unclipped_poi_labels():
+    js = read("course-suite/maker/maker.js")
+    css = read("course-suite/maker/maker.css")
+    for token in ["drawExportMapBackground", "createLinearGradient", "#dbeafe", "#f8fafc", "지도 배경", "drawExportRoadGrid"]:
+        assert_contains(js, token, "maker export background")
+    for token in ["clampExportLabelRect", "Math.min(Math.max", "labelX", "labelY", "maxLabelWidth", "ellipsisText"]:
+        assert_contains(js, token, "maker export label clamp")
+    for token in ["max-width: min(240px, calc(100vw - 32px))", "overflow: hidden", "text-overflow: ellipsis"]:
+        assert_contains(css, token, "maker POI label clipping guard")
+
+
 def test_course_maker_has_file_browser_for_gpx_versions():
     html = read("course-suite/maker/index.html")
     js = read("course-suite/maker/maker.js")
