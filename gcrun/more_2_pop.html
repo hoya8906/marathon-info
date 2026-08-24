@@ -1,0 +1,192 @@
+<!-- 과천마라톤 공지 카드 시작 (CSS 격리 처리됨) -->
+<div class="gwacheon-marathon-notice">
+    <style>
+        /* [CSS 격리 영역] 홈페이지 기본 스타일과의 충돌 방지 */
+        .gwacheon-marathon-notice {
+            all: initial;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background-color: transparent;
+            padding: 20px 0;
+            box-sizing: border-box;
+        }
+
+        .gwacheon-marathon-notice *, 
+        .gwacheon-marathon-notice *::before, 
+        .gwacheon-marathon-notice *::after {
+            box-sizing: border-box !important;
+            margin: 0;
+            padding: 0;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
+            line-height: 1.5;
+        }
+
+        /* 메인 카드 컨테이너 */
+        .gwacheon-marathon-notice .poster-container {
+            width: 100%;
+            max-width: 700px;
+            background-color: #FAFAF0;
+            border: 1px solid #E5E5D8;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border-radius: 8px;
+            overflow: hidden;
+            color: #333333;
+            text-align: left;
+        }
+
+        /* 상단 4색 브랜드 상징 바 */
+        .gwacheon-marathon-notice .top-bar {
+            width: 100%;
+            height: 12px;
+            display: flex;
+        }
+        .gwacheon-marathon-notice .top-bar .bar {
+            flex: 1;
+            height: 100%;
+        }
+        .gwacheon-marathon-notice .bg-red { background-color: #E2526B; }
+        .gwacheon-marathon-notice .bg-yellow { background-color: #E6C875; }
+        .gwacheon-marathon-notice .bg-teal { background-color: #128B82; }
+        .gwacheon-marathon-notice .bg-navy { background-color: #2D4352; }
+
+        /* 컨텐츠 본문 */
+        .gwacheon-marathon-notice .content {
+            padding: 40px 35px;
+        }
+
+        /* 헤더 섹션 */
+        .gwacheon-marathon-notice .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .gwacheon-marathon-notice .sub-title {
+            font-size: 15px !important;
+            font-weight: bold !important;
+            color: #128B82 !important;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .gwacheon-marathon-notice .main-title {
+            font-size: 30px !important;
+            font-weight: 800 !important;
+            color: #2D4352 !important;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        .gwacheon-marathon-notice .header-desc {
+            font-size: 15px !important;
+            color: #555555 !important;
+        }
+
+        /* 취소분 추가 접수 안내 카드 (청록색 포인트) */
+        .gwacheon-marathon-notice .card-highlight {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 26px 25px;
+            margin-bottom: 16px;
+            border-left: 6px solid #128B82;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            text-align: center;
+        }
+        .gwacheon-marathon-notice .highlight-title {
+            font-size: 21px !important;
+            font-weight: 800 !important;
+            color: #0E6B64 !important;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            word-break: keep-all;
+        }
+        .gwacheon-marathon-notice .highlight-desc {
+            font-size: 15px !important;
+            color: #555555 !important;
+            font-weight: 500 !important;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+
+        /* 환불 불가 주의사항 카드 (레드 포인트) */
+        .gwacheon-marathon-notice .card-warning {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 24px 25px;
+            margin-bottom: 20px;
+            border-left: 6px solid #E2526B;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            text-align: center;
+        }
+        .gwacheon-marathon-notice .warning-title {
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: #E2526B !important;
+            margin-bottom: 6px;
+            word-break: keep-all;
+        }
+        .gwacheon-marathon-notice .warning-desc {
+            font-size: 14.5px !important;
+            color: #444444 !important;
+            font-weight: 600 !important;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+
+        /* 하단 서브 안내 박스 */
+        .gwacheon-marathon-notice .info-box {
+            background-color: #F4F4E6;
+            border-radius: 8px;
+            padding: 16px 20px;
+            text-align: center;
+            font-size: 13.5px !important;
+            color: #666666 !important;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+    </style>
+
+    <div class="poster-container">
+        <!-- 상단 4색 컬러 바 -->
+        <div class="top-bar">
+            <div class="bar bg-red"></div>
+            <div class="bar bg-yellow"></div>
+            <div class="bar bg-teal"></div>
+            <div class="bar bg-navy"></div>
+        </div>
+
+        <div class="content">
+            <!-- 타이틀 영역 -->
+            <div class="header">
+                <div class="sub-title">2026 GWACHEON MARATHON</div>
+                <div class="main-title">취소분 추가 접수 안내</div>
+                <div class="header-desc">참가자 여러분의 많은 관심과 성원에 감사드립니다.</div>
+            </div>
+
+            <!-- 취소분 추가 접수 안내 카드 -->
+            <div class="card-highlight">
+                <div class="highlight-title">
+                    취소분 발생 시 실시간 추가 접수가 가능합니다.
+                </div>
+                <div class="highlight-desc">
+                    취소 및 미결제에 따른 잔여 자리는 실시간으로 오픈되며,<br>
+                    잔여 수량은 별도로 공지되지 않는 점 양해 부탁드립니다.<br>
+                    (최종 마감 시 별도 공지 예정)
+                </div>
+            </div>
+
+            <!-- 환불 불가 안내 카드 -->
+            <div class="card-warning">
+                <div class="warning-title">
+                    추가 신청 건 환불 불가 안내
+                </div>
+                <div class="warning-desc">
+                    추가 신청 및 결제하시는 경우,<br>
+                    <strong>기념품 제작 일정으로 인해 어떠한 사유로도 환불이 불가</strong>합니다.<br>
+                    신중히 신청해주시기 바랍니다.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 과천마라톤 공지 카드 끝 -->
