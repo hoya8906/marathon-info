@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제3회 자유민주 마라톤 참가접수 공지</title>
+    <style>
+        /* 독립형 마라톤 A4 안내문 컴포넌트 */
+        body.gcn-notice-page {
+            background-color: #f4f4f4;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .gcn-notice,
+        .gcn-notice * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        /* 메인 컨테이너 - A4 비율(1 : 1.414) 캡처용 */
+        .gcn-notice {
+            width: 800px;
+            height: 1131px;
+            background-color: #fefce1; /* 연노랑 배경색 */
+            border: 1px solid #e2e0c5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 상단 멀티컬러 스트라이프 */
+        .gcn-notice__top-stripe {
+            height: 22px;
+            min-height: 22px;
+            flex: 0 0 22px;
+            display: flex;
+            width: 100%;
+        }
+        .gcn-notice__stripe-red    { flex: 1; background-color: #e63946; }
+        .gcn-notice__stripe-orange { flex: 1; background-color: #f4a261; }
+        .gcn-notice__stripe-yellow { flex: 1; background-color: #e9c46a; }
+        .gcn-notice__stripe-green  { flex: 1; background-color: #2a9d8f; }
+        .gcn-notice__stripe-blue   { flex: 1; background-color: #264653; }
+
+        /* 내부 콘텐츠 패딩 */
+        .gcn-notice__content {
+            padding: 38px 40px 34px 40px;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 헤더 섹션 */
+        .gcn-notice__header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .gcn-notice__sub-title {
+            font-size: 15px;
+            color: #5b3b8c;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .gcn-notice__main-title {
+            font-size: 36px;
+            color: #e92078;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .gcn-notice__intro-text {
+            font-size: 16px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* 핵심 정보 테이블 구조 상자 */
+        .gcn-notice__info-box {
+            background-color: #ffffff;
+            border-left: 5px solid #e92078;
+            border-radius: 4px;
+            padding: 20px 28px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .gcn-notice__info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 11px;
+            font-size: 15.5px;
+        }
+        .gcn-notice__info-item:last-child {
+            margin-bottom: 0;
+        }
+        .gcn-notice__info-label {
+            width: 105px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .gcn-notice__info-value {
+            color: #555;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        /* 강조 텍스트 */
+        .gcn-notice__highlight {
+            color: #e92078;
+            font-weight: bold;
+        }
+
+        /* 안내 공지 상자 */
+        .gcn-notice__notice-box {
+            background-color: #ffffff;
+            border-left: 5px solid #5b3b8c;
+            border-radius: 4px;
+            padding: 18px 28px;
+            margin-bottom: 24px;
+            font-size: 15px;
+            line-height: 1.55;
+            color: #444;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .gcn-notice__notice-box strong {
+            color: #5b3b8c;
+        }
+        .gcn-notice__website-link {
+            margin-top: 6px;
+            display: inline-block;
+            color: #5b3b8c;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 1px dashed #5b3b8c;
+        }
+
+        /* 유의사항 섹션 */
+        .gcn-notice__caution-section {
+            margin-bottom: 20px;
+        }
+        .gcn-notice__section-title {
+            font-size: 20px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 10px;
+        }
+        .gcn-notice__section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 4px;
+            height: 18px;
+            background-color: #5b3b8c;
+        }
+        .gcn-notice__caution-list {
+            list-style: none;
+        }
+        .gcn-notice__caution-list li {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 8px;
+            font-size: 14.8px;
+            line-height: 1.5;
+            color: #555;
+        }
+        .gcn-notice__caution-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #5b3b8c;
+            font-weight: bold;
+        }
+
+        /* 하단 사전 안내 문구 */
+        .gcn-notice__footer-desc {
+            font-size: 13.8px;
+            color: #666;
+            line-height: 1.5;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        /* 하단 배너 */
+        .gcn-notice__footer-banner {
+            background-color: #5b3b8c;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .gcn-notice__footer-banner .gcn-notice__thanks {
+            font-size: 16px;
+            font-weight: bold;
+            display: block;
+            color: #fff;
+        }
+        .gcn-notice__footer-banner a {
+            color: #ffd166;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        /* 인쇄/PDF 저장 시 A4 크기 기준 */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body.gcn-notice-page {
+                padding: 0;
+                background: #fff;
+            }
+
+            .gcn-notice {
+                width: 210mm;
+                height: 297mm;
+                box-shadow: none;
+                border: 0;
+            }
+        }
+
+        /* 화면이 좁을 때만 축소 */
+        @media (max-width: 799px) {
+            body.gcn-notice-page {
+                padding: 10px;
+            }
+
+            .gcn-notice {
+                width: 100%;
+                height: auto;
+                min-height: calc((100vw - 20px) * 1.414);
+            }
+        }
+    </style>
+</head>
+<body class="gcn-notice-page">
+
+<div class="gcn-notice">
+    <!-- 상단 포스터 아이덴티티 스트라이프 -->
+    <div class="gcn-notice__top-stripe">
+        <div class="gcn-notice__stripe-red"></div>
+        <div class="gcn-notice__stripe-orange"></div>
+        <div class="gcn-notice__stripe-yellow"></div>
+        <div class="gcn-notice__stripe-green"></div>
+        <div class="gcn-notice__stripe-blue"></div>
+    </div>
+
+    <div class="gcn-notice__content">
+        <!-- 헤더 -->
+        <div class="gcn-notice__header">
+            <div class="gcn-notice__sub-title">THE 3rd FREEDOM DEMOCRACY MARATHON</div>
+            <h1 class="gcn-notice__main-title">제3회 자유민주 마라톤 참가접수 공지</h1>
+            <p class="gcn-notice__intro-text">참가자 여러분의 많은 관심과 참여를 기다립니다.</p>
+        </div>
+
+        <!-- 대회 개요 정보 상자 (제공된 소스 및 이미지 기반 반영) -->
+        <div class="gcn-notice__info-box">
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">📅 대회일시</span>
+                <span class="gcn-notice__info-value gcn-notice__highlight">2026-11-08(일) 07:30 출발</span>
+            </div>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">📍 대회장소</span>
+                <span class="gcn-notice__info-value">서울시청 광장 (START & FINISH)</span>
+            </div>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">📝 접수시작</span>
+                <span class="gcn-notice__info-value gcn-notice__highlight">2026-09-07(월) 14:00부터 선착순 마감</span>
+            </div>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">👥 참가인원</span>
+                <span class="gcn-notice__info-value">총 <span class="gcn-notice__highlight">8,000명</span> 선착순 접수</span>
+            </div>
+            <div class="gcn-notice__info-item">
+                <span class="gcn-notice__info-label">💵 참가종목</span>
+                <span class="gcn-notice__info-value">10km (40,000원) / 6.10km (35,000원)</span>
+            </div>
+        </div>
+
+        <!-- 안내 사항 상자 -->
+        <div class="gcn-notice__notice-box">
+            공식 홈페이지를 통한 <strong>온라인 접수만</strong> 가능합니다.<br>
+            🔗 공식 홈페이지 | <a href="https://freerun.runwithgo.com" class="gcn-notice__website-link" target="_blank">freerun.runwithgo.com</a>
+        </div>
+
+        <!-- 유의사항 -->
+        <div class="gcn-notice__caution-section">
+            <h2 class="gcn-notice__section-title">유의사항</h2>
+            <ul class="gcn-notice__caution-list">
+                <li><span class="gcn-notice__highlight">9월 7일(월) 14:00부터</span> 선착순 마감으로 종목별 정원이 차면 접수가 종료됩니다[cite: 1].</li>
+                <li>참가 신청 후 <span class="gcn-notice__highlight">신청/조회 &gt; 신청내역조회</span> 페이지에서 결제까지 완료되어야 최종 참가 확정됩니다[cite: 1].</li>
+                <li>결제 방법은 <span class="gcn-notice__highlight">1) 카드 결제</span> 또는 <span class="gcn-notice__highlight">2) 가상계좌 발행 후 입금 (발행 후 24시간 이내)</span> 두 가지 방식으로 가능합니다[cite: 1].</li>
+                <li>가상계좌 선택 시 24시간 이내에 입금되지 않으면 자동 취소될 수 있으며, 마감일 이후에는 신규 발급이 제한될 수 있습니다[cite: 1].</li>
+                <li><span class="gcn-notice__highlight">단체의 경우</span> <strong>단체장이 단체 생성 → 단체원 등록 → 참가비 결제</strong>까지 완료되어야 참가 신청이 최종 확정됩니다[cite: 1].</li>
+                <li>참가 확정 이후에는 <span class="gcn-notice__highlight">코스 변경 및 환불이 제한</span>될 수 있으니 신중히 선택해 주세요[cite: 1].</li>
+            </ul>
+        </div>
+
+        <!-- 사전 안내 문구 -->
+        <div class="gcn-notice__footer-desc">
+            본 공지는 참가자분들이 원활히 준비하실 수 있도록 제공되는 사전 안내입니다.<br>
+            추가 정보는 홈페이지를 통해 순차적으로 공지하겠습니다.
+        </div>
+    </div>
+
+    <!-- 하단 푸터 배너 -->
+    <div class="gcn-notice__footer-banner">
+        <span class="gcn-notice__thanks">여러분의 많은 관심과 성원에 감사드립니다.</span>
+        제3회 자유민주 마라톤 운영사무국 · 문의: 070-4135-9684
+    </div>
+</div>
+
+</body>
+</html>
