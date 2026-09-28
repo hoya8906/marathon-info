@@ -78,7 +78,7 @@
     display: inline-block;
 }
 .summary-info .highlight {
-    color: #ef4444; /* 강조 색상 */
+    color: #ef4444;
     font-weight: 700;
 }
 
@@ -108,7 +108,7 @@
     background: #fff;
     text-align: center;
     font-size: 15px;
-    min-width: 600px; /* 모바일에서 깨짐 방지 */
+    min-width: 600px;
 }
 .info-table th, .info-table td {
     border: 1px solid #e2e8f0;
@@ -122,7 +122,7 @@
 
 /* 유의사항 박스 */
 .notice-box {
-    background: #f0fdfa; /* 연한 청록색 */
+    background: #f0fdfa;
     border: 1px solid #ccfbf1;
     border-radius: 12px;
     padding: 24px 30px;
@@ -145,18 +145,10 @@
     margin-bottom: 8px;
 }
 .notice-list li strong {
-    color: #ef4444; /* 빨간색 강조 */
+    color: #ef4444;
 }
 
-/* 아주 강력한 강조용 스타일 (탑승 미보장 안내용) */
-.notice-list li .super-highlight {
-    color: #dc2626; /* 더 진한 빨강 */
-    font-weight: 800;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-}
-
-/* 신청 버튼 영역 */
+/* 마감 버튼 스타일 */
 .apply-btn-wrap {
     text-align: center;
     margin: 60px 0 40px;
@@ -165,20 +157,15 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    background-color: #1DC5A3;
+    background-color: #94a3b8; /* 마감 시 비활성화 회색 */
     color: #fff;
     font-size: 20px;
     font-weight: 700;
     padding: 18px 56px;
     border-radius: 50px;
     text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(29, 197, 163, 0.3);
-}
-.btn-apply-main:hover {
-    background-color: #15A88B;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(29, 197, 163, 0.4);
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* 모바일 반응형 */
@@ -218,74 +205,68 @@
                     <th>탑승 시간</th>
                 </tr>
             </thead>
-           <tbody>
-    <!-- 예시 -->
-    <!-- <tr class="sold-out">
-        <td>서울 A</td>
-        <td>서울역 스퀘어빌딩 앞<span class="status-close">[마감]</span></td>
-        <td>오전 03:30</td>
-    </tr> -->
-    <!-- 서울 A (마감 적용) -->
-    <tr class="sold-out">
-        <td>서울 A</td>
-        <td>서울역 스퀘어빌딩 앞<span class="status-close">[마감]</span></td>
-        <td>오전 03:30</td>
-    </tr>
-    <!-- 서울 B (마감 적용) -->
-    <tr>
-        <td>서울 B</td>
-        <td>잠실종합운동장 6번 출구 앞</td>
-        <td>오전 03:30</td>
-    </tr>
-    <!-- 인천 (마감 적용) -->
-    <tr>
-        <td>인천</td>
-        <td>인천터미널역 2번 출구 앞</td>
-        <td>오전 03:30</td>
-    </tr>
-    <!-- 수원 (마감 적용) -->
-    <tr>
-        <td>수원</td>
-        <td>수원역 4번 출구 앞</td>
-        <td>오전 04:00</td>
-    </tr>
-    <!-- 대전 (정상 운행) -->
-    <tr>
-        <td>대전</td>
-        <td>월드컵경기장 P5 주차장 (CU 앞)</td>
-        <td>오전 05:00</td>
-    </tr>
-    <!-- 대구 A (마감 적용) -->
-    <tr class="sold-out">
-        <td>대구 A</td>
-        <td>반월당 동아쇼핑 정문<span class="status-close">[마감]</span></td>
-        <td>오전 05:00</td>
-    </tr>
-    <!-- 대구 B (정상 운행) -->
-    <tr>
-        <td>대구 B</td>
-        <td>홈플러스 성서점</td>
-        <td>오전 05:30</td>
-    </tr>
-    <!-- 울산 (마감 적용) -->
-    <tr>
-        <td>울산</td>
-        <td>신복로터리 (버스환승장)</td>
-        <td>오전 05:00</td>
-    </tr>
-    <!-- 부산 (마감 적용) -->
-    <tr class="sold-out">
-        <td>부산</td>
-        <td>교대 국제신문 맞은편<span class="status-close">[마감]</span></td>
-        <td>오전 04:00</td>
-    </tr>
-</tbody>
+            <tbody>
+                <!-- 서울 A -->
+                <tr class="sold-out">
+                    <td>서울 A</td>
+                    <td>서울역 스퀘어빌딩 앞<span class="status-close">[마감]</span></td>
+                    <td>오전 03:30</td>
+                </tr>
+                <!-- 서울 B -->
+                <tr class="sold-out">
+                    <td>서울 B</td>
+                    <td>잠실종합운동장 6번 출구 앞<span class="status-close">[마감]</span></td>
+                    <td>오전 03:30</td>
+                </tr>
+                <!-- 인천 -->
+                <tr class="sold-out">
+                    <td>인천</td>
+                    <td>인천터미널역 2번 출구 앞<span class="status-close">[마감]</span></td>
+                    <td>오전 03:30</td>
+                </tr>
+                <!-- 수원 -->
+                <tr class="sold-out">
+                    <td>수원</td>
+                    <td>수원역 4번 출구 앞<span class="status-close">[마감]</span></td>
+                    <td>오전 04:00</td>
+                </tr>
+                <!-- 대전 -->
+                <tr class="sold-out">
+                    <td>대전</td>
+                    <td>월드컵경기장 P5 주차장 (CU 앞)<span class="status-close">[마감]</span></td>
+                    <td>오전 05:00</td>
+                </tr>
+                <!-- 대구 A -->
+                <tr class="sold-out">
+                    <td>대구 A</td>
+                    <td>반월당 동아쇼핑 정문<span class="status-close">[마감]</span></td>
+                    <td>오전 05:00</td>
+                </tr>
+                <!-- 대구 B -->
+                <tr class="sold-out">
+                    <td>대구 B</td>
+                    <td>홈플러스 성서점<span class="status-close">[마감]</span></td>
+                    <td>오전 05:30</td>
+                </tr>
+                <!-- 울산 -->
+                <tr class="sold-out">
+                    <td>울산</td>
+                    <td>신복로터리 (버스환승장)<span class="status-close">[마감]</span></td>
+                    <td>오전 05:00</td>
+                </tr>
+                <!-- 부산 -->
+                <tr class="sold-out">
+                    <td>부산</td>
+                    <td>교대 국제신문 맞은편<span class="status-close">[마감]</span></td>
+                    <td>오전 04:00</td>
+                </tr>
+            </tbody>
         </table>
     </div>
 
     <div class="apply-btn-wrap">
-        <a href="https://forms.gle/WqiJ5XxRpxo8v8sS9" target="_blank" class="btn-apply-main">
-            셔틀버스 신청하기
+        <a href="javascript:void(0);" class="btn-apply-main">
+            셔틀버스 신청이 마감되었습니다
         </a>
     </div>
 

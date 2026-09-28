@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제3회 자유민주 마라톤 × 굿윌스토어 ESG 캠페인</title>
+    <style>
+        :root {
+            --black: #0c0c0c;
+            --dark: #1e1e1e;
+            --pink: #ff0055;
+            --pink-soft: #fff0f5;
+            --pink-border: #ffd3e0;
+            --bg: #f5f6f8;
+            --card-bg: #ffffff;
+            --border: #eaedf1;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Nanum Gothic', 'Malgun Gothic', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            line-height: 1.65;
+            padding: 30px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .esg-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        /* 1. 상단 히어로 헤더 */
+        .hero-banner {
+            background: var(--black);
+            color: #ffffff;
+            padding: 36px 24px 30px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--pink);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: -0.2px;
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            line-height: 1.35;
+            margin-bottom: 10px;
+        }
+
+        .hero-desc {
+            font-size: 15px;
+            color: #cccccc;
+            word-break: keep-all;
+        }
+
+        .hero-desc strong {
+            color: #ffffff;
+        }
+
+        /* 2. 본문 컨테이너 */
+        .content-wrap {
+            padding: 26px 24px 28px;
+            display: grid;
+            gap: 24px;
+            word-break: keep-all;
+        }
+
+        /* 핑크 하이라이트 박스 (취지 설명) */
+        .highlight-box {
+            background: var(--pink-soft);
+            border: 1px solid var(--pink-border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            font-size: 14.5px;
+            color: #2b2b2b;
+            line-height: 1.7;
+        }
+
+        .highlight-box strong {
+            color: var(--pink);
+            font-weight: 800;
+        }
+
+        /* 섹션 타이틀 */
+        .sec-title {
+            font-size: 16.5px;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .sec-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--pink);
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* 참여 방법 스텝 (가로 연결형) */
+        .step-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .step-col {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+        }
+
+        .step-num {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--pink);
+            margin-bottom: 4px;
+        }
+
+        .step-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 6px;
+        }
+
+        .step-text {
+            font-size: 12.5px;
+            color: #555555;
+            line-height: 1.45;
+        }
+
+        .time-badge {
+            margin-top: 10px;
+            background: #ffffff;
+            border: 1px dashed var(--pink-border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            color: #333333;
+        }
+
+        .time-badge span {
+            color: var(--pink);
+            font-weight: 800;
+        }
+
+        /* 기부 가능/불가 비교표 */
+        .guide-box {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .guide-col {
+            padding: 14px 16px;
+        }
+
+        .guide-col.ok {
+            background: #ffffff;
+            border-right: 1px solid var(--border);
+        }
+
+        .guide-col.no {
+            background: #fafafa;
+        }
+
+        .guide-head {
+            font-size: 13.5px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .guide-col.ok .guide-head {
+            color: #111111;
+            border-color: #111111;
+        }
+
+        .guide-col.no .guide-head {
+            color: var(--pink);
+            border-color: var(--pink);
+        }
+
+        .guide-list {
+            list-style: none;
+            display: grid;
+            gap: 6px;
+            font-size: 13px;
+            color: #444444;
+            line-height: 1.5;
+        }
+
+        .guide-col.ok li::before {
+            content: '• ';
+            color: #111111;
+            font-weight: bold;
+        }
+
+        .guide-col.no li::before {
+            content: '• ';
+            color: var(--pink);
+            font-weight: bold;
+        }
+
+        .guide-footer {
+            background: var(--pink-soft);
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--pink);
+            border-top: 1px solid var(--pink-border);
+        }
+
+        /* 굿윌스토어 소개 */
+        .info-about {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-size: 13.5px;
+            color: #444444;
+            line-height: 1.65;
+        }
+
+        .about-quote {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: #ffffff;
+            border-radius: 8px;
+            font-weight: 700;
+            color: var(--black);
+            font-size: 13px;
+            display: grid;
+            gap: 4px;
+        }
+
+        /* 3. 하단 로고 & 문의 */
+        .footer-wrap {
+            border-top: 1px solid var(--border);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-logo img {
+            height: 28px;
+            width: auto;
+            display: block;
+        }
+
+        .footer-contact {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .footer-contact strong {
+            color: var(--pink);
+            font-weight: 800;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 520px) {
+            .hero-title { font-size: 20px; }
+            .step-row { grid-template-columns: 1fr; }
+            .guide-grid { grid-template-columns: 1fr; }
+            .guide-col.ok { border-right: none; border-bottom: 1px solid var(--border); }
+            .footer-wrap {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="esg-container">
+
+        <!-- 헤더 영역 (블랙 & 핑크 배너) -->
+        <header class="hero-banner">
+            <span class="hero-badge">제3회 자유민주 마라톤 × 굿윌스토어</span>
+            <h1 class="hero-title">달리기 전, 옷장 속 잠든 옷을<br>가져와 주세요</h1>
+            <p class="hero-desc">기부된 옷은 <strong>장애인의 지속 가능한 일자리</strong>가 됩니다.</p>
+        </header>
+
+        <!-- 본문 내용 -->
+        <div class="content-wrap">
+
+            <!-- 캠페인 취지 (핑크 박스) -->
+            <div class="highlight-box">
+                체온 조절용 <strong>일회용 비닐 우의 대신 잠들어 있는 헌 옷</strong>을 입고 와 주세요.<br>
+                출발 직전 수거된 옷은 버려지지 않고 밀알복지재단 굿윌스토어를 통해 새 주인을 찾으며 플라스틱 배출을 줄이고 장애인의 일자리로 이어집니다.
+            </div>
+
+            <!-- 참여 3단계 (스텝 카드) -->
+            <section>
+                <div class="sec-title">참여 방법</div>
+                <div class="step-row">
+                    <div class="step-col">
+                        <div class="step-num">STEP 01</div>
+                        <div class="step-name">준비하기</div>
+                        <div class="step-text">입지 않지만 깨끗한 옷을 입거나 챙기기</div>
+                    </div>
+                    <div class="step-col">
+                        <div class="step-num">STEP 02</div>
+                        <div class="step-name">가져오기</div>
+                        <div class="step-text">출발 전 굿윌 의류수거함에 투입</div>
+                    </div>
+                    <div class="step-col">
+                        <div class="step-num">STEP 03</div>
+                        <div class="step-name">함께 나누기</div>
+                        <div class="step-text">굿윌스토어를 통해 기부 및 일자리 창출</div>
+                    </div>
+                </div>
+
+                <div class="time-badge">
+                    📍 수거 위치: <strong>서울광장 출발선 옆</strong> | ⏰ 운영 시간: <span>06:30 ~ 10:00</span>
+                </div>
+            </section>
+
+            <!-- 기부 가능 / 기부 불가 기준 -->
+            <section>
+                <div class="sec-title">기부 전 확인해 주세요</div>
+                <div class="guide-box">
+                    <div class="guide-grid">
+                        <div class="guide-col ok">
+                            <div class="guide-head">기부할 수 있어요 ⭕</div>
+                            <ul class="guide-list">
+                                <li>티셔츠, 바지, 드레스, 재킷 등 의류</li>
+                                <li>미개봉 내의 및 속옷류</li>
+                            </ul>
+                        </div>
+                        <div class="guide-col no">
+                            <div class="guide-head">기부할 수 없어요 ❌</div>
+                            <ul class="guide-list">
+                                <li>손상되거나 오염된 의류</li>
+                                <li>사용한 속옷, 양말, 스타킹</li>
+                                <li>교복, 도복, 단복 등 특정 유니폼</li>
+                                <li>사용감이 많은 유아 생활복</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="guide-footer">
+                        “다음 사람이 기분 좋게 입을 수 있는 옷”이면 충분합니다.
+                    </div>
+                </div>
+            </section>
+
+            <!-- 굿윌스토어 소개 -->
+            <section>
+                <div class="sec-title">굿윌스토어 소개</div>
+                <div class="info-about">
+                    굿윌스토어는 사회복지법인 <strong>밀알복지재단</strong>이 운영하는 장애인 자립 지원 비영리 단체로, 기부된 물품을 통해 직업 훈련과 양질의 일자리를 만들어 가고 있습니다.
+                    <div class="about-quote">
+                        <div>• 우리는 이익이 아닌 봉사를 위해 존재합니다.</div>
+                        <div>• 우리는 자선이 아닌 기회를 제공합니다.</div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 푸터 (로고 & 문의) -->
+        <footer class="footer-wrap">
+            <div class="footer-logo">
+                <img src="./Goodwill.png" alt="굿윌스토어 로고">
+            </div>
+            <div class="footer-contact">
+                문의: 굿윌스토어 고객센터 <strong>1533-0091</strong>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>
