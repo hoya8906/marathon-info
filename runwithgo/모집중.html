@@ -1,0 +1,178 @@
+<!-- D-DAY 초간결 컴포넌트 (400x300) -->
+<style>
+  .run-simple-section {
+    width: 100% !important;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+    box-sizing: border-box !important;
+    padding: 10px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background-color: transparent !important;
+  }
+
+  .run-simple-section *,
+  .run-simple-section *::before,
+  .run-simple-section *::after {
+    box-sizing: border-box !important;
+  }
+
+  /* 400x300 고정 박스 */
+  .run-simple-card {
+    width: 400px !important;
+    height: 250px !important;
+    background: #ffffff !important;
+    border: 2px solid #fed7aa !important;
+    border-top: 6px solid #f97316 !important;
+    border-radius: 24px !important;
+    padding: 28px 24px !important;
+    text-align: center !important;
+    box-shadow: 0 12px 28px rgba(249, 115, 22, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  /* 1. 상단 로고 */
+  .run-simple-logo-wrap {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .run-simple-logo {
+    max-width: 200px !important;
+    height: auto !important;
+    max-height: 52px !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
+  /* 2. 중앙 메인: 모집중 D-6 */
+  .run-simple-main-wrap {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    margin: auto 0 !important;
+  }
+
+  .run-simple-text {
+    font-size: 34px !important;
+    font-weight: 900 !important;
+    color: #111827 !important;
+    letter-spacing: -1px !important;
+    line-height: 1 !important;
+  }
+
+  .run-simple-dday {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    font-size: 28px !important;
+    font-weight: 900 !important;
+    padding: 6px 16px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.28) !important;
+    letter-spacing: -0.5px !important;
+    line-height: 1 !important;
+  }
+
+  /* 3. 하단 마감일 */
+  .run-simple-period-box {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background-color: #fffaf5 !important;
+    border: 1px dashed #fdba74 !important;
+    border-radius: 12px !important;
+    padding: 10px 22px !important;
+    width: 100% !important;
+    max-width: 290px !important;
+  }
+
+  .run-simple-period-text {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #4b5563 !important;
+    letter-spacing: -0.3px !important;
+    line-height: 1 !important;
+  }
+
+  .run-simple-period-text strong {
+    color: #ea580c !important;
+    font-weight: 900 !important;
+  }
+
+  /* 400px 이하 모바일 화면 대응 */
+  @media (max-width: 420px) {
+    .run-simple-card {
+      width: 100% !important;
+      height: 280px !important;
+      padding: 24px 16px !important;
+    }
+    .run-simple-logo {
+      max-width: 170px !important;
+    }
+    .run-simple-text {
+      font-size: 28px !important;
+    }
+    .run-simple-dday {
+      font-size: 24px !important;
+      padding: 5px 12px !important;
+    }
+    .run-simple-period-text {
+      font-size: 15px !important;
+    }
+  }
+</style>
+
+<div class="run-simple-section">
+  <div class="run-simple-card">
+
+    <!-- 1. 런위드고 로고 -->
+    <div class="run-simple-logo-wrap">
+      <img 
+        src="https://cdn.blueimg.co.kr/runwithgo/image/icon/runwithgo.png" 
+        alt="RUN WITH GO" 
+        class="run-simple-logo"
+      >
+    </div>
+
+    <!-- 2. 모집중 D-DAY (자동 연산) -->
+    <div class="run-simple-main-wrap">
+      <span class="run-simple-text">모집중</span>
+      <span class="run-simple-dday" id="simple-auto-dday">D-6</span>
+    </div>
+
+    <!-- 3. 마감일 안내 -->
+    <div class="run-simple-period-box">
+      <span class="run-simple-period-text">마감일 <strong>(~10.7.수)</strong></span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function() {
+    var targetDate = new Date(2026, 9, 7); // 2026년 10월 7일
+    targetDate.setHours(0, 0, 0, 0);
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var diffTime = targetDate.getTime() - today.getTime();
+    var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    var ddayEl = document.getElementById("simple-auto-dday");
+
+    if (diffDays > 0) {
+      ddayEl.innerText = "D-" + diffDays;
+    } else if (diffDays === 0) {
+      ddayEl.innerText = "D-DAY";
+    } else {
+      ddayEl.innerText = "마감";
+    }
+  })();
+</script>
